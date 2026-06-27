@@ -1,0 +1,72 @@
+stage	branch	module	gene	enzyme	ec	pfam	ncbifam_tigrfam	tier	notes
+hydrolysis	carbohydrate	HYDROL-CARB	GH (multi)	glycoside hydrolases (cellulase/hemicellulase/amylase)	3.2.1.-	(use dbCAN)	(use dbCAN)	core	Detect via dbCAN/CAZy run_dbcan, not single HMMs. GH5/GH9/GH48 cellulases, GH10/GH11 xylanases, GH13 amylase.
+hydrolysis	protein	HYDROL-PROT	pep (multi)	extracellular peptidases/proteases	3.4.-.-	PF00082;PF01435;PF00675	—	core	MEROPS S8/M4/M9 etc. Use Pfam peptidase clans (PROSITE/MEROPS have NC terms — avoid).
+hydrolysis	lipid	HYDROL-LIP	lip/est	lipases/esterases	3.1.1.-	PF00151;PF07859;PF00756	—	accessory	Lipid hydrolysis to glycerol + LCFA.
+acidogenesis	glycolysis	ACID-GLYC	(core)	Embden-Meyerhof-Parnas	—	—	—	core	Central metabolism; assume present, not a discriminating marker.
+acidogenesis	pyruvate	ACID-ACE	porA/porB	pyruvate:ferredoxin oxidoreductase (PFOR)	1.2.7.1	PF01855;PF17147;PF17179	—	core	Pyruvate -> acetyl-CoA + reduced Fd (key fermentative node).
+acidogenesis	acetate	ACID-ACE	pta	phosphotransacetylase	2.3.1.8	PF01515	—	core	acetyl-CoA -> acetyl-P.
+acidogenesis	acetate	ACID-ACE	ackA	acetate kinase	2.7.2.1	PF00871	—	core	acetyl-P -> acetate + ATP. Reversible; also acetate activation in Methanosarcina.
+acidogenesis	butyrate	ACID-BUT	thlA/atoB	acetyl-CoA acetyltransferase (thiolase)	2.3.1.9	PF00108;PF02803	—	core	First step of butyrate synthesis (and reverse beta-oxidation).
+acidogenesis	butyrate	ACID-BUT	hbd	3-hydroxybutyryl-CoA dehydrogenase	1.1.1.157	PF00725;PF02737	—	core
+acidogenesis	butyrate	ACID-BUT	crt	crotonase (3-OH-butyryl-CoA dehydratase)	4.2.1.55	PF00378	—	core
+acidogenesis	butyrate	ACID-BUT	bcd	butyryl-CoA dehydrogenase	1.3.8.1	PF00441	—	core	Forms electron-bifurcating complex with EtfAB.
+acidogenesis	butyrate	ACID-BUT	etfA	electron transfer flavoprotein alpha	—	PF01012;PF00766	—	core
+acidogenesis	butyrate	ACID-BUT	etfB	electron transfer flavoprotein beta	—	PF01012	—	core
+acidogenesis	butyrate	ACID-BUT	ptb	phosphotransbutyrylase	2.3.1.19	PF01515	—	accessory
+acidogenesis	butyrate	ACID-BUT	buk	butyrate kinase	2.7.2.7	PF00871	—	accessory
+acidogenesis	propionate	ACID-PROP	mcmA/mut	methylmalonyl-CoA mutase	5.4.99.2	PF01642;PF02310	—	core	Methylmalonyl-CoA (succinate) propionate pathway.
+acidogenesis	propionate	ACID-PROP	mce	methylmalonyl-CoA epimerase	5.1.99.1	PF02746	—	accessory
+acidogenesis	propionate	ACID-PROP	pcc/mmd	methylmalonyl-CoA decarboxylase/carboxyltransferase	7.2.4.3	PF01039	—	accessory
+acidogenesis	lactate	ACID-LACT	ldh	L-lactate dehydrogenase	1.1.1.27	PF00056;PF02866	—	accessory
+acidogenesis	lactate	ACID-LACT	dld/lldEFG	lactate dehydrogenase (oxidative)	1.1.-.-	PF02754;PF01070	—	accessory	Lactate oxidation in syntrophy.
+acidogenesis	ethanol	ACID-ETOH	adhE/adh	alcohol dehydrogenase	1.1.1.1	PF00465;PF08240;PF00107	—	accessory
+acidogenesis	ethanol	ACID-ETOH	aldh	aldehyde dehydrogenase	1.2.1.-	PF00171	—	accessory
+acidogenesis	hydrogen	ACID-H2	hydA	[FeFe]-hydrogenase	1.12.7.2	PF02906;PF02256	—	core	Fermentative H2 production; key for syntrophy/DIET balance.
+acidogenesis	hydrogen	ACID-H2	hydB/hyaB	[NiFe]-hydrogenase large subunit	1.12.-.-	PF00374	—	core
+acetogenesis	WoodLjungdahl	ACET-WL	fhs	formate--tetrahydrofolate ligase	6.3.4.3	PF01268	TIGR02182	core	Diagnostic marker for acetogens (homoacetogenesis).
+acetogenesis	WoodLjungdahl	ACET-WL	folD	methylene-THF dehydrogenase/cyclohydrolase	1.5.1.5;3.5.4.9	PF00763;PF02882	—	core
+acetogenesis	WoodLjungdahl	ACET-WL	metF	methylene-THF reductase	1.5.1.20	PF02219	—	core
+acetogenesis	WoodLjungdahl	ACET-WL	acsB/cdhC	acetyl-CoA synthase	2.3.1.169	PF03598	—	core	Carbonyl branch; condensation to acetyl-CoA.
+acetogenesis	WoodLjungdahl	ACET-WL	cooS/acsA	CO dehydrogenase (Ni)	1.2.7.4	PF03063	—	core
+acetogenesis	WoodLjungdahl	ACET-WL	acsC/acsD	corrinoid iron-sulfur protein	—	PF00198;PF02607	—	accessory	Methyl branch carrier.
+acetogenesis	WoodLjungdahl	ACET-WL	fdhA	formate dehydrogenase	1.17.1.9	PF00384;PF01568	—	core
+acetogenesis	syntrophy-but	ACET-SYN-BUT	bcd-etf	syntrophic butyrate beta-oxidation	—	(see ACID-BUT)	—	core	Reverse beta-oxidation; same enzymes run oxidatively (Syntrophomonas).
+acetogenesis	syntrophy-prop	ACET-SYN-PROP	mcm+	syntrophic propionate oxidation (MMC pathway)	—	(see ACID-PROP)	—	core	Syntrophobacter; thermodynamically tight, needs low H2/formate.
+methanogenesis	core	MEG-CORE	mcrA	methyl-CoM reductase alpha	2.8.4.1	PF02249;PF02745	TIGR03256	core	MASTER MARKER. Present in ALL methanogens + ANME. Quantify + phylo-bin to ID methanogen type.
+methanogenesis	core	MEG-CORE	mcrB	methyl-CoM reductase beta	2.8.4.1	PF02241;PF02783	TIGR03257	core
+methanogenesis	core	MEG-CORE	mcrG	methyl-CoM reductase gamma	2.8.4.1	PF02240	TIGR03258	core
+methanogenesis	core	MEG-CORE	mcrC	McrC (assembly/activation)	—	PF04210	—	accessory
+methanogenesis	core	MEG-CORE	mcrD	McrD (assembly)	—	PF03296	—	accessory
+methanogenesis	core	MEG-CORE	hdrA	heterodisulfide reductase A	1.8.98.1	PF02662	—	core	CoM-S-S-CoB recycling; electron bifurcation with Mvh.
+methanogenesis	core	MEG-CORE	hdrB	heterodisulfide reductase B	1.8.98.1	PF02754	—	core	CCG domain (x2).
+methanogenesis	core	MEG-CORE	hdrC	heterodisulfide reductase C	1.8.98.1	PF13183;PF13534	—	accessory
+methanogenesis	core	MEG-CORE	mvhA	F420-non-reducing hydrogenase (large)	1.8.98.5	PF00374	—	core	Hydrogenotrophic electron input via Mvh-Hdr.
+methanogenesis	hydrogenotrophic	MEG-HYDRO	fwdB/fmdB	formylmethanofuran dehydrogenase (Mo/W subunit)	1.2.7.12	PF01568;PF00384	—	core	CO2 -> formyl-MFR (first reductive step).
+methanogenesis	hydrogenotrophic	MEG-HYDRO	fwdA/fmdA	formylmethanofuran dehydrogenase A	1.2.7.12	PF01493	—	accessory
+methanogenesis	hydrogenotrophic	MEG-HYDRO	ftr	formyl-MFR:H4MPT formyltransferase	2.3.1.101	PF01913;PF02741	TIGR03119	core	formyl-MFR -> formyl-H4MPT.
+methanogenesis	hydrogenotrophic	MEG-HYDRO	mch	methenyl-H4MPT cyclohydrolase	3.5.4.27	PF02289	TIGR03211	core
+methanogenesis	hydrogenotrophic	MEG-HYDRO	mtd	F420-dep methylene-H4MPT dehydrogenase	1.5.98.1	PF01993	—	core
+methanogenesis	hydrogenotrophic	MEG-HYDRO	hmd	H2-forming methylene-H4MPT dehydrogenase	1.12.98.2	PF03201	—	accessory	Alternative to mtd under Ni limitation.
+methanogenesis	hydrogenotrophic	MEG-HYDRO	mer	F420-dep methylene-H4MPT reductase	1.5.98.2	PF00296	TIGR03555	core
+methanogenesis	hydrogenotrophic	MEG-HYDRO	frhA	F420-reducing [NiFe]-hydrogenase (large)	1.12.98.1	PF00374	—	core	Regenerates reduced F420 from H2.
+methanogenesis	hydrogenotrophic	MEG-HYDRO	frhB	F420-reducing hydrogenase (F420-binding)	1.12.98.1	PF04432	—	accessory
+methanogenesis	common-methyl	MEG-CORE	mtrA	N5-methyl-H4MPT:CoM methyltransferase A	2.1.1.86	PF03599	TIGR01005	core	Membrane Na+-pumping complex; methyl-H4MPT -> methyl-CoM. Shared by hydrogenotrophic+acetoclastic.
+methanogenesis	common-methyl	MEG-CORE	mtrH	methyl-H4MPT:CoM methyltransferase H	2.1.1.86	PF01571	—	core
+methanogenesis	acetoclastic	MEG-ACETO	acs	acetyl-CoA synthetase (AMP-forming)	6.2.1.1	PF00501;PF13193	—	core	Methanothrix/Methanosaeta acetate activation (high-affinity).
+methanogenesis	acetoclastic	MEG-ACETO	ackA+pta	acetate kinase + phosphotransacetylase	2.7.2.1;2.3.1.8	PF00871;PF01515	—	core	Methanosarcina acetate activation (low-affinity).
+methanogenesis	acetoclastic	MEG-ACETO	cdhA	CO dehydrogenase/acetyl-CoA decarbonylase, alpha	1.2.7.4	PF03063	—	core	ACDS complex: acetyl-CoA -> CH3(->H4MPT) + CO(->CO2) + CoA.
+methanogenesis	acetoclastic	MEG-ACETO	cdhC	ACDS beta (acetyl-CoA synthase)	2.3.1.169	PF03598	—	core
+methanogenesis	acetoclastic	MEG-ACETO	cdhE/cdhD	ACDS corrinoid (delta/gamma)	2.1.1.245	PF00198;PF02607	—	accessory
+methanogenesis	methylotrophic	MEG-METHYL	mtaB	methanol:corrinoid methyltransferase	2.1.1.90	PF12176	—	core	Methanol utilisation (Methanosarcina, Methanomethylophilus).
+methanogenesis	methylotrophic	MEG-METHYL	mtaC	methanol corrinoid protein	—	PF02310	—	accessory
+methanogenesis	methylotrophic	MEG-METHYL	mtaA	methylcobalamin:CoM methyltransferase	2.1.1.246	PF03291	—	accessory
+methanogenesis	methylotrophic	MEG-METHYL	mttB	trimethylamine methyltransferase	2.1.1.250	PF06253	—	core	MttB superfamily (pyrrolysine). Marker of methylamine methanogenesis.
+methanogenesis	methylotrophic	MEG-METHYL	mtbB	dimethylamine methyltransferase	2.1.1.249	PF06253	—	accessory
+methanogenesis	methylotrophic	MEG-METHYL	mtmB	monomethylamine methyltransferase	2.1.1.248	PF06253	—	accessory
+methanogenesis	methylotrophic	MEG-METHYL	mtsA	methylthiol:CoM methyltransferase	2.1.1.-	PF03291	—	accessory	Dimethylsulfide utilisation.
+energy	conservation	ENERGY	echA-F	energy-converting hydrogenase (Ech)	—	PF00146;PF00361	—	accessory	Ferredoxin-dependent H2; energy conservation.
+energy	conservation	ENERGY	fpoA-N	F420H2:methanophenazine oxidoreductase (Fpo)	—	PF00146;PF00361	—	accessory	Complex-I-like; Methanosarcina.
+energy	conservation	ENERGY	rnfA-G	Rnf complex	7.2.1.2	PF02508;PF04060	—	accessory	Ferredoxin:NAD oxidoreductase, ion pumping.
+energy	conservation	ENERGY	ahaA/atpA	A1Ao ATP synthase	7.1.2.2	PF00006;PF00231	—	accessory	Archaeal ATP synthase.
+syntrophy	DIET	DIET	omcS/mhc	multiheme c-type cytochrome	—	PF13442;PF14537	—	accessory	Direct interspecies electron transfer (Geobacter<->Methanothrix/Methanosarcina).
+syntrophy	DIET	DIET	pilA	type-IV pilin (e-pili)	—	PF00114	—	accessory	Conductive pili for DIET.
