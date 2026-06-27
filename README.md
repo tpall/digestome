@@ -1,7 +1,7 @@
 # Anaerobic-Digestion / Methanogenesis marker-gene panel
 
 > **Part of DRAM's experimental KEGG-less workflow** (branch `feature/kegg-less-ad`).
-> Goal: distill microbial metabolism for biogas/AD genomes using only
+> Goal: distill microbial metabolism using only
 > commercially-licensable databases (Pfam CC0, NCBIfam public-domain, Rhea
 > CC BY, dbCAN) — no KEGG/KOfam, no MetaCyc. This panel is the curated scaffold
 > the KEGG-less distill step scores against.
@@ -85,6 +85,18 @@ curl -s 'https://www.ebi.ac.uk/interpro/api/entry/pfam/?search=methyl-coenzyme%2
 # 4. CAZymes: run_dbcan (dbCAN) on predicted proteins for HYDROL-CARB rows.
 ```
 Build a custom `hmmsearch` DB from the validated NCBIfam models, run against MAG/contig proteins (Prodigal), then apply the module rules above. This is your DRAM-free, KEGG-free functional engine.
+
+### Scripts
+- **`build_ad_hmm_db.sh`** — downloads NCBIfam HMMs + `rhea2ec.tsv`, matches the panel (by gene symbol / EC), and emits `db/ad_panel.hmm` (pressed HMMER DB), `db/ad_panel_map.tsv` (model → gene/module), and `db/rhea2ec.tsv`.
+- **`panel_scored.py`** — takes `hmmsearch --tblout` (+ optional `run_dbcan` overview) and the map, writes per-module completeness and prints a branch-gate + diagnostic-marker summary.
+
+```bash
+bash build_ad_hmm_db.sh
+hmmsearch --cut_nc --tblout hits.tblout db/ad_panel.hmm proteins.faa
+python3 panel_scored.py --tblout hits.tblout --map db/ad_panel_map.tsv \
+  --panel AD_methanogenesis_panel.tsv --name MAG001 --out MAG001.modules.tsv
+```
+Both are **scaffolds** — validate matched accessions (gene-symbol matches are reliable; EC matches need review) and tune cutoffs before production.
 
 ---
 
