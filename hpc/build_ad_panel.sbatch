@@ -56,9 +56,14 @@ echo "(build script guessed: ncbi_accession / gene_symbol / ec_numbers / label)"
 head -1 "$WORK/hmm_PGAP.tsv" | tr '\t' '\n' | nl
 echo
 echo "================ B. archive layout ================"
-tar -tzf "$WORK/hmm_PGAP.HMM.tgz" | head -5
-echo "  ... total entries: $(tar -tzf "$WORK/hmm_PGAP.HMM.tgz" | wc -l)"
-echo "  models concatenated: $(grep -c '^HMMER3' "$WORK/ncbifam_all.hmm" || true)"
+# Materialise the listing before slicing it: `tar -tzf ... | head` kills tar
+# with SIGPIPE, which under `set -o pipefail` fails the whole job -- and it
+# saves decompressing 424M twice.
+TARLIST="$WORK/archive_listing.txt"
+[ -s "$TARLIST" ] || tar -tzf "$WORK/hmm_PGAP.HMM.tgz" > "$TARLIST"
+head -5 "$TARLIST"
+echo "  ... total entries: $(wc -l < "$TARLIST")"
+echo "  models available:  $(wc -l < "$WORK/available_acc.txt")"
 echo
 echo "================ C. panel coverage ================"
 MAP="$OUT/ad_panel_map.tsv" python3 - <<'PY'
@@ -100,8 +105,11 @@ if missing:
 PY
 echo
 echo "================ D. EC-derived matches (REVIEW THESE) ================"
-awk -F'\t' 'NR>1 && $5 ~ /^ec:/ {print "  " $1 "\t" $3 "\t" $5 "\t" $2}' "$OUT/ad_panel_map.tsv" | sort -k2,2 | head -60
-echo "  ... EC-derived total: $(awk -F'\t' 'NR>1 && $5 ~ /^ec:/' "$OUT/ad_panel_map.tsv" | wc -l)"
+ECLIST="$WORK/ec_derived.txt"
+awk -F'\t' 'NR>1 && $5 ~ /^ec:/ {print "  " $1 "\t" $3 "\t" $5 "\t" $2}' "$OUT/ad_panel_map.tsv" \
+  | LC_ALL=C sort -k2,2 > "$ECLIST"
+head -60 "$ECLIST"
+echo "  ... EC-derived total: $(wc -l < "$ECLIST")"
 echo
 echo "==> artifacts:"
 ls -lh "$OUT"
