@@ -31,15 +31,25 @@ echo "==> 1. Download NCBIfam HMMs + metadata"
 
 echo "==> 2. Concatenate models into one fetchable, indexed HMM file"
 if [ ! -s "$WORK/ncbifam_all.hmm" ]; then
-  tar -xzf "$WORK/hmm_PGAP.HMM.tgz" -C "$WORK"
-  # archive layout varies: a dir of *.HMM files, or one concatenated file
-  if find "$WORK" -name '*.HMM' | grep -q .; then
-    find "$WORK" -name '*.HMM' -print0 | xargs -0 cat > "$WORK/ncbifam_all.hmm"
-  elif find "$WORK" -name '*.hmm' | grep -q .; then
-    find "$WORK" -name '*.hmm' ! -name 'ncbifam_all.hmm' -print0 | xargs -0 cat > "$WORK/ncbifam_all.hmm"
+  # Verified 2026-08: the archive is ~19k individual hmm_PGAP/NF*.HMM files.
+  # Layout has changed before, so still tolerate a flat dir or lowercase .hmm.
+  find_models() { find "$WORK" -name "$1" ! -name 'ncbifam_all.hmm' "${@:2}"; }
+
+  # Skip the (slow) extraction if models are already unpacked.
+  [ -n "$(find_models '*.HMM' -print -quit)" ] || [ -n "$(find_models '*.hmm' -print -quit)" ] || \
+    tar -xzf "$WORK/hmm_PGAP.HMM.tgz" -C "$WORK"
+
+  # NB: do NOT probe with `find ... | grep -q .`. grep exits on the first match,
+  # find is killed by SIGPIPE partway through 19k paths, and under `pipefail`
+  # the pipeline reports failure even though the models are present. Small test
+  # dirs hide this -- their output fits the 64K pipe buffer. Use -print -quit.
+  if   [ -n "$(find_models '*.HMM' -print -quit)" ]; then pat='*.HMM'
+  elif [ -n "$(find_models '*.hmm' -print -quit)" ]; then pat='*.hmm'
   else
     echo "!! could not locate extracted HMM models under $WORK" >&2; exit 1
   fi
+  echo "    concatenating $(find_models "$pat" | wc -l) models matching $pat"
+  find_models "$pat" -print0 | xargs -0 cat > "$WORK/ncbifam_all.hmm"
 fi
 hmmfetch --index "$WORK/ncbifam_all.hmm"
 
