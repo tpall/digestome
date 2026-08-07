@@ -51,7 +51,14 @@ if [ ! -s "$WORK/ncbifam_all.hmm" ]; then
   echo "    concatenating $(find_models "$pat" | wc -l) models matching $pat"
   find_models "$pat" -print0 | xargs -0 cat > "$WORK/ncbifam_all.hmm"
 fi
-hmmfetch --index "$WORK/ncbifam_all.hmm"
+# hmmfetch --index refuses to overwrite an existing .ssi, which breaks every
+# re-run. Index only when missing, or when the concatenated file is newer.
+if [ ! -s "$WORK/ncbifam_all.hmm.ssi" ] || [ "$WORK/ncbifam_all.hmm" -nt "$WORK/ncbifam_all.hmm.ssi" ]; then
+  rm -f "$WORK/ncbifam_all.hmm.ssi"
+  hmmfetch --index "$WORK/ncbifam_all.hmm"
+else
+  echo "    reusing existing SSI index"
+fi
 
 echo "==> 3. Match panel genes/EC to NCBIfam models -> keylist + map"
 PANEL="$PANEL" NCBIFAM_TSV="$WORK/hmm_PGAP.tsv" KEYS="$WORK/keys.txt" MAP="$OUT/ad_panel_map.tsv" \
