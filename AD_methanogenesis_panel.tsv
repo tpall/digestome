@@ -67,6 +67,6 @@ methanogenesis	methylotrophic	MEG-METHYL	mtsA	methylthiol:CoM methyltransferase	
 energy	conservation	ENERGY	echA-F	energy-converting hydrogenase (Ech)	—	PF00146;PF00361	—	accessory	Ferredoxin-dependent H2; energy conservation.	scored
 energy	conservation	ENERGY	fpoA-N	F420H2:methanophenazine oxidoreductase (Fpo)	—	PF00146;PF00361	—	accessory	Complex-I-like; Methanosarcina.	scored
 energy	conservation	ENERGY	rnfA-G	Rnf complex	7.2.1.2	PF02508;PF04060	—	accessory	Ferredoxin:NAD oxidoreductase, ion pumping.	scored
-energy	conservation	ENERGY	ahaA/atpA	A1Ao ATP synthase	7.1.2.2	PF00006;PF00231	—	accessory	Archaeal ATP synthase.	scored
+energy	conservation	ENERGY	ahaA/atpA	A1Ao ATP synthase	7.1.2.2	PF00006;PF00231	TIGR01043; TIGR01041	accessory	"A1Ao catalytic subunit A (TIGR01043) + archaeal subunit B (TIGR01041), both equivalog. Pinned: EC 7.1.2.2 covers every subunit of F-, V- and A-type ATP synthases (120 models). Note the naming inversion — in A/V-type ""subunit A"" is catalytic, in F0F1 ""subunit A"" (atpB) is membrane."	scored
 syntrophy	DIET	DIET	omcS/mhc	multiheme c-type cytochrome	—	PF13442;PF14537	—	accessory	Direct interspecies electron transfer (Geobacter<->Methanothrix/Methanosarcina).	scored
 syntrophy	DIET	DIET	pilA	type-IV pilin (e-pili)	—	PF00114	—	accessory	Conductive pili for DIET.	scored
