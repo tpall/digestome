@@ -41,11 +41,11 @@ methanogenesis	core	MEG-CORE	hdrA	heterodisulfide reductase A	1.8.98.1	PF02662	�
 methanogenesis	core	MEG-CORE	hdrB	heterodisulfide reductase B	1.8.98.1	PF02754	—	core	CCG domain (x2).	scored
 methanogenesis	core	MEG-CORE	hdrC	heterodisulfide reductase C	1.8.98.1	PF13183;PF13534	—	accessory		scored
 methanogenesis	core	MEG-CORE	mvhA	F420-non-reducing hydrogenase (large)	1.8.98.5	PF00374	—	core	Hydrogenotrophic electron input via Mvh-Hdr.	scored
-methanogenesis	hydrogenotrophic	MEG-HYDRO	fwdB/fmdB	formylmethanofuran dehydrogenase (Mo/W subunit)	1.2.7.12	PF01568;PF00384	—	core	CO2 -> formyl-MFR (first reductive step).	scored
-methanogenesis	hydrogenotrophic	MEG-HYDRO	fwdA/fmdA	formylmethanofuran dehydrogenase A	1.2.7.12	PF01493	—	accessory		scored
+methanogenesis	hydrogenotrophic	MEG-HYDRO	fwdB/fmdB	formylmethanofuran dehydrogenase (Mo/W subunit)	1.2.7.12	PF01568;PF00384	TIGR03129	core	CO2 -> formyl-MFR (first reductive step). Formylmethanofuran dehydrogenase subunit B = the Mo/W subunit this row describes. Was present in the DB all along but mislabelled fmdA: EC 1.2.7.12 is shared by subunits A/B/C and the EC path labels every model with one arbitrary gene name.	scored
+methanogenesis	hydrogenotrophic	MEG-HYDRO	fwdA/fmdA	formylmethanofuran dehydrogenase A	1.2.7.12	PF01493	TIGR03121	accessory	Formylmethanofuran dehydrogenase subunit A. Pinned to stop the gene_symbol path matching NF045496 formamidase, an unrelated enzyme that genuinely carries the symbol fmdA.	scored
 methanogenesis	hydrogenotrophic	MEG-HYDRO	ftr	formyl-MFR:H4MPT formyltransferase	2.3.1.101	PF01913;PF02741	TIGR03119	core	formyl-MFR -> formyl-H4MPT.	scored
 methanogenesis	hydrogenotrophic	MEG-HYDRO	mch	methenyl-H4MPT cyclohydrolase	3.5.4.27	PF02289	TIGR03120	core	Accession corrected 2026-08-07: TIGR03211 was catechol 2,3-dioxygenase, not mch.	scored
-methanogenesis	hydrogenotrophic	MEG-HYDRO	mtd	F420-dep methylene-H4MPT dehydrogenase	1.5.98.1	PF01993	—	core		scored
+methanogenesis	hydrogenotrophic	MEG-HYDRO	mtd	F420-dep methylene-H4MPT dehydrogenase	1.5.98.1	PF01993	NF002162	core	PRK00994 equivalog, F420-dep methylene-H4MPT dehydrogenase. NCBIfam has no gene_symbol=mtd and annotates no model with EC 1.5.98.1, so neither match path could ever fire; the PfamEq model for PF01993 (NF014095.8) is not shipped in this release.	scored
 methanogenesis	hydrogenotrophic	MEG-HYDRO	hmd	H2-forming methylene-H4MPT dehydrogenase	1.12.98.2	PF03201	—	accessory	Alternative to mtd under Ni limitation.	scored
 methanogenesis	hydrogenotrophic	MEG-HYDRO	mer	F420-dep methylene-H4MPT reductase	1.5.98.2	PF00296	TIGR03555	core		scored
 methanogenesis	hydrogenotrophic	MEG-HYDRO	frhA	F420-reducing [NiFe]-hydrogenase (large)	1.12.98.1	PF00374	—	core	Regenerates reduced F420 from H2.	scored
