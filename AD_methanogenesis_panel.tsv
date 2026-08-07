@@ -23,7 +23,7 @@ acidogenesis	ethanol	ACID-ETOH	adhE/adh	alcohol dehydrogenase	1.1.1.1	PF00465;PF
 acidogenesis	ethanol	ACID-ETOH	aldh	aldehyde dehydrogenase	1.2.1.-	PF00171	—	accessory		scored
 acidogenesis	hydrogen	ACID-H2	hydA	[FeFe]-hydrogenase	1.12.7.2	PF02906;PF02256	—	core	Fermentative H2 production; key for syntrophy/DIET balance.	scored
 acidogenesis	hydrogen	ACID-H2	hydB/hyaB	[NiFe]-hydrogenase large subunit	1.12.-.-	PF00374	—	core		scored
-acetogenesis	WoodLjungdahl	ACET-WL	fhs	formate--tetrahydrofolate ligase	6.3.4.3	PF01268	TIGR02182	core	Diagnostic marker for acetogens (homoacetogenesis).	scored
+acetogenesis	WoodLjungdahl	ACET-WL	fhs	formate--tetrahydrofolate ligase	6.3.4.3	PF01268	NF010030; NF010031	core	Diagnostic marker for acetogens (homoacetogenesis). Accession corrected 2026-08-07: TIGR02182 was GrxB family glutaredoxin, not fhs.	scored
 acetogenesis	WoodLjungdahl	ACET-WL	folD	methylene-THF dehydrogenase/cyclohydrolase	1.5.1.5;3.5.4.9	PF00763;PF02882	—	core		scored
 acetogenesis	WoodLjungdahl	ACET-WL	metF	methylene-THF reductase	1.5.1.20	PF02219	—	core		scored
 acetogenesis	WoodLjungdahl	ACET-WL	acsB/cdhC	acetyl-CoA synthase	2.3.1.169	PF03598	—	core	Carbonyl branch; condensation to acetyl-CoA.	scored
@@ -34,7 +34,7 @@ acetogenesis	syntrophy-but	ACET-SYN-BUT	bcd-etf	syntrophic butyrate beta-oxidati
 acetogenesis	syntrophy-prop	ACET-SYN-PROP	mcm+	syntrophic propionate oxidation (MMC pathway)	—	(see ACID-PROP)	—	core	Syntrophobacter; thermodynamically tight, needs low H2/formate.	scored
 methanogenesis	core	MEG-CORE	mcrA	methyl-CoM reductase alpha	2.8.4.1	PF02249;PF02745	TIGR03256	core	MASTER MARKER. Present in ALL methanogens + ANME. Quantify + phylo-bin to ID methanogen type.	scored
 methanogenesis	core	MEG-CORE	mcrB	methyl-CoM reductase beta	2.8.4.1	PF02241;PF02783	TIGR03257	core		scored
-methanogenesis	core	MEG-CORE	mcrG	methyl-CoM reductase gamma	2.8.4.1	PF02240	TIGR03258	core		scored
+methanogenesis	core	MEG-CORE	mcrG	methyl-CoM reductase gamma	2.8.4.1	PF02240	TIGR03259	core	Accession corrected 2026-08-07: TIGR03258 was 2-aminoethylphosphonate ABC transporter PhnT, not mcrG.	scored
 methanogenesis	core	MEG-CORE	mcrC	McrC (assembly/activation)	—	PF04210	—	accessory		scored
 methanogenesis	core	MEG-CORE	mcrD	McrD (assembly)	—	PF03296	—	accessory		scored
 methanogenesis	core	MEG-CORE	hdrA	heterodisulfide reductase A	1.8.98.1	PF02662	—	core	CoM-S-S-CoB recycling; electron bifurcation with Mvh.	scored
@@ -44,13 +44,13 @@ methanogenesis	core	MEG-CORE	mvhA	F420-non-reducing hydrogenase (large)	1.8.98.5
 methanogenesis	hydrogenotrophic	MEG-HYDRO	fwdB/fmdB	formylmethanofuran dehydrogenase (Mo/W subunit)	1.2.7.12	PF01568;PF00384	—	core	CO2 -> formyl-MFR (first reductive step).	scored
 methanogenesis	hydrogenotrophic	MEG-HYDRO	fwdA/fmdA	formylmethanofuran dehydrogenase A	1.2.7.12	PF01493	—	accessory		scored
 methanogenesis	hydrogenotrophic	MEG-HYDRO	ftr	formyl-MFR:H4MPT formyltransferase	2.3.1.101	PF01913;PF02741	TIGR03119	core	formyl-MFR -> formyl-H4MPT.	scored
-methanogenesis	hydrogenotrophic	MEG-HYDRO	mch	methenyl-H4MPT cyclohydrolase	3.5.4.27	PF02289	TIGR03211	core		scored
+methanogenesis	hydrogenotrophic	MEG-HYDRO	mch	methenyl-H4MPT cyclohydrolase	3.5.4.27	PF02289	TIGR03120	core	Accession corrected 2026-08-07: TIGR03211 was catechol 2,3-dioxygenase, not mch.	scored
 methanogenesis	hydrogenotrophic	MEG-HYDRO	mtd	F420-dep methylene-H4MPT dehydrogenase	1.5.98.1	PF01993	—	core		scored
 methanogenesis	hydrogenotrophic	MEG-HYDRO	hmd	H2-forming methylene-H4MPT dehydrogenase	1.12.98.2	PF03201	—	accessory	Alternative to mtd under Ni limitation.	scored
 methanogenesis	hydrogenotrophic	MEG-HYDRO	mer	F420-dep methylene-H4MPT reductase	1.5.98.2	PF00296	TIGR03555	core		scored
 methanogenesis	hydrogenotrophic	MEG-HYDRO	frhA	F420-reducing [NiFe]-hydrogenase (large)	1.12.98.1	PF00374	—	core	Regenerates reduced F420 from H2.	scored
 methanogenesis	hydrogenotrophic	MEG-HYDRO	frhB	F420-reducing hydrogenase (F420-binding)	1.12.98.1	PF04432	—	accessory		scored
-methanogenesis	common-methyl	MEG-CORE	mtrA	N5-methyl-H4MPT:CoM methyltransferase A	2.1.1.86	PF03599	TIGR01005	core	Membrane Na+-pumping complex; methyl-H4MPT -> methyl-CoM. Shared by hydrogenotrophic+acetoclastic.	scored
+methanogenesis	common-methyl	MEG-CORE	mtrA	N5-methyl-H4MPT:CoM methyltransferase A	2.1.1.86	PF03599	TIGR01111	core	Membrane Na+-pumping complex; methyl-H4MPT -> methyl-CoM. Shared by hydrogenotrophic+acetoclastic. Accession corrected 2026-08-07: TIGR01005 was exopolysaccharide transport protein, not mtrA.	scored
 methanogenesis	common-methyl	MEG-CORE	mtrH	methyl-H4MPT:CoM methyltransferase H	2.1.1.86	PF01571	—	core		scored
 methanogenesis	acetoclastic	MEG-ACETO	acs	acetyl-CoA synthetase (AMP-forming)	6.2.1.1	PF00501;PF13193	—	core	Methanothrix/Methanosaeta acetate activation (high-affinity).	scored
 methanogenesis	acetoclastic	MEG-ACETO	ackA+pta	acetate kinase + phosphotransacetylase	2.7.2.1;2.3.1.8	PF00871;PF01515	—	core	Methanosarcina acetate activation (low-affinity).	scored

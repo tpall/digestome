@@ -111,6 +111,17 @@ awk -F'\t' 'NR>1 && $5 ~ /^ec:/ {print "  " $1 "\t" $3 "\t" $5 "\t" $2}' "$OUT/a
 head -60 "$ECLIST"
 echo "  ... EC-derived total: $(wc -l < "$ECLIST")"
 echo
+echo "================ E. CURATED accessions vs what NCBIfam says they are ================"
+# Pinned rows have no symbol/EC fallback, so a wrong accession silently swaps in
+# an unrelated protein and still reports as "resolved". Four of the original
+# eight were wrong this way (mcrG -> a phosphonate transporter, mch -> catechol
+# 2,3-dioxygenase, mtrA -> an EPS transport protein, fhs -> a glutaredoxin).
+# Eyeball this table whenever the curated set changes.
+awk -F'\t' '
+  NR==FNR { if (FNR>1) prod[$1]=$11; next }              # hmm_PGAP.tsv: acc -> product_name
+  FNR>1 && $5=="curated" { printf "  %-10s %-14s %-18s %s\n", $3, $1, $2, (($1 in prod) ? prod[$1] : "?? not in metadata") }
+' "$WORK/hmm_PGAP.tsv" "$OUT/ad_panel_map.tsv" | LC_ALL=C sort
+echo
 echo "==> artifacts:"
 ls -lh "$OUT"
 echo "==> done $(date)"
