@@ -24,7 +24,19 @@ set -euo pipefail
 module purge
 module load hmmer/3.3.2
 
-KEGGLESS="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# SLURM copies the batch script into its spool dir, so BASH_SOURCE does NOT
+# point into the repo under sbatch -- use the submit dir there, and fall back to
+# BASH_SOURCE when this is run directly with bash.
+if [ -n "${SLURM_SUBMIT_DIR:-}" ]; then
+  KEGGLESS="$SLURM_SUBMIT_DIR/kegg-less"
+else
+  KEGGLESS="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+fi
+[ -f "$KEGGLESS/build_ad_hmm_db.sh" ] || {
+  echo "!! cannot find build_ad_hmm_db.sh under $KEGGLESS" >&2
+  echo "   submit from the worktree root: sbatch kegg-less/hpc/build_ad_panel.sbatch" >&2
+  exit 1
+}
 DB="${DB:-/gpfs/space/projects/preterm/databases}"
 export PANEL="$KEGGLESS/AD_methanogenesis_panel.tsv"
 export WORK="${WORK:-$DB/ncbifam/_work}"
