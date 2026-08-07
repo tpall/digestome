@@ -96,27 +96,32 @@ for r in reader:
     gsym = (r.get(gene_col) or '').strip() if gene_col else ''
     name = (r.get(name_col) or '').strip() if name_col else ''
     ecs  = [e.strip() for e in re.split(r'[;, ]+', (r.get(ec_col) or '') if ec_col else '') if e.strip()]
-    gene, mods = None, set()
+    gene, mods, basis = None, set(), ''
     if gsym and gsym.lower() in panel_genes:                    # reliable: gene-symbol match
         gene, mods = panel_genes[gsym.lower()]
+        basis = 'gene_symbol'
     else:                                                       # weaker: EC match (review!)
         for e in ecs:
             if e in panel_ec:
                 gs = sorted(panel_ec[e]); gene = gs[0] if gs else gsym
                 for g in panel_ec[e]:
                     if g.lower() in panel_genes: mods |= panel_genes[g.lower()][1]
+                basis = 'ec:' + e
                 break
     if gene and acc:
         keys.add(acc)
-        maprows.append((acc, name, gene, ';'.join(sorted(mods))))
+        maprows.append((acc, name, gene, ';'.join(sorted(mods)), basis))
 
 with open(keys_path, 'w') as fh:
     fh.write('\n'.join(sorted(keys)) + '\n')
 with open(map_path, 'w') as fh:
-    fh.write('#model_accession\tmodel_name\tgene\tmodules\n')
+    fh.write('#model_accession\tmodel_name\tgene\tmodules\tmatch_basis\n')
     for row in sorted(set(maprows)):
         fh.write('\t'.join(row) + '\n')
-print(f"   matched {len(keys)} models -> {len(maprows)} map rows")
+n_sym = sum(1 for r in maprows if r[4] == 'gene_symbol')
+print(f"   resolved columns: acc={acc_col} gene={gene_col} ec={ec_col} name={name_col}")
+print(f"   matched {len(keys)} models -> {len(maprows)} map rows "
+      f"({n_sym} by gene symbol, {len(maprows) - n_sym} by EC -- review the EC ones)")
 PY
 
 echo "==> 4. Fetch matched models -> pressed DB"
