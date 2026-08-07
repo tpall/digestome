@@ -88,7 +88,12 @@ for r in csv.DictReader(open(panel_path), delimiter='\t'):
         e = panel_genes.setdefault(g.lower(), (g, set())); e[1].add(mod)
     for ec in re.split(r'[;, ]+', r.get('ec','') or ''):
         ec = ec.strip()
-        if ec and ec[0].isdigit():
+        # Wildcard ECs (2.1.1.-, 3.4.-.-) name an enzyme class, not a gene.
+        # Matching them pulled in every methyltransferase / peptidase / lipase
+        # in NCBIfam -- 58 models, most with no module attached. Those panel
+        # rows are dbCAN/MEROPS territory; leave them to run_dbcan rather than
+        # manufacturing coverage out of a whole EC class.
+        if ec and ec[0].isdigit() and '-' not in ec:
             panel_ec.setdefault(ec, set()).update(toks)
 
 # --- locate columns in NCBIfam metadata by header name ---
@@ -119,12 +124,20 @@ for r in reader:
         basis = 'gene_symbol'
     else:                                                       # weaker: EC match (review!)
         for e in ecs:
-            if e in panel_ec:
-                gs = sorted(panel_ec[e]); gene = gs[0] if gs else gsym
-                for g in panel_ec[e]:
-                    if g.lower() in panel_genes: mods |= panel_genes[g.lower()][1]
-                basis = 'ec:' + e
-                break
+            if e not in panel_ec:
+                continue
+            gs = sorted(panel_ec[e])
+            if not gs:
+                # Panel row had no usable gene token. Falling back to NCBIfam's
+                # own gene_symbol here imported unrelated models (mepA, ampH,
+                # flgJ, prsW ...) carrying an empty modules column -- pure
+                # scoring dead weight. Skip instead.
+                continue
+            gene = gs[0]
+            for g in panel_ec[e]:
+                if g.lower() in panel_genes: mods |= panel_genes[g.lower()][1]
+            basis = 'ec:' + e
+            break
     if gene and acc:
         keys.add(acc)
         maprows.append((acc, name, gene, ';'.join(sorted(mods)), basis))
@@ -139,6 +152,23 @@ n_sym = sum(1 for r in maprows if r[4] == 'gene_symbol')
 print(f"   resolved columns: acc={acc_col} gene={gene_col} ec={ec_col} name={name_col}")
 print(f"   matched {len(keys)} models -> {len(maprows)} map rows "
       f"({n_sym} by gene symbol, {len(maprows) - n_sym} by EC -- review the EC ones)")
+
+# An EC shared by a whole protein family resolves to dozens of models that
+# cannot tell the panel gene from its relatives (ahaA/EC 7.1.2.2 once pulled 117
+# ATP synthase subunits = 37% of the DB). Surface it at build time.
+max_per_gene = int(os.environ.get('MAX_MODELS_PER_GENE', '20'))
+per_gene = {}
+for r in maprows:
+    per_gene[r[2]] = per_gene.get(r[2], 0) + 1
+broad = sorted(((n, g) for g, n in per_gene.items() if n > max_per_gene), reverse=True)
+if broad:
+    print(f"   !! {len(broad)} gene(s) over {max_per_gene} models -- EC too generic to be diagnostic:")
+    for n, g in broad:
+        bases = sorted({r[4] for r in maprows if r[2] == g})
+        print(f"      {g}: {n} models via {', '.join(bases)}")
+n_nomod = sum(1 for r in maprows if not r[3])
+if n_nomod:
+    print(f"   !! {n_nomod} map rows still carry no module assignment")
 PY
 
 echo "==> 4. Fetch matched models -> pressed DB"
