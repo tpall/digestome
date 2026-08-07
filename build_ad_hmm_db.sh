@@ -135,8 +135,33 @@ print(f"   matched {len(keys)} models -> {len(maprows)} map rows "
 PY
 
 echo "==> 4. Fetch matched models -> pressed DB"
-hmmfetch -f "$WORK/ncbifam_all.hmm" "$WORK/keys.txt" > "$OUT/ad_panel.hmm"
+# hmm_PGAP.tsv indexes more models than the .tgz ships -- some accessions in the
+# metadata (seen 2026-08: 21 of 337, all .7 versions) have no model in this
+# release, and hmmfetch -f aborts on the first one it cannot find. Intersect the
+# key list with the accessions actually present, and name the panel genes that
+# lost a model instead of dropping them silently.
+grep '^ACC' "$WORK/ncbifam_all.hmm" | awk '{print $2}' | LC_ALL=C sort -u > "$WORK/available_acc.txt"
+LC_ALL=C sort -u "$WORK/keys.txt" > "$WORK/keys_sorted.txt"
+LC_ALL=C comm -12 "$WORK/keys_sorted.txt" "$WORK/available_acc.txt" > "$WORK/keys_present.txt"
+LC_ALL=C comm -23 "$WORK/keys_sorted.txt" "$WORK/available_acc.txt" > "$WORK/keys_missing.txt"
+
+n_want=$(wc -l < "$WORK/keys_sorted.txt"); n_have=$(wc -l < "$WORK/keys_present.txt")
+n_missing=$(wc -l < "$WORK/keys_missing.txt")
+echo "    $n_have/$n_want matched accessions present in this NCBIfam release"
+if [ "$n_missing" -gt 0 ]; then
+  echo "    !! $n_missing absent from the archive (accession / gene / match_basis):"
+  awk -F'\t' 'NR==FNR{miss[$1];next} FNR>1 && ($1 in miss){print "       " $1 "\t" $3 "\t" $5}' \
+      "$WORK/keys_missing.txt" "$OUT/ad_panel_map.tsv" | LC_ALL=C sort -k2,2
+fi
+
+hmmfetch -f "$WORK/ncbifam_all.hmm" "$WORK/keys_present.txt" > "$OUT/ad_panel.hmm"
 hmmpress -f "$OUT/ad_panel.hmm"
+
+# Keep the map honest: it must describe only what is in the pressed DB.
+{ head -1 "$OUT/ad_panel_map.tsv"
+  awk -F'\t' 'NR==FNR{ok[$1];next} FNR>1 && ($1 in ok)' "$WORK/keys_present.txt" "$OUT/ad_panel_map.tsv"
+} > "$OUT/ad_panel_map.tsv.tmp"
+mv "$OUT/ad_panel_map.tsv.tmp" "$OUT/ad_panel_map.tsv"
 
 echo "==> 5. EC -> Rhea map (CC BY)"
 [ -s "$OUT/rhea2ec.tsv" ] || curl -L --fail -o "$OUT/rhea2ec.tsv" "$RHEA_EC_URL"
