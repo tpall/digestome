@@ -29,13 +29,36 @@ def gene_tokens(field):
     return out
 
 def load_panel(path):
+    """module -> {branch, core, accessory, scoring}.
+
+    `scoring` comes from the panel's own column so detection policy lives with
+    the data, not in module names hardcoded here:
+      scored   normal HMM scoring off the core tier (default)
+      assumed  universal central metabolism -- present by assumption, no marker
+      dbcan    satisfied by any CAZyme call from run_dbcan
+      pending  no license-clean detector wired yet; reported, never scored
+    """
     modules = {}
     for r in csv.DictReader(open(path), delimiter='\t'):
         m = r['module']
-        d = modules.setdefault(m, {'branch': r['branch'], 'core': set(), 'accessory': set()})
+        d = modules.setdefault(m, {'branch': r['branch'], 'core': set(),
+                                   'accessory': set(), 'scoring': None})
         tier = r['tier'] if r['tier'] in ('core', 'accessory') else 'accessory'
         for g in gene_tokens(r['gene']):
             d[tier].add(g)
+        s = (r.get('scoring') or '').strip().lower()
+        if s:
+            if d['scoring'] and d['scoring'] != s:
+                print(f"!! {m}: conflicting scoring modes "
+                      f"'{d['scoring']}' vs '{s}' -- keeping the first",
+                      file=sys.stderr)
+            elif s not in ('scored', 'assumed', 'dbcan', 'pending'):
+                print(f"!! {m}: unknown scoring mode '{s}' -- treating as 'scored'",
+                      file=sys.stderr)
+                s = 'scored'
+            d['scoring'] = d['scoring'] or s
+    for d in modules.values():
+        d['scoring'] = d['scoring'] or 'scored'   # panels without the column
     return modules
 
 def load_map(path):
@@ -103,15 +126,33 @@ def main():
         return any(g.lower() in found for g in gs)
 
     # ---- per-module completeness ----
+    # A module with nothing to score reports pct = NA, never 0.0. Emitting 0.0
+    # made "no marker defined" indistinguishable from "pathway absent" -- on a
+    # digester report that reads as a failing plant.
     rows = []
     for m, d in sorted(modules.items()):
-        if m == 'HYDROL-CARB':
-            fc, exp = (1 if 'cazyme' in found else 0), 1
+        mode = d['scoring']
+        if mode == 'assumed':
+            exp = fc = 0
+            status = 'assumed-present'
+        elif mode == 'dbcan':
+            if a.dbcan:
+                exp, fc = 1, (1 if 'cazyme' in found else 0)
+                status = 'scored'
+            else:
+                exp = fc = 0
+                status = 'no-detector'        # run_dbcan output not supplied
+        elif mode == 'pending':
+            exp = fc = 0
+            status = 'not-wired'
         else:
             exp = len(d['core'])
             fc = len({g for g in d['core'] if g.lower() in found})
-        pct = round(100 * fc / exp, 1) if exp else 0.0
-        rows.append((m, d['branch'], exp, fc, pct))
+            # Empty core tier: the module's genes are all accessory-tier, which
+            # scoring does not read yet. Not a zero -- an absence of a metric.
+            status = 'scored' if exp else 'no-core-tier'
+        pct = round(100 * fc / exp, 1) if exp else None
+        rows.append((m, d['branch'], exp, fc, pct, status))
 
     # ---- branch gates (own logic, replacing KEGG modules) ----
     c1 = [g for g in ('fwdB','fmdB','ftr','mch','mtd','hmd','mer','mtrA') if g.lower() in found]
@@ -129,9 +170,10 @@ def main():
     # ---- write module table ----
     with open(a.out, 'w', newline='') as fh:
         w = csv.writer(fh, delimiter='\t')
-        w.writerow(['genome','module','branch','core_expected','core_found','pct_complete'])
-        for m, b, exp, fc, pct in rows:
-            w.writerow([a.name, m, b, exp, fc, pct])
+        w.writerow(['genome','module','branch','core_expected','core_found',
+                    'pct_complete','status'])
+        for m, b, exp, fc, pct, status in rows:
+            w.writerow([a.name, m, b, exp, fc, 'NA' if pct is None else pct, status])
 
     # ---- stdout summary ----
     print(f"# {a.name} — AD/methanogenesis KEGG-less summary")
@@ -145,6 +187,13 @@ def main():
         print(f"  {mk:6} {'+' if has(mk) else '-'}")
     if cazyme_families:
         print(f"CAZyme families (hydrolysis): {', '.join(sorted(cazyme_families))}")
+
+    unscored = [(m, s) for m, _b, _e, _f, pct, s in rows if pct is None]
+    if unscored:
+        print(f"not scored ({len(unscored)}/{len(rows)} modules) — absent from the "
+              f"percentages above, NOT zero:")
+        for m, s in unscored:
+            print(f"  {m:<13} {s}")
     print(f"\nmodule table -> {a.out}")
 
 if __name__ == '__main__':

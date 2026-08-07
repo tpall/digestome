@@ -34,6 +34,22 @@ Report in **gene symbol + EC + Pfam/NCBIfam + Rhea** identifiers. Never emit `K#
 ## Module-completeness scoring (the "% pathway present" figure)
 Score each module as `core genes found / core genes expected`. A branch is "present" when its gate condition is met. These replace KEGG module scoring with rules you own.
 
+### The `scoring` column — how a module is (or is not) scored
+Detection policy lives in the panel's `scoring` column, not in module names hardcoded in `panel_scored.py`. Per module:
+
+| mode | meaning | reported as |
+|---|---|---|
+| `scored` | default — HMM scoring off the core tier | `pct_complete` |
+| `assumed` | universal central metabolism; present by assumption, no discriminating marker exists | `NA`, status `assumed-present` |
+| `dbcan` | satisfied by any CAZyme call from `run_dbcan` | `pct_complete`, or `NA`/`no-detector` if `--dbcan` was not passed |
+| `pending` | no license-clean detector wired yet | `NA`, status `not-wired` |
+
+**A module that cannot be scored reports `NA`, never `0.0`.** Emitting `0.0` made "no marker is defined for this module" indistinguishable from "this pathway is absent from the genome" — on a digester health report that reads as a failing plant. `panel_scored.py` prints the unscored modules and their reason under the branch gates so they cannot be missed.
+
+Current non-default modules: `ACID-GLYC` = `assumed` (Embden-Meyerhof-Parnas is in essentially every organism), `HYDROL-CARB` = `dbcan`, `HYDROL-PROT` + `HYDROL-LIP` = `pending` (peptidases/lipases would need MEROPS, whose commercial terms are unverified — see the licensing table in `PLAN.md`).
+
+A module whose rows are **all accessory-tier** (`ACID-ETOH`, `ACID-LACT`, `DIET`, `ENERGY`) also reports `NA`, status `no-core-tier`: scoring reads only the core tier today. Do not "fix" this by falling back to the accessory tier until `ahaA` is curated — it currently matches ~120 ATP-synthase models and would push `ENERGY` to a false ~100% in any genome.
+
 **Hydrogenotrophic methanogenesis (CO2+H2 -> CH4)** — gate: `mcrA` present AND ≥4 of the C1 carriers.
 Core: `fwdB/fmdB, ftr, mch, mtd (or hmd), mer, mtrA, mcrA`  (+ `frhA`, `mvhA`, `hdrA/B` for electron supply)
 
