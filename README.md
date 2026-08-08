@@ -70,6 +70,16 @@ Propionate: methylmalonyl-CoA set (`mcmA, mce`) — *Syntrophobacter*
 
 ---
 
+### Substrate signals (not methanogenesis branches)
+**Ethanolamine utilisation (`ACID-ETA`)** — gate: `eutB` AND `eutC`, both subunits of the ammonia-lyase.
+Core: `eutB, eutC` · accessory: `eutA` (reactivase), `eutD` (eut-specific phosphotransacetylase), `eutM` (microcompartment shell)
+
+Read this as **two signals at once**: ethanolamine catabolism releases NH₃ stoichiometrically with acetaldehyde, so it is an ammonia-load indicator — and ammonia inhibition is a primary digester failure mode. It also points at feedstock, since ethanolamine comes from phosphatidylethanolamine, abundant in manure and food waste.
+
+Every row here is **pinned**, and that is a requirement rather than a preference: most NCBIfam models whose product name mentions "ethanolamine" are phosphoethanolamine–lipid A transferases (MCR colistin resistance), entirely unrelated. Name or symbol matching would pull antibiotic-resistance genes into the panel.
+
+`eutD` deserves its own note. It catalyses the same reaction as housekeeping `pta` and was originally matching the `pta` markers through the shared EC 2.3.1.8. It is excluded there and given a marker here instead, so a hit reads as ethanolamine catabolism rather than inflating acetate activation — which matters because the acetoclastic gate requires `ackA AND pta`.
+
 ## Single-gene diagnostic markers (the quick fingerprint)
 | Marker | Tells you | 
 |---|---|
