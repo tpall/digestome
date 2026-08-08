@@ -134,6 +134,14 @@ def main():
                 found |= src
                 break
 
+    # Markers that COULD be hit, i.e. have at least one model in the pressed DB.
+    # Distinguishing "looked for and absent" from "never looked for" is the whole
+    # point -- a marker with no detector must never read as a negative result.
+    detectable = set()
+    for d in (acc2mid, name2mid):
+        for mids in d.values():
+            detectable |= mids
+
     # optional CAZyme presence -> satisfies carbohydrate hydrolysis
     cazyme_families = set()
     if a.dbcan:
@@ -182,22 +190,57 @@ def main():
             # scoring does not read yet. Not a zero -- an absence of a metric.
             status = 'scored' if exp else 'no-core-tier'
         pct = round(100 * fc / exp, 1) if exp else None
-        rows.append((m, d['branch'], exp, fc, pct, status))
+        # How much of the core has a model at all: pct must be read against
+        # this, not against exp. MEG-CORE can never exceed 10/11 while mvhA
+        # has no detector, and 90.9% should not read as a missing gene.
+        det = len(d['core'] & detectable)
+        rows.append((m, d['branch'], exp, det, fc, pct, status))
 
     # ---- branch gates (own logic, replacing KEGG modules) ----
-    c1 = [g for g in ('fwdB','fmdB','ftr','mch','mtd','hmd','mer','mtrA') if has(g)]
-    gates = {
-        'methanogenesis: hydrogenotrophic': has('mcrA') and len(c1) >= 4,
-        'methanogenesis: acetoclastic':     has('mcrA') and has('cdhA') and (has('acs') or (has('ackA') and has('pta'))),
-        'methanogenesis: methylotrophic':   has('mcrA') and has('mtaB','mttB','mtbB','mtmB','mtsA'),
-        'acetogenesis: Wood-Ljungdahl':     has('fhs') and (has('acsB') or has('cdhC')) and has('cooS','acsA'),
-        'syntrophy: butyrate oxidation':    has('bcd') and has('crt') and has('hbd') and has('thlA','atoB'),
+    # A gate whose requirements include a marker with NO model in the DB cannot
+    # be evaluated at all, and printing it as an unticked box is a guaranteed
+    # false negative rather than a cautious one. Butyrate oxidation was exactly
+    # this: bcd and crt have no NCBIfam model, so two of its four AND-terms were
+    # permanently false and the branch reported absent for every sample ever run.
+    # Same rule as the module table -- never report absence when nothing was
+    # measured. Requirements below mirror each boolean's structure: groups are
+    # ANDed, members within a group are ORed.
+    def _markers(n):
+        return by_gene.get(n.lower()) or {n}
+
+    def unmeasurable(groups):
+        """Requirement groups with no detectable member -- the gate is blind."""
+        return [g for g in groups
+                if not any(_markers(n) & detectable for n in g)]
+
+    C1 = ('fwdB','fmdB','ftr','mch','mtd','hmd','mer','mtrA')
+    c1 = [g for g in C1 if has(g)]
+    gate_defs = [
+        ('methanogenesis: hydrogenotrophic',
+         has('mcrA') and len(c1) >= 4, [('mcrA',), C1]),
+        ('methanogenesis: acetoclastic',
+         has('mcrA') and has('cdhA') and (has('acs') or (has('ackA') and has('pta'))),
+         [('mcrA',), ('cdhA',), ('acs','ackA'), ('acs','pta')]),
+        ('methanogenesis: methylotrophic',
+         has('mcrA') and has('mtaB','mttB','mtbB','mtmB','mtsA'),
+         [('mcrA',), ('mtaB','mttB','mtbB','mtmB','mtsA')]),
+        ('acetogenesis: Wood-Ljungdahl',
+         has('fhs') and (has('acsB') or has('cdhC')) and has('cooS','acsA'),
+         [('fhs',), ('acsB','cdhC'), ('cooS','acsA')]),
+        ('syntrophy: butyrate oxidation',
+         has('bcd') and has('crt') and has('hbd') and has('thlA','atoB'),
+         [('bcd',), ('crt',), ('hbd',), ('thlA','atoB')]),
         # Substrate capability, not a methanogenesis branch. Both ammonia-lyase
         # subunits required: EutB alone is not a functional enzyme, and the
         # downstream eut genes (eutD/eutE) only differ from housekeeping
         # acetate metabolism by operon context.
-        'substrate: ethanolamine (NH3 source)': has('eutB') and has('eutC'),
-    }
+        ('substrate: ethanolamine (NH3 source)',
+         has('eutB') and has('eutC'), [('eutB',), ('eutC',)]),
+    ]
+    # (label, True/False/None-if-unmeasurable, tokens with no detector)
+    gates = [(label, None if blind else value, sorted({n for g in blind for n in g}))
+             for label, value, reqs in gate_defs
+             for blind in (unmeasurable(reqs),)]
     genus_hint = ('Methanothrix/Methanosaeta (acs)' if has('acs')
                   else 'Methanosarcina (ackA+pta)' if (has('ackA') and has('pta'))
                   else '-')
@@ -205,25 +248,28 @@ def main():
     # ---- write module table ----
     with open(a.out, 'w', newline='') as fh:
         w = csv.writer(fh, delimiter='\t')
-        w.writerow(['genome','module','branch','core_expected','core_found',
-                    'pct_complete','status'])
-        for m, b, exp, fc, pct, status in rows:
-            w.writerow([a.name, m, b, exp, fc, 'NA' if pct is None else pct, status])
+        w.writerow(['genome','module','branch','core_expected','core_detectable',
+                    'core_found','pct_complete','status'])
+        for m, b, exp, det, fc, pct, status in rows:
+            w.writerow([a.name, m, b, exp, det, fc,
+                        'NA' if pct is None else pct, status])
 
     # ---- stdout summary ----
     print(f"# {a.name} — AD/methanogenesis KEGG-less summary")
     print(f"mcrA (master methanogen marker): {'PRESENT' if has('mcrA') else 'absent'}")
     print(f"acetoclastic genus hint: {genus_hint}")
     print("branch gates:")
-    for k, v in gates.items():
-        print(f"  [{'x' if v else ' '}] {k}")
+    for label, v, blind in gates:
+        mark = '?' if v is None else ('x' if v else ' ')
+        note = f"  — NOT ASSESSABLE: no detector for {', '.join(blind)}" if v is None else ''
+        print(f"  [{mark}] {label}{note}")
     print("diagnostic markers:")
     for mk in ('mcrA','fhs','fwdB','mtrA','cdhA','acs','mttB','mtaB','hydA','frhA','eutB'):
         print(f"  {mk:6} {'+' if has(mk) else '-'}")
     if cazyme_families:
         print(f"CAZyme families (hydrolysis): {', '.join(sorted(cazyme_families))}")
 
-    unscored = [(m, s) for m, _b, _e, _f, pct, s in rows if pct is None]
+    unscored = [(m, s) for m, _b, _e, _d, _f, pct, s in rows if pct is None]
     if unscored:
         print(f"not scored ({len(unscored)}/{len(rows)} modules) — absent from the "
               f"percentages above, NOT zero:")
