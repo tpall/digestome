@@ -79,13 +79,24 @@ def gene_tokens(field):
     return out
 
 # --- load panel ---
-panel_genes = {}   # lower -> (orig, set(modules))
-panel_ec    = {}   # ec -> set(orig genes)
-curated     = {}   # bare accession -> [gene, set(modules)]
+# Everything downstream joins on marker_id, never on the gene name. A gene name
+# is a 3-4 letter label that is neither unique across the panel nor unique in
+# NCBIfam, and using it as a key produced silent, hard-to-see errors: EC matches
+# collapsed every model sharing an EC onto one arbitrary name (fwd subunits B
+# and C both became `fmdA`), and one accession serving two panel rows could only
+# record one of them, so the loser scored 0 with its model sitting in the DB.
+panel_genes = {}   # gene token (lower) -> set(marker_id)
+panel_ec    = {}   # ec               -> set(marker_id)
+curated     = {}   # bare accession   -> set(marker_id)
+marker      = {}   # marker_id        -> (gene, module)
 ACC_RE = re.compile(r'\b(?:TIGR\d{5}|NF\d{6})\b')
 
 for r in csv.DictReader(open(panel_path), delimiter='\t'):
+    mid = (r.get('marker_id') or '').strip()
     mod = r['module']
+    if not mid:                                  # panels predating marker_id
+        mid = f"{mod}:{(gene_tokens(r['gene']) or [r['gene']])[0]}"
+    marker[mid] = (r['gene'], mod)
     toks = gene_tokens(r['gene'])
 
     # A row naming explicit accessions is PINNED to them: curated models win and
@@ -95,13 +106,12 @@ for r in csv.DictReader(open(panel_path), delimiter='\t'):
     # from the archaeal A1Ao this row is about.
     accs = ACC_RE.findall(r.get('ncbifam_tigrfam') or '')
     if accs:
-        gname = toks[0] if toks else (r['gene'] or '').strip()
         for a in accs:
-            e = curated.setdefault(a, [gname, set()]); e[1].add(mod)
+            curated.setdefault(a, set()).add(mid)
         continue
 
     for g in toks:
-        e = panel_genes.setdefault(g.lower(), (g, set())); e[1].add(mod)
+        panel_genes.setdefault(g.lower(), set()).add(mid)
     for ec in re.split(r'[;, ]+', r.get('ec','') or ''):
         ec = ec.strip()
         # Wildcard ECs (2.1.1.-, 3.4.-.-) name an enzyme class, not a gene.
@@ -110,7 +120,7 @@ for r in csv.DictReader(open(panel_path), delimiter='\t'):
         # rows are dbCAN/MEROPS territory; leave them to run_dbcan rather than
         # manufacturing coverage out of a whole EC class.
         if ec and ec[0].isdigit() and '-' not in ec:
-            panel_ec.setdefault(ec, set()).update(toks)
+            panel_ec.setdefault(ec, set()).add(mid)
 
 # --- locate columns in NCBIfam metadata by header name ---
 reader = csv.DictReader(open(ncbi_path), delimiter='\t')
@@ -137,43 +147,41 @@ for r in reader:
     ecs  = [e.strip() for e in re.split(r'[;, ]+', (r.get(ec_col) or '') if ec_col else '') if e.strip()]
     src  = (r.get(src_col) or '').strip() if src_col else ''
     bare = re.sub(r'\.\d+$', '', acc)                           # TIGR01043.1 -> TIGR01043
-    gene, mods, basis = None, set(), ''
+    mids, basis = set(), ''
     cur_key = next((k for k in (src, bare, acc) if k and k in curated), None)
     if cur_key:                                                 # authoritative: curated accession
-        gene, mods = curated[cur_key][0], set(curated[cur_key][1])
+        mids = set(curated[cur_key])
         basis = 'curated'
         curated_hits.add(cur_key)
     elif gsym and gsym.lower() in panel_genes:                  # reliable: gene-symbol match
-        gene, mods = panel_genes[gsym.lower()]
+        mids = set(panel_genes[gsym.lower()])
         basis = 'gene_symbol'
     else:                                                       # weaker: EC match (review!)
         for e in ecs:
-            if e not in panel_ec:
-                continue
-            gs = sorted(panel_ec[e])
-            if not gs:
-                # Panel row had no usable gene token. Falling back to NCBIfam's
-                # own gene_symbol here imported unrelated models (mepA, ampH,
-                # flgJ, prsW ...) carrying an empty modules column -- pure
-                # scoring dead weight. Skip instead.
-                continue
-            gene = gs[0]
-            for g in panel_ec[e]:
-                if g.lower() in panel_genes: mods |= panel_genes[g.lower()][1]
-            basis = 'ec:' + e
-            break
-    if gene and acc:
+            # Every marker whose row carries this EC gets the model -- no more
+            # picking one arbitrary name and mislabelling the rest. A panel row
+            # with no usable gene token contributes no marker here, so nothing
+            # falls back to NCBIfam's own symbol.
+            if e in panel_ec and panel_ec[e]:
+                mids = set(panel_ec[e])
+                basis = 'ec:' + e
+                break
+    if mids and acc:
         keys.add(acc)
-        maprows.append((acc, name, gene, ';'.join(sorted(mods)), basis))
+        # One row per (accession, marker). An accession serving two markers is
+        # recorded twice rather than one of them silently winning.
+        for mid in sorted(mids):
+            gene, mod = marker.get(mid, ('', ''))
+            maprows.append((acc, name, mid, gene, mod, basis))
 
 with open(keys_path, 'w') as fh:
     fh.write('\n'.join(sorted(keys)) + '\n')
 with open(map_path, 'w') as fh:
-    fh.write('#model_accession\tmodel_name\tgene\tmodules\tmatch_basis\n')
+    fh.write('#model_accession\tmodel_name\tmarker_id\tgene\tmodule\tmatch_basis\n')
     for row in sorted(set(maprows)):
         fh.write('\t'.join(row) + '\n')
-n_cur = sum(1 for r in maprows if r[4] == 'curated')
-n_sym = sum(1 for r in maprows if r[4] == 'gene_symbol')
+n_cur = sum(1 for r in maprows if r[5] == 'curated')
+n_sym = sum(1 for r in maprows if r[5] == 'gene_symbol')
 n_ec  = len(maprows) - n_cur - n_sym
 print(f"   resolved columns: acc={acc_col} gene={gene_col} ec={ec_col} name={name_col}")
 print(f"   matched {len(keys)} models -> {len(maprows)} map rows "
@@ -187,24 +195,24 @@ if missed:
     print(f"   !! {len(missed)} curated accession(s) matched no NCBIfam model "
           f"-- those panel rows now have NO detector:")
     for a in missed:
-        print(f"      {a}  ({curated[a][0]})")
+        print(f"      {a}  ({', '.join(sorted(curated[a]))})")
 
 # An EC shared by a whole protein family resolves to dozens of models that
 # cannot tell the panel gene from its relatives (ahaA/EC 7.1.2.2 once pulled 117
 # ATP synthase subunits = 37% of the DB). Surface it at build time.
-max_per_gene = int(os.environ.get('MAX_MODELS_PER_GENE', '20'))
-per_gene = {}
+max_per_marker = int(os.environ.get('MAX_MODELS_PER_GENE', '20'))
+per_marker = {}
 for r in maprows:
-    per_gene[r[2]] = per_gene.get(r[2], 0) + 1
-broad = sorted(((n, g) for g, n in per_gene.items() if n > max_per_gene), reverse=True)
+    per_marker[r[2]] = per_marker.get(r[2], 0) + 1
+broad = sorted(((n, m) for m, n in per_marker.items() if n > max_per_marker), reverse=True)
 if broad:
-    print(f"   !! {len(broad)} gene(s) over {max_per_gene} models -- EC too generic to be diagnostic:")
-    for n, g in broad:
-        bases = sorted({r[4] for r in maprows if r[2] == g})
-        print(f"      {g}: {n} models via {', '.join(bases)}")
-n_nomod = sum(1 for r in maprows if not r[3])
-if n_nomod:
-    print(f"   !! {n_nomod} map rows still carry no module assignment")
+    print(f"   !! {len(broad)} marker(s) over {max_per_marker} models -- EC too generic to be diagnostic:")
+    for n, m in broad:
+        bases = sorted({r[5] for r in maprows if r[2] == m})
+        print(f"      {m}: {n} models via {', '.join(bases)}")
+unknown = sorted({r[2] for r in maprows if r[2] not in marker})
+if unknown:
+    print(f"   !! {len(unknown)} map row(s) reference an unknown marker_id: {', '.join(unknown)}")
 PY
 
 echo "==> 4. Fetch matched models -> pressed DB"
@@ -222,8 +230,8 @@ n_want=$(wc -l < "$WORK/keys_sorted.txt"); n_have=$(wc -l < "$WORK/keys_present.
 n_missing=$(wc -l < "$WORK/keys_missing.txt")
 echo "    $n_have/$n_want matched accessions present in this NCBIfam release"
 if [ "$n_missing" -gt 0 ]; then
-  echo "    !! $n_missing absent from the archive (accession / gene / match_basis):"
-  awk -F'\t' 'NR==FNR{miss[$1];next} FNR>1 && ($1 in miss){print "       " $1 "\t" $3 "\t" $5}' \
+  echo "    !! $n_missing absent from the archive (accession / marker_id / match_basis):"
+  awk -F'\t' 'NR==FNR{miss[$1];next} FNR>1 && ($1 in miss){print "       " $1 "\t" $3 "\t" $6}' \
       "$WORK/keys_missing.txt" "$OUT/ad_panel_map.tsv" | LC_ALL=C sort -k2,2
 fi
 

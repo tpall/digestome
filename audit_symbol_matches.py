@@ -70,12 +70,12 @@ def main():
                     help="match_basis to audit: gene_symbol, ec, or all")
     a = ap.parse_args()
 
-    # gene token -> enzyme text the panel is asking for
+    # marker_id -> enzyme text the panel is asking for
     want = {}
     for r in csv.DictReader(open(a.panel), delimiter='\t'):
-        for g in gene_tokens(r['gene']):
-            want.setdefault(g.lower(), set()).add(
-                f"{r.get('enzyme','')} {r.get('branch','')}")
+        mid = (r.get('marker_id') or '').strip() or \
+              f"{r['module']}:{(gene_tokens(r['gene']) or [r['gene']])[0]}"
+        want[mid] = f"{r.get('enzyme','')} {r.get('branch','')}"
 
     prod, tax = {}, {}
     for r in csv.DictReader(open(a.ncbifam), delimiter='\t'):
@@ -92,10 +92,10 @@ def main():
                 else basis != 'curated')
         if not keep:
             continue
-        acc, gene = r['#model_accession'], (r.get('gene') or '')
+        acc, mid = r['#model_accession'], (r.get('marker_id') or '')
         p = prod.get(acc, '')
-        shared = overlap(terms(' '.join(want.get(gene.lower(), set()))), terms(p))
-        rows.append((len(shared), gene, acc, basis, p, tax.get(acc, ''), sorted(shared)))
+        shared = overlap(terms(want.get(mid, '')), terms(p))
+        rows.append((len(shared), mid, acc, basis, p, tax.get(acc, ''), sorted(shared)))
 
     rows.sort(key=lambda t: (t[0], t[1]))
     sus = [r for r in rows if r[0] == 0]
@@ -109,14 +109,13 @@ def main():
         if not group:
             continue
         print(f"=== {label} ===")
-        for n, gene, acc, basis, p, tx, shared in group:
-            print(f"  {gene:<10} {acc:<13} {p}")
-            print(f"  {'':<10} {'':<13} panel wants: "
-                  f"{' | '.join(sorted(want.get(gene.lower(), {'?'})))}")
+        for n, mid, acc, basis, p, tx, shared in group:
+            print(f"  {mid:<22} {acc:<13} {p}")
+            print(f"  {'':<22} {'':<13} panel wants: {want.get(mid, '?')}")
             if tx:
-                print(f"  {'':<10} {'':<13} ncbifam range: {tx}")
+                print(f"  {'':<22} {'':<13} ncbifam range: {tx}")
             if shared:
-                print(f"  {'':<10} {'':<13} shared: {', '.join(shared)}")
+                print(f"  {'':<22} {'':<13} shared: {', '.join(shared)}")
             print()
 
 if __name__ == '__main__':

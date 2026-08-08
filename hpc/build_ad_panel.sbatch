@@ -66,47 +66,37 @@ echo "  ... total entries: $(wc -l < "$TARLIST")"
 echo "  models available:  $(wc -l < "$WORK/available_acc.txt")"
 echo
 echo "================ C. panel coverage ================"
-MAP="$OUT/ad_panel_map.tsv" python3 - <<'PY'
-import csv, os, re
-# gene_tokens mirrors build_ad_hmm_db.sh -- keep in sync if that splitter changes.
-SKIP = {'multi','core','use','dbcan','see','pep','gh','lip','est'}
-def gene_tokens(field):
-    field = re.sub(r'\(.*?\)', '', field)
-    out = []
-    for p in re.split(r'[\/\+\s]+', field):
-        for q in p.split('-'):
-            q = q.strip()
-            if len(q) >= 3 and re.search(r'[a-z]', q) and q.lower() not in SKIP:
-                out.append(q)
-    return out
-
-covered = {(r.get('gene') or '').lower()
+MAP="$OUT/ad_panel_map.tsv" python3 - <<'PYCOV'
+import csv, os
+# Joins on marker_id -- no gene-name re-tokenisation here, so this cannot
+# disagree with what the build actually recorded.
+covered = {(r.get('marker_id') or '').strip()
            for r in csv.DictReader(open(os.environ['MAP']), delimiter='\t')}
 
 by_module, missing = {}, []
 for r in csv.DictReader(open(os.environ['PANEL']), delimiter='\t'):
-    mod = r['module']; toks = gene_tokens(r['gene'])
-    ok = any(t.lower() in covered for t in toks)
+    mod, mid = r['module'], (r.get('marker_id') or '').strip()
+    ok = mid in covered
     n_tot, n_ok = by_module.get(mod, (0, 0))
     by_module[mod] = (n_tot + 1, n_ok + (1 if ok else 0))
     if not ok:
-        missing.append((mod, r['gene'], (r.get('tier') or '').strip()))
+        missing.append((mod, r['gene'], (r.get('tier') or '').strip(), mid))
 
-print(f"{'module':<28} {'genes':>6} {'with model':>11}")
+print(f"{'module':<28} {'markers':>8} {'with model':>11}")
 for mod, (tot, ok) in sorted(by_module.items()):
     flag = '' if ok == tot else '   <-- gaps'
-    print(f"{mod:<28} {tot:>6} {ok:>11}{flag}")
+    print(f"{mod:<28} {tot:>8} {ok:>11}{flag}")
 tot = sum(t for t, _ in by_module.values()); okc = sum(o for _, o in by_module.values())
-print(f"\nTOTAL {okc}/{tot} panel genes resolved to >=1 NCBIfam model")
+print(f"\nTOTAL {okc}/{tot} panel markers resolved to >=1 NCBIfam model")
 if missing:
     print(f"\nUNRESOLVED ({len(missing)}) -- need Pfam fallback, dbCAN, or panel fix:")
-    for mod, gene, tier in missing:
-        print(f"  [{mod}] {gene}" + (f"  (tier {tier})" if tier else ""))
-PY
+    for mod, gene, tier, mid in missing:
+        print(f"  {mid:<24} {gene}" + (f"  (tier {tier})" if tier else ""))
+PYCOV
 echo
 echo "================ D. EC-derived matches (REVIEW THESE) ================"
 ECLIST="$WORK/ec_derived.txt"
-awk -F'\t' 'NR>1 && $5 ~ /^ec:/ {print "  " $1 "\t" $3 "\t" $5 "\t" $2}' "$OUT/ad_panel_map.tsv" \
+awk -F'\t' 'NR>1 && $6 ~ /^ec:/ {print "  " $1 "\t" $3 "\t" $6 "\t" $2}' "$OUT/ad_panel_map.tsv" \
   | LC_ALL=C sort -k2,2 > "$ECLIST"
 head -60 "$ECLIST"
 echo "  ... EC-derived total: $(wc -l < "$ECLIST")"
@@ -119,7 +109,7 @@ echo "================ E. CURATED accessions vs what NCBIfam says they are =====
 # Eyeball this table whenever the curated set changes.
 awk -F'\t' '
   NR==FNR { if (FNR>1) prod[$1]=$11; next }              # hmm_PGAP.tsv: acc -> product_name
-  FNR>1 && $5=="curated" { printf "  %-10s %-14s %-18s %s\n", $3, $1, $2, (($1 in prod) ? prod[$1] : "?? not in metadata") }
+  FNR>1 && $6=="curated" { printf "  %-24s %-14s %-18s %s\n", $3, $1, $2, (($1 in prod) ? prod[$1] : "?? not in metadata") }
 ' "$WORK/hmm_PGAP.tsv" "$OUT/ad_panel_map.tsv" | LC_ALL=C sort
 echo
 echo "==> artifacts:"

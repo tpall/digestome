@@ -12,6 +12,14 @@ Outputs:
   --out      per-module completeness TSV.
   stdout     branch-gate + diagnostic-marker summary.
 
+Identity note: everything joins on the panel's `marker_id` (e.g. MEG-CORE:mcrA),
+never on the gene name. Gene names are 3-4 letter labels that are unique neither
+within the panel nor in NCBIfam, and using one as a key hid real errors -- EC
+matches collapsed every model sharing an EC onto one arbitrary name, and an
+accession serving two panel rows could record only one of them. Gene tokens
+survive only as display text and as an input to `has()`, which resolves them
+through the panel so gate expressions stay readable.
+
 Stdlib only. SCAFFOLD — review thresholds and gate logic before production.
 Run once per genome/MAG; loop externally for a community profile.
 """
@@ -38,14 +46,18 @@ def load_panel(path):
       dbcan    satisfied by any CAZyme call from run_dbcan
       pending  no license-clean detector wired yet; reported, never scored
     """
-    modules = {}
+    modules, by_gene = {}, {}
     for r in csv.DictReader(open(path), delimiter='\t'):
         m = r['module']
+        mid = (r.get('marker_id') or '').strip() or \
+              f"{m}:{(gene_tokens(r['gene']) or [r['gene']])[0]}"
         d = modules.setdefault(m, {'branch': r['branch'], 'core': set(),
                                    'accessory': set(), 'scoring': None})
         tier = r['tier'] if r['tier'] in ('core', 'accessory') else 'accessory'
+        # Tiers hold marker_ids, not gene names -- see the module docstring.
+        d[tier].add(mid)
         for g in gene_tokens(r['gene']):
-            d[tier].add(g)
+            by_gene.setdefault(g.lower(), set()).add(mid)
         s = (r.get('scoring') or '').strip().lower()
         if s:
             if d['scoring'] and d['scoring'] != s:
@@ -59,17 +71,26 @@ def load_panel(path):
             d['scoring'] = d['scoring'] or s
     for d in modules.values():
         d['scoring'] = d['scoring'] or 'scored'   # panels without the column
-    return modules
+    return modules, by_gene
 
 def load_map(path):
-    acc2gene, name2gene = {}, {}
+    """accession/model-name -> set(marker_id).
+
+    Sets, not single values: one model can legitimately serve two panel rows
+    (the same methylmalonyl-CoA mutase marks both ACID-PROP and ACET-SYN-PROP).
+    Storing one gene per accession meant the second row scored 0 with its model
+    sitting in the DB.
+    """
+    acc2mid, name2mid = {}, {}
     for r in csv.reader(open(path), delimiter='\t'):
         if not r or r[0].startswith('#'):
             continue
-        acc, name, gene = (r + ['', '', ''])[:3]
-        if acc:  acc2gene[acc]   = gene
-        if name: name2gene[name] = gene
-    return acc2gene, name2gene
+        acc, name, mid = (r + ['', '', ''])[:3]
+        if not mid:
+            continue
+        if acc:  acc2mid.setdefault(acc, set()).add(mid)
+        if name: name2mid.setdefault(name, set()).add(mid)
+    return acc2mid, name2mid
 
 def parse_tblout(path, evalue):
     hits = set()
@@ -101,16 +122,17 @@ def main():
                     help='E-value cutoff; omit if hmmsearch used --cut_nc')
     a = ap.parse_args()
 
-    modules = load_panel(a.panel)
-    acc2gene, name2gene = load_map(a.map)
+    modules, by_gene = load_panel(a.panel)
+    acc2mid, name2mid = load_map(a.map)
     hits = parse_tblout(a.tblout, a.evalue)
 
-    found = set()
+    found = set()                                  # marker_ids, not gene names
     for qacc, qname in hits:
-        g = (acc2gene.get(qacc) or name2gene.get(qname)
-             or name2gene.get(qacc) or acc2gene.get(qname))
-        if g:
-            found.add(g.lower())
+        for src in (acc2mid.get(qacc), name2mid.get(qname),
+                    name2mid.get(qacc), acc2mid.get(qname)):
+            if src:
+                found |= src
+                break
 
     # optional CAZyme presence -> satisfies carbohydrate hydrolysis
     cazyme_families = set()
@@ -119,11 +141,19 @@ def main():
             if not line.strip() or line.startswith('Gene'):
                 continue
             cazyme_families.update(re.findall(r'\b(?:GH|CE|PL|GT|CBM)\d+\b', line))
-        if cazyme_families:
-            found.add('cazyme')
 
-    def has(*gs):
-        return any(g.lower() in found for g in gs)
+    def has(*names):
+        """True if any named marker was found.
+
+        Accepts a marker_id ('MEG-CORE:mcrA') or a bare gene token ('mcrA').
+        Tokens are resolved through the panel, so a gate stays readable while
+        the underlying join is still on marker_id -- and a token shared by two
+        modules is satisfied by either.
+        """
+        for n in names:
+            if n in found or any(m in found for m in by_gene.get(n.lower(), ())):
+                return True
+        return False
 
     # ---- per-module completeness ----
     # A module with nothing to score reports pct = NA, never 0.0. Emitting 0.0
@@ -137,7 +167,7 @@ def main():
             status = 'assumed-present'
         elif mode == 'dbcan':
             if a.dbcan:
-                exp, fc = 1, (1 if 'cazyme' in found else 0)
+                exp, fc = 1, (1 if cazyme_families else 0)
                 status = 'scored'
             else:
                 exp = fc = 0
@@ -147,7 +177,7 @@ def main():
             status = 'not-wired'
         else:
             exp = len(d['core'])
-            fc = len({g for g in d['core'] if g.lower() in found})
+            fc = len(d['core'] & found)
             # Empty core tier: the module's genes are all accessory-tier, which
             # scoring does not read yet. Not a zero -- an absence of a metric.
             status = 'scored' if exp else 'no-core-tier'
@@ -155,7 +185,7 @@ def main():
         rows.append((m, d['branch'], exp, fc, pct, status))
 
     # ---- branch gates (own logic, replacing KEGG modules) ----
-    c1 = [g for g in ('fwdB','fmdB','ftr','mch','mtd','hmd','mer','mtrA') if g.lower() in found]
+    c1 = [g for g in ('fwdB','fmdB','ftr','mch','mtd','hmd','mer','mtrA') if has(g)]
     gates = {
         'methanogenesis: hydrogenotrophic': has('mcrA') and len(c1) >= 4,
         'methanogenesis: acetoclastic':     has('mcrA') and has('cdhA') and (has('acs') or (has('ackA') and has('pta'))),
