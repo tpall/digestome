@@ -1,0 +1,8 @@
+#label	accession	organism	role
+Mbarkeri	GCF_000970025.1	Methanosarcina barkeri MS	metabolic generalist: acetoclastic + methylotrophic + hydrogenotrophic
+Msoehngenii	GCF_000204415.1	Methanothrix soehngenii GP6	obligate acetoclastic, high-affinity acs route
+Mbourgensis	GCF_000304355.2	Methanoculleus bourgensis MS2	hydrogenotrophic; common biogas digester methanogen
+Mthermautotroph	GCF_027554905.1	Methanothermobacter thermautotrophicus	hydrogenotrophic, Mvh/Hdr-containing
+Cljungdahlii	GCF_000143685.1	Clostridium ljungdahlii DSM 13528	acetogen, Wood-Ljungdahl
+Swolfei	GCF_000014725.1	Syntrophomonas wolfei Goettingen G311	syntrophic butyrate oxidiser
+Ecoli	GCF_000005845.2	Escherichia coli K-12 MG1655	NEGATIVE CONTROL: no methanogenesis, but carries pta/ackA/folD/atoB and the eut operon

@@ -1,0 +1,45 @@
+# Assertions for the smoke test. Only well-established biology is asserted;
+# anything uncertain is left out and merely reported, so a failure means a real
+# disagreement rather than a shaky expectation.
+#
+# kind:  gate   -> branch-gate label, expected yes / no / na (na = NOT ASSESSABLE)
+#        marker -> diagnostic marker line, expected yes / no
+#        hint   -> substring that must appear in the acetoclastic genus hint
+#label	kind	name	expected
+Mbarkeri	marker	mcrA	yes
+Mbarkeri	gate	methanogenesis: acetoclastic	yes
+Mbarkeri	gate	methanogenesis: methylotrophic	yes
+
+Msoehngenii	marker	mcrA	yes
+Msoehngenii	gate	methanogenesis: acetoclastic	yes
+Msoehngenii	hint	Methanothrix	yes
+
+Mbourgensis	marker	mcrA	yes
+Mbourgensis	gate	methanogenesis: hydrogenotrophic	yes
+Mbourgensis	gate	methanogenesis: acetoclastic	no
+
+Mthermautotroph	marker	mcrA	yes
+Mthermautotroph	gate	methanogenesis: hydrogenotrophic	yes
+Mthermautotroph	gate	methanogenesis: acetoclastic	no
+
+Cljungdahlii	marker	mcrA	no
+Cljungdahlii	gate	acetogenesis: Wood-Ljungdahl	yes
+Cljungdahlii	gate	methanogenesis: hydrogenotrophic	no
+
+# bcd and crt have no NCBIfam model, so this gate must report NOT ASSESSABLE
+# even in a genome that genuinely performs the pathway. That is the honest
+# answer and this asserts we keep giving it.
+Swolfei	marker	mcrA	no
+Swolfei	gate	methanogenesis: acetoclastic	no
+Swolfei	gate	syntrophy: butyrate oxidation	na
+
+# Specificity control. E. coli carries pta, ackA, folD, atoB and the full eut
+# operon, so it exercises nearly every symbol collision fixed on this branch
+# (fmdA/formamidase, mcm/MCM, mtaB/tRNA-MtaB, hdrA/DHFR, mcrC/McrBC, EutD/pta).
+# Any methanogenesis gate firing here is a live bug.
+Ecoli	marker	mcrA	no
+Ecoli	gate	methanogenesis: hydrogenotrophic	no
+Ecoli	gate	methanogenesis: acetoclastic	no
+Ecoli	gate	methanogenesis: methylotrophic	no
+Ecoli	gate	acetogenesis: Wood-Ljungdahl	no
+Ecoli	gate	substrate: ethanolamine (NH3 source)	yes
