@@ -238,6 +238,24 @@ fi
 hmmfetch -f "$WORK/ncbifam_all.hmm" "$WORK/keys_present.txt" > "$OUT/ad_panel.hmm"
 hmmpress -f "$OUT/ad_panel.hmm"
 
+# The documented run mode is `hmmsearch --cut_nc`, which uses each model's own
+# curated cutoff. That only works if every pressed model carries the NC line --
+# hmmsearch aborts on the first one that does not. Assert it here rather than
+# discovering it mid-run. Per-model cutoffs are also why a single global -T is
+# the wrong tool: across this DB the curated values span ~65 to ~1400 bits, so
+# any one threshold is simultaneously too strict for some models and too lenient
+# for others.
+missing_nc=$(awk '/^NAME /{n=$2; nc=0} /^NC /{nc=1} /^\/\//{if(!nc) print n}' "$OUT/ad_panel.hmm")
+if [ -n "$missing_nc" ]; then
+  echo "    !! models lacking an NC cutoff line -- hmmsearch --cut_nc would fail on them:" >&2
+  echo "$missing_nc" | sed 's/^/       /' >&2
+else
+  n_m=$(grep -c '^NAME ' "$OUT/ad_panel.hmm")
+  echo "    all $n_m models carry curated GA/TC/NC cutoffs -- --cut_nc is safe"
+  echo "    curated cutoff spread: $(grep '^GA ' "$OUT/ad_panel.hmm" | awk '{print $2}' \
+        | LC_ALL=C sort -n | awk '{v[NR]=$1} END{printf "min=%s median=%s max=%s", v[1], v[int(NR/2)], v[NR]}')"
+fi
+
 # Keep the map honest: it must describe only what is in the pressed DB.
 { head -1 "$OUT/ad_panel_map.tsv"
   awk -F'\t' 'NR==FNR{ok[$1];next} FNR>1 && ($1 in ok)' "$WORK/keys_present.txt" "$OUT/ad_panel_map.tsv"
