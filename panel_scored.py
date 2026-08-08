@@ -189,11 +189,16 @@ def main():
             # Empty core tier: the module's genes are all accessory-tier, which
             # scoring does not read yet. Not a zero -- an absence of a metric.
             status = 'scored' if exp else 'no-core-tier'
-        pct = round(100 * fc / exp, 1) if exp else None
         # How much of the core has a model at all: pct must be read against
-        # this, not against exp. MEG-CORE can never exceed 10/11 while mvhA
-        # has no detector, and 90.9% should not read as a missing gene.
+        # this, not against exp. MEG-CORE can never exceed 10/11 while mvhA has
+        # no detector, and 90.9% should not read as a missing gene.
         det = len(d['core'] & detectable)
+        if status == 'scored' and exp and not det:
+            # Module-level twin of the dead gate: every core marker lacks a
+            # model, so 0.0% would be a measurement that never happened.
+            exp = fc = 0
+            status = 'no-detector-for-core'
+        pct = round(100 * fc / exp, 1) if exp else None
         rows.append((m, d['branch'], exp, det, fc, pct, status))
 
     # ---- branch gates (own logic, replacing KEGG modules) ----
