@@ -30,7 +30,9 @@ def parse_summary(path):
         if s.startswith(('CAZyme', 'not scored', 'module table')):
             section = None
         if section == 'gates':
-            m = re.match(r'\s*\[([x? ])\]\s+(.*?)(?:\s+—\s+NOT ASSESSABLE.*)?$', s)
+            # Strip ANY trailing "  — note" (NOT ASSESSABLE, taxonomy-confirmed,
+            # scored-absent-on-taxonomy ...) so the label still matches.
+            m = re.match(r'\s*\[([x? ])\]\s+(.*?)(?:\s+—\s+.*)?$', s)
             if m:
                 flag, label = m.group(1), m.group(2).strip()
                 gates[label] = None if flag == '?' else (flag == 'x')
