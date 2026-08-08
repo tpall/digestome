@@ -3,7 +3,7 @@ hydrolysis	carbohydrate	HYDROL-CARB	GH (multi)	glycoside hydrolases (cellulase/h
 hydrolysis	protein	HYDROL-PROT	pep (multi)	extracellular peptidases/proteases	3.4.-.-	PF00082;PF01435;PF00675	—	core	MEROPS S8/M4/M9 etc. Use Pfam peptidase clans (PROSITE/MEROPS have NC terms — avoid).	pending
 hydrolysis	lipid	HYDROL-LIP	lip/est	lipases/esterases	3.1.1.-	PF00151;PF07859;PF00756	—	accessory	Lipid hydrolysis to glycerol + LCFA.	pending
 acidogenesis	glycolysis	ACID-GLYC	(core)	Embden-Meyerhof-Parnas	—	—	—	core	Central metabolism; assume present, not a discriminating marker.	assumed
-acidogenesis	pyruvate	ACID-ACE	porA/porB	pyruvate:ferredoxin oxidoreductase (PFOR)	1.2.7.1	PF01855;PF17147;PF17179	—	core	Pyruvate -> acetyl-CoA + reduced Fd (key fermentative node).	scored
+acidogenesis	pyruvate	ACID-ACE	porA/porB	pyruvate:ferredoxin oxidoreductase (PFOR)	1.2.7.1	PF01855;PF17147;PF17179	NF040682; NF008819	core	Pyruvate -> acetyl-CoA + reduced Fd (key fermentative node). Pyruvate synthase subunits PorA/PorB. Pinned: porB also matches NF040479 trimeric porin PorB.	scored
 acidogenesis	acetate	ACID-ACE	pta	phosphotransacetylase	2.3.1.8	PF01515	—	core	acetyl-CoA -> acetyl-P.	scored
 acidogenesis	acetate	ACID-ACE	ackA	acetate kinase	2.7.2.1	PF00871	—	core	acetyl-P -> acetate + ATP. Reversible; also acetate activation in Methanosarcina.	scored
 acidogenesis	butyrate	ACID-BUT	thlA/atoB	acetyl-CoA acetyltransferase (thiolase)	2.3.1.9	PF00108;PF02803	—	core	First step of butyrate synthesis (and reverse beta-oxidation).	scored
@@ -14,30 +14,30 @@ acidogenesis	butyrate	ACID-BUT	etfA	electron transfer flavoprotein alpha	—	PF0
 acidogenesis	butyrate	ACID-BUT	etfB	electron transfer flavoprotein beta	—	PF01012	—	core		scored
 acidogenesis	butyrate	ACID-BUT	ptb	phosphotransbutyrylase	2.3.1.19	PF01515	—	accessory		scored
 acidogenesis	butyrate	ACID-BUT	buk	butyrate kinase	2.7.2.7	PF00871	—	accessory		scored
-acidogenesis	propionate	ACID-PROP	mcmA/mut	methylmalonyl-CoA mutase	5.4.99.2	PF01642;PF02310	—	core	Methylmalonyl-CoA (succinate) propionate pathway.	scored
-acidogenesis	propionate	ACID-PROP	mce	methylmalonyl-CoA epimerase	5.1.99.1	PF02746	—	accessory		scored
+acidogenesis	propionate	ACID-PROP	mcmA/mut	methylmalonyl-CoA mutase	5.4.99.2	PF01642;PF02310	NF006944; TIGR00642	core	Methylmalonyl-CoA (succinate) propionate pathway. Methylmalonyl-CoA mutase + small subunit. Pinned to share these models with the ACET-SYN-PROP mcm+ row, which would otherwise claim them.	scored
+acidogenesis	propionate	ACID-PROP	mce	methylmalonyl-CoA epimerase	5.1.99.1	PF02746	TIGR03081	accessory	Methylmalonyl-CoA epimerase. Pinned: mce also matches NF047463 mammalian cell entry protein.	scored
 acidogenesis	propionate	ACID-PROP	pcc/mmd	methylmalonyl-CoA decarboxylase/carboxyltransferase	7.2.4.3	PF01039	—	accessory		scored
 acidogenesis	lactate	ACID-LACT	ldh	L-lactate dehydrogenase	1.1.1.27	PF00056;PF02866	—	accessory		scored
 acidogenesis	lactate	ACID-LACT	dld/lldEFG	lactate dehydrogenase (oxidative)	1.1.-.-	PF02754;PF01070	—	accessory	Lactate oxidation in syntrophy.	scored
 acidogenesis	ethanol	ACID-ETOH	adhE/adh	alcohol dehydrogenase	1.1.1.1	PF00465;PF08240;PF00107	—	accessory		scored
 acidogenesis	ethanol	ACID-ETOH	aldh	aldehyde dehydrogenase	1.2.1.-	PF00171	—	accessory		scored
-acidogenesis	hydrogen	ACID-H2	hydA	[FeFe]-hydrogenase	1.12.7.2	PF02906;PF02256	—	core	Fermentative H2 production; key for syntrophy/DIET balance.	scored
+acidogenesis	hydrogen	ACID-H2	hydA	[FeFe]-hydrogenase	1.12.7.2	PF02906;PF02256	NF040762	core	Fermentative H2 production; key for syntrophy/DIET balance. [FeFe]-hydrogenase (ferredoxin hydrogenase). Pinned: hydA also matches TIGR02033 dihydropyrimidinase and NF040832 sulfhydrogenase.	scored
 acidogenesis	hydrogen	ACID-H2	hydB/hyaB	[NiFe]-hydrogenase large subunit	1.12.-.-	PF00374	—	core		scored
 acetogenesis	WoodLjungdahl	ACET-WL	fhs	formate--tetrahydrofolate ligase	6.3.4.3	PF01268	NF010030; NF010031	core	Diagnostic marker for acetogens (homoacetogenesis). Accession corrected 2026-08-07: TIGR02182 was GrxB family glutaredoxin, not fhs.	scored
 acetogenesis	WoodLjungdahl	ACET-WL	folD	methylene-THF dehydrogenase/cyclohydrolase	1.5.1.5;3.5.4.9	PF00763;PF02882	—	core		scored
 acetogenesis	WoodLjungdahl	ACET-WL	metF	methylene-THF reductase	1.5.1.20	PF02219	—	core		scored
 acetogenesis	WoodLjungdahl	ACET-WL	acsB/cdhC	acetyl-CoA synthase	2.3.1.169	PF03598	—	core	Carbonyl branch; condensation to acetyl-CoA.	scored
-acetogenesis	WoodLjungdahl	ACET-WL	cooS/acsA	CO dehydrogenase (Ni)	1.2.7.4	PF03063	—	core		scored
+acetogenesis	WoodLjungdahl	ACET-WL	cooS/acsA	CO dehydrogenase (Ni)	1.2.7.4	PF03063	TIGR01702	core	Anaerobic CO dehydrogenase catalytic subunit. Pinned: acsA also matches NF003313 acetate--CoA ligase, a different enzyme. CODH/ACS alpha stays with the MEG-ACETO cdhA row (TIGR00314).	scored
 acetogenesis	WoodLjungdahl	ACET-WL	acsC/acsD	corrinoid iron-sulfur protein	—	PF00198;PF02607	—	accessory	Methyl branch carrier.	scored
-acetogenesis	WoodLjungdahl	ACET-WL	fdhA	formate dehydrogenase	1.17.1.9	PF00384;PF01568	—	core		scored
+acetogenesis	WoodLjungdahl	ACET-WL	fdhA	formate dehydrogenase	1.17.1.9	PF00384;PF01568	TIGR01591	core	Formate dehydrogenase alpha (catalytic). Pinned: fdhA also matches TIGR02819 FORMALDEHYDE dehydrogenase.	scored
 acetogenesis	syntrophy-but	ACET-SYN-BUT	bcd-etf	syntrophic butyrate beta-oxidation	—	(see ACID-BUT)	—	core	Reverse beta-oxidation; same enzymes run oxidatively (Syntrophomonas).	scored
-acetogenesis	syntrophy-prop	ACET-SYN-PROP	mcm+	syntrophic propionate oxidation (MMC pathway)	—	(see ACID-PROP)	—	core	Syntrophobacter; thermodynamically tight, needs low H2/formate.	scored
+acetogenesis	syntrophy-prop	ACET-SYN-PROP	mcm+	syntrophic propionate oxidation (MMC pathway)	—	(see ACID-PROP)	NF006944; TIGR00642	core	Syntrophobacter; thermodynamically tight, needs low H2/formate. Methylmalonyl-CoA mutase (MMC pathway). Pinned: the bare token mcm matched NF040949 minichromosome maintenance protein -- an archaeal replication protein present in every methanogen, so this module scored present in any digester.	scored
 methanogenesis	core	MEG-CORE	mcrA	methyl-CoM reductase alpha	2.8.4.1	PF02249;PF02745	TIGR03256	core	MASTER MARKER. Present in ALL methanogens + ANME. Quantify + phylo-bin to ID methanogen type.	scored
 methanogenesis	core	MEG-CORE	mcrB	methyl-CoM reductase beta	2.8.4.1	PF02241;PF02783	TIGR03257	core		scored
 methanogenesis	core	MEG-CORE	mcrG	methyl-CoM reductase gamma	2.8.4.1	PF02240	TIGR03259	core	Accession corrected 2026-08-07: TIGR03258 was 2-aminoethylphosphonate ABC transporter PhnT, not mcrG.	scored
-methanogenesis	core	MEG-CORE	mcrC	McrC (assembly/activation)	—	PF04210	—	accessory		scored
+methanogenesis	core	MEG-CORE	mcrC	McrC (assembly/activation)	—	PF04210	TIGR03264	accessory	Methyl-CoM reductase operon protein C. Pinned: mcrC also matches NF007277 McrBC restriction endonuclease.	scored
 methanogenesis	core	MEG-CORE	mcrD	McrD (assembly)	—	PF03296	—	accessory		scored
-methanogenesis	core	MEG-CORE	hdrA	heterodisulfide reductase A	1.8.98.1	PF02662	—	core	CoM-S-S-CoB recycling; electron bifurcation with Mvh.	scored
+methanogenesis	core	MEG-CORE	hdrA	heterodisulfide reductase A	1.8.98.1	PF02662	NF041778; NF041891	core	CoM-S-S-CoB recycling; electron bifurcation with Mvh. Ferredoxin:CoB-CoM heterodisulfide reductase HdrA. Pinned: hdrA also matches NF041386 dihydrofolate reductase.	scored
 methanogenesis	core	MEG-CORE	hdrB	heterodisulfide reductase B	1.8.98.1	PF02754	—	core	CCG domain (x2).	scored
 methanogenesis	core	MEG-CORE	hdrC	heterodisulfide reductase C	1.8.98.1	PF13183;PF13534	—	accessory		scored
 methanogenesis	core	MEG-CORE	mvhA	F420-non-reducing hydrogenase (large)	1.8.98.5	PF00374	—	core	Hydrogenotrophic electron input via Mvh-Hdr.	scored
@@ -57,7 +57,7 @@ methanogenesis	acetoclastic	MEG-ACETO	ackA+pta	acetate kinase + phosphotransacet
 methanogenesis	acetoclastic	MEG-ACETO	cdhA	CO dehydrogenase/acetyl-CoA decarbonylase, alpha	1.2.7.4	PF03063	—	core	ACDS complex: acetyl-CoA -> CH3(->H4MPT) + CO(->CO2) + CoA.	scored
 methanogenesis	acetoclastic	MEG-ACETO	cdhC	ACDS beta (acetyl-CoA synthase)	2.3.1.169	PF03598	—	core		scored
 methanogenesis	acetoclastic	MEG-ACETO	cdhE/cdhD	ACDS corrinoid (delta/gamma)	2.1.1.245	PF00198;PF02607	—	accessory		scored
-methanogenesis	methylotrophic	MEG-METHYL	mtaB	methanol:corrinoid methyltransferase	2.1.1.90	PF12176	—	core	Methanol utilisation (Methanosarcina, Methanomethylophilus).	scored
+methanogenesis	methylotrophic	MEG-METHYL	mtaB	methanol:corrinoid methyltransferase	2.1.1.90	PF12176	NF040651	core	Methanol utilisation (Methanosarcina, Methanomethylophilus). Methanol--corrinoid co-methyltransferase MtaB. Pinned: mtaB also matches TIGR01579 tRNA methylthiotransferase, widespread in bacteria -- and mtaB gates methylotrophic methanogenesis.	scored
 methanogenesis	methylotrophic	MEG-METHYL	mtaC	methanol corrinoid protein	—	PF02310	—	accessory		scored
 methanogenesis	methylotrophic	MEG-METHYL	mtaA	methylcobalamin:CoM methyltransferase	2.1.1.246	PF03291	—	accessory		scored
 methanogenesis	methylotrophic	MEG-METHYL	mttB	trimethylamine methyltransferase	2.1.1.250	PF06253	—	core	MttB superfamily (pyrrolysine). Marker of methylamine methanogenesis.	scored
