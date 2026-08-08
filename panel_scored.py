@@ -192,6 +192,11 @@ def main():
         'methanogenesis: methylotrophic':   has('mcrA') and has('mtaB','mttB','mtbB','mtmB','mtsA'),
         'acetogenesis: Wood-Ljungdahl':     has('fhs') and (has('acsB') or has('cdhC')) and has('cooS','acsA'),
         'syntrophy: butyrate oxidation':    has('bcd') and has('crt') and has('hbd') and has('thlA','atoB'),
+        # Substrate capability, not a methanogenesis branch. Both ammonia-lyase
+        # subunits required: EutB alone is not a functional enzyme, and the
+        # downstream eut genes (eutD/eutE) only differ from housekeeping
+        # acetate metabolism by operon context.
+        'substrate: ethanolamine (NH3 source)': has('eutB') and has('eutC'),
     }
     genus_hint = ('Methanothrix/Methanosaeta (acs)' if has('acs')
                   else 'Methanosarcina (ackA+pta)' if (has('ackA') and has('pta'))
@@ -213,7 +218,7 @@ def main():
     for k, v in gates.items():
         print(f"  [{'x' if v else ' '}] {k}")
     print("diagnostic markers:")
-    for mk in ('mcrA','fhs','fwdB','mtrA','cdhA','acs','mttB','mtaB','hydA','frhA'):
+    for mk in ('mcrA','fhs','fwdB','mtrA','cdhA','acs','mttB','mtaB','hydA','frhA','eutB'):
         print(f"  {mk:6} {'+' if has(mk) else '-'}")
     if cazyme_families:
         print(f"CAZyme families (hydrolysis): {', '.join(sorted(cazyme_families))}")
