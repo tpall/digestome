@@ -83,6 +83,7 @@ echo "================ RESULT ================"
 if [ "$fails" -eq 0 ]; then
   echo "  all $n genomes passed their assertions"
 else
+  echo "  $fails of $n genomes FAILED"
   echo "  $fails of $n genomes FAILED" >&2
 fi
 echo "==> artifacts in $WORK"

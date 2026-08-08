@@ -62,6 +62,11 @@ def main():
 
     fails = 0
     for _lbl, kind, name, want in rows:
+        # `xfail:` marks a KNOWN limitation: reported, but does not fail the
+        # suite. If it ever starts passing we want to hear about that too.
+        xfail = want.startswith('xfail:')
+        if xfail:
+            want = want.split(':', 1)[1]
         if kind == 'gate':
             got = gates.get(name, '<missing>')
             ok = (got is None) if want == 'na' else (got is (want == 'yes'))
@@ -78,9 +83,10 @@ def main():
             print(f"  ?? unknown expectation kind '{kind}'", file=sys.stderr)
             fails += 1
             continue
-        if not ok:
+        if not ok and not xfail:
             fails += 1
-        print(f"  [{'PASS' if ok else 'FAIL'}] {a.label:<16} {kind:<6} "
+        tag = ('XPASS' if ok else 'XFAIL') if xfail else ('PASS' if ok else 'FAIL')
+        print(f"  [{tag:^5}] {a.label:<16} {kind:<6} "
               f"{name:<38} want={want:<3} got={shown}")
 
     if fails:

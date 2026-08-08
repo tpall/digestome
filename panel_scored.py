@@ -246,9 +246,17 @@ def main():
     gates = [(label, None if blind else value, sorted({n for g in blind for n in g}))
              for label, value, reqs in gate_defs
              for blind in (unmeasurable(reqs),)]
-    genus_hint = ('Methanothrix/Methanosaeta (acs)' if has('acs')
-                  else 'Methanosarcina (ackA+pta)' if (has('ackA') and has('pta'))
-                  else '-')
+    # Only offer a genus hint once the acetoclastic gate is actually met. acs,
+    # ackA and pta are ubiquitous acetate-metabolism genes, so computing this
+    # unconditionally put a methanogen genus on organisms with no mcrA at all --
+    # the smoke test labelled E. coli "Methanothrix/Methanosaeta", and both
+    # Clostridium ljungdahlii and Syntrophomonas wolfei "Methanosarcina".
+    aceto = dict((lbl, v) for lbl, v, _b in gates).get('methanogenesis: acetoclastic')
+    genus_hint = '-'
+    if aceto:
+        genus_hint = ('Methanothrix/Methanosaeta (acs)' if has('acs')
+                      else 'Methanosarcina (ackA+pta)' if (has('ackA') and has('pta'))
+                      else '-')
 
     # ---- write module table ----
     with open(a.out, 'w', newline='') as fh:
@@ -268,6 +276,15 @@ def main():
         mark = '?' if v is None else ('x' if v else ' ')
         note = f"  — NOT ASSESSABLE: no detector for {', '.join(blind)}" if v is None else ''
         print(f"  [{mark}] {label}{note}")
+    if aceto:
+        # ACDS/CODH is reversible and autotrophic hydrogenotrophs run it in the
+        # synthetic direction for carbon fixation, so cdhA presence does not
+        # imply acetate is being consumed for methanogenesis. Gene content cannot
+        # resolve direction; Methanothermobacter trips this gate in the smoke
+        # test despite being an obligate hydrogenotroph.
+        print("      NB: ACDS/CODH is bidirectional and also serves autotrophic carbon")
+        print("          fixation — confirm against taxonomy (Methanosarcinaceae /")
+        print("          Methanotrichaceae) before reporting acetoclastic methanogenesis.")
     print("diagnostic markers:")
     for mk in ('mcrA','fhs','fwdB','mtrA','cdhA','acs','mttB','mtaB','hydA','frhA','eutB'):
         print(f"  {mk:6} {'+' if has(mk) else '-'}")
