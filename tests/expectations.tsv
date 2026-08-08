@@ -20,12 +20,14 @@ Mbourgensis	gate	methanogenesis: acetoclastic	no
 
 Mthermautotroph	marker	mcrA	yes
 Mthermautotroph	gate	methanogenesis: hydrogenotrophic	yes
-# KNOWN LIMITATION, found by this test. M. thermautotrophicus is an obligate
+# RESOLVED by wiring GTDB-Tk taxonomy into the gate (was xfail).
+# M. thermautotrophicus is an obligate
 # hydrogenotroph, but it carries ACDS/CODH (cdhA/cdhC/cdhE) plus acs for
 # AUTOTROPHIC carbon fixation and acetate assimilation. ACDS is reversible, so
 # gene content cannot tell acetyl-CoA cleavage (acetoclastic) from acetyl-CoA
-# synthesis (autotrophic). Resolving this needs taxonomy, not more markers.
-Mthermautotroph	gate	methanogenesis: acetoclastic	xfail:no
+# synthesis (autotrophic). Taxonomy resolves it: o__Methanobacteriales is not
+# an acetoclastic clade, so the gate is now scored absent on lineage.
+Mthermautotroph	gate	methanogenesis: acetoclastic	no
 
 Cljungdahlii	marker	mcrA	no
 Cljungdahlii	gate	acetogenesis: Wood-Ljungdahl	yes

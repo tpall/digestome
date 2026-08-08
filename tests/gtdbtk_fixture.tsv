@@ -1,0 +1,14 @@
+#	HAND-WRITTEN TEST FIXTURE — NOT GTDB-Tk OUTPUT.
+#	Lineages for the smoke-test reference genomes, in GTDB-Tk summary.tsv shape
+#	(user_genome + classification are the only columns panel_scored.py reads).
+#	Written by hand because these are known type strains; running GTDB-Tk on them
+#	would need the 100 GB reference data for no added confidence.
+#	Real runs pass the actual gtdbtk.ar53.summary.tsv / gtdbtk.bac120.summary.tsv.
+user_genome	classification
+Mbarkeri	d__Archaea;p__Halobacteriota;c__Methanosarcinia;o__Methanosarcinales;f__Methanosarcinaceae;g__Methanosarcina;s__Methanosarcina barkeri
+Msoehngenii	d__Archaea;p__Halobacteriota;c__Methanosarcinia;o__Methanotrichales;f__Methanotrichaceae;g__Methanothrix;s__Methanothrix soehngenii
+Mbourgensis	d__Archaea;p__Halobacteriota;c__Methanomicrobia;o__Methanomicrobiales;f__Methanomicrobiaceae;g__Methanoculleus;s__Methanoculleus bourgensis
+Mthermautotroph	d__Archaea;p__Methanobacteriota;c__Methanobacteria;o__Methanobacteriales;f__Methanobacteriaceae;g__Methanothermobacter;s__Methanothermobacter thermautotrophicus
+Cljungdahlii	d__Bacteria;p__Bacillota;c__Clostridia;o__Eubacteriales;f__Clostridiaceae;g__Clostridium;s__Clostridium ljungdahlii
+Swolfei	d__Bacteria;p__Bacillota;c__Syntrophomonadia;o__Syntrophomonadales;f__Syntrophomonadaceae;g__Syntrophomonas;s__Syntrophomonas wolfei
+Ecoli	d__Bacteria;p__Pseudomonadota;c__Gammaproteobacteria;o__Enterobacterales;f__Enterobacteriaceae;g__Escherichia;s__Escherichia coli

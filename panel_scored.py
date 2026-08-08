@@ -73,6 +73,45 @@ def load_panel(path):
         d['scoring'] = d['scoring'] or 'scored'   # panels without the column
     return modules, by_gene
 
+# Acetoclastic methanogenesis is confined to these clades. Everything else that
+# carries ACDS/CODH runs it in the synthetic (carbon-fixing) direction. Family
+# and genus are both listed because GTDB has renamed these across releases
+# (Methanosaeta -> Methanothrix, Methanosaetaceae -> Methanotrichaceae).
+ACETOCLASTIC_CLADES = (
+    'f__Methanosarcinaceae', 'f__Methanotrichaceae', 'f__Methanosaetaceae',
+    'g__Methanosarcina', 'g__Methanothrix', 'g__Methanosaeta',
+)
+
+def _clade(lineage):
+    """Most specific informative rank in a GTDB lineage, for display."""
+    for rank in ('g__', 'f__', 'o__', 'c__', 'p__'):
+        for part in lineage.split(';'):
+            part = part.strip()
+            if part.startswith(rank) and len(part) > len(rank):
+                return part
+    return lineage.strip()
+
+def load_lineage(paths, genome):
+    """GTDB-Tk summary.tsv (ar53 and/or bac120) -> classification for `genome`.
+
+    Returns '' when no file lists it, which is treated as "no taxonomy" rather
+    than as a negative -- an unclassified MAG must not silently score as absent.
+    """
+    for p in paths or ():
+        try:
+            fh = open(p)
+        except OSError:
+            print(f"!! cannot read GTDB-Tk summary {p}", file=sys.stderr)
+            continue
+        with fh:
+            # Skip comment lines so the header is found even in a commented
+            # fixture; real GTDB-Tk output has none, so this is a no-op there.
+            for r in csv.DictReader((l for l in fh if not l.startswith('#')),
+                                    delimiter='\t'):
+                if (r.get('user_genome') or '').strip() == genome:
+                    return (r.get('classification') or '').strip()
+    return ''
+
 def load_map(path):
     """accession/model-name -> set(marker_id).
 
@@ -120,8 +159,13 @@ def main():
     ap.add_argument('--dbcan', help='optional run_dbcan overview.txt for HYDROL-CARB')
     ap.add_argument('--evalue', type=float, default=None,
                     help='E-value cutoff; omit if hmmsearch used --cut_nc')
+    ap.add_argument('--gtdbtk', action='append', metavar='SUMMARY.TSV',
+                    help='GTDB-Tk summary.tsv (repeatable for ar53 + bac120). '
+                         'Used to confirm the acetoclastic call, which gene '
+                         'content alone cannot resolve.')
     a = ap.parse_args()
 
+    lineage = load_lineage(a.gtdbtk, a.name)
     modules, by_gene = load_panel(a.panel)
     acc2mid, name2mid = load_map(a.map)
     hits = parse_tblout(a.tblout, a.evalue)
@@ -242,16 +286,38 @@ def main():
         ('substrate: ethanolamine (NH3 source)',
          has('eutB') and has('eutC'), [('eutB',), ('eutC',)]),
     ]
-    # (label, True/False/None-if-unmeasurable, tokens with no detector)
-    gates = [(label, None if blind else value, sorted({n for g in blind for n in g}))
+    # (label, True/False/None-if-unmeasurable, tokens with no detector, note)
+    gates = [[label, None if blind else value, sorted({n for g in blind for n in g}), '']
              for label, value, reqs in gate_defs
              for blind in (unmeasurable(reqs),)]
+
+    # ---- taxonomy check on the acetoclastic call ----
+    # ACDS/CODH is reversible: autotrophic hydrogenotrophs carry it to FIX carbon,
+    # so cdhA presence does not mean acetate is being consumed. Gene content
+    # cannot resolve direction -- lineage can. Methanothermobacter trips the gene
+    # test while being an obligate hydrogenotroph, which is why this exists.
+    for g in gates:
+        if g[0] != 'methanogenesis: acetoclastic' or g[1] is None:
+            continue
+        if not lineage:
+            if g[1]:
+                g[3] = ('gene markers only — ACDS is bidirectional, so pass --gtdbtk '
+                        'to confirm the clade before reporting this')
+        elif any(c in lineage for c in ACETOCLASTIC_CLADES):
+            if g[1]:
+                g[3] = f"taxonomy-confirmed ({_clade(lineage)})"
+        else:
+            # Markers present, lineage says otherwise. Taxonomy wins: no
+            # acetoclastic methanogen is known outside these clades.
+            g[3] = (f"markers present but {_clade(lineage) or 'lineage'} is not an "
+                    f"acetoclastic clade — scored as absent on taxonomy")
+            g[1] = False
     # Only offer a genus hint once the acetoclastic gate is actually met. acs,
     # ackA and pta are ubiquitous acetate-metabolism genes, so computing this
     # unconditionally put a methanogen genus on organisms with no mcrA at all --
     # the smoke test labelled E. coli "Methanothrix/Methanosaeta", and both
     # Clostridium ljungdahlii and Syntrophomonas wolfei "Methanosarcina".
-    aceto = dict((lbl, v) for lbl, v, _b in gates).get('methanogenesis: acetoclastic')
+    aceto = dict((g[0], g[1]) for g in gates).get('methanogenesis: acetoclastic')
     genus_hint = '-'
     if aceto:
         genus_hint = ('Methanothrix/Methanosaeta (acs)' if has('acs')
@@ -270,21 +336,16 @@ def main():
     # ---- stdout summary ----
     print(f"# {a.name} — AD/methanogenesis KEGG-less summary")
     print(f"mcrA (master methanogen marker): {'PRESENT' if has('mcrA') else 'absent'}")
+    print(f"taxonomy: {lineage or '(none supplied — pass --gtdbtk)'}")
     print(f"acetoclastic genus hint: {genus_hint}")
     print("branch gates:")
-    for label, v, blind in gates:
+    for label, v, blind, gnote in gates:
         mark = '?' if v is None else ('x' if v else ' ')
-        note = f"  — NOT ASSESSABLE: no detector for {', '.join(blind)}" if v is None else ''
-        print(f"  [{mark}] {label}{note}")
-    if aceto:
-        # ACDS/CODH is reversible and autotrophic hydrogenotrophs run it in the
-        # synthetic direction for carbon fixation, so cdhA presence does not
-        # imply acetate is being consumed for methanogenesis. Gene content cannot
-        # resolve direction; Methanothermobacter trips this gate in the smoke
-        # test despite being an obligate hydrogenotroph.
-        print("      NB: ACDS/CODH is bidirectional and also serves autotrophic carbon")
-        print("          fixation — confirm against taxonomy (Methanosarcinaceae /")
-        print("          Methanotrichaceae) before reporting acetoclastic methanogenesis.")
+        if v is None:
+            extra = f"  — NOT ASSESSABLE: no detector for {', '.join(blind)}"
+        else:
+            extra = f"  — {gnote}" if gnote else ''
+        print(f"  [{mark}] {label}{extra}")
     print("diagnostic markers:")
     for mk in ('mcrA','fhs','fwdB','mtrA','cdhA','acs','mttB','mtaB','hydA','frhA','eutB'):
         print(f"  {mk:6} {'+' if has(mk) else '-'}")

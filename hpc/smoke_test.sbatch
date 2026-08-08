@@ -68,6 +68,7 @@ while IFS=$'\t' read -r label acc organism role; do
   python3 "$KEGGLESS/panel_scored.py" \
       --tblout "$WORK/${label}.tblout" --map "$MAP" --panel "$PANEL" \
       --name "$label" --out "$WORK/${label}.modules.tsv" \
+      --gtdbtk "$KEGGLESS/tests/gtdbtk_fixture.tsv" \
       | tee "$WORK/${label}.summary.txt"
 
   echo "  --- assertions ---"
