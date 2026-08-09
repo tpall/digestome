@@ -67,26 +67,53 @@ fi
 n_idx=$(( $(wc -l < "$OUT/catalogue_index.tsv") - 1 ))
 echo "==> $n_idx assemblies in $BIOPROJECT"
 
-# ---- 2. bulk download the proteomes ----
+# ---- 2. download the proteomes, in batches ----
+# One request for all 1441 fails: the NCBI datasets CLI aborts mid-stream
+# ("stream error ... INTERNAL_ERROR") after a few hundred MB. Batching keeps each
+# request small enough to succeed, makes the whole fetch resumable, and lets a
+# single flaky batch be retried without redoing the rest.
+BATCH="${BATCH:-200}"
+RETRIES="${RETRIES:-3}"
 if [ ! -s "$OUT/proteomes/.complete" ]; then
   awk -F'\t' 'NR>1{print $1}' "$OUT/catalogue_index.tsv" > "$OUT/accessions.txt"
-  echo "==> downloading protein FASTA for $n_idx genomes (this is the slow step)"
-  datasets download genome accession --inputfile "$OUT/accessions.txt" \
-      --include protein --filename "$OUT/catalogue.zip" --no-progressbar
-  echo "==> unpacking"
-  rm -rf "$OUT/_unzip"; mkdir -p "$OUT/_unzip"
-  unzip -q -o "$OUT/catalogue.zip" -d "$OUT/_unzip"
-  n=0
-  # datasets lays out ncbi_dataset/data/<ACCESSION>/protein.faa
-  for d in "$OUT/_unzip"/ncbi_dataset/data/*/; do
-    acc=$(basename "$d")
-    [ -s "$d/protein.faa" ] || continue
-    mv "$d/protein.faa" "$OUT/proteomes/${acc}.faa"
-    n=$((n+1))
+  rm -rf "$OUT/_batches"; mkdir -p "$OUT/_batches"
+  split -l "$BATCH" -d -a 3 "$OUT/accessions.txt" "$OUT/_batches/b"
+  n_batch=$(ls "$OUT/_batches" | wc -l)
+  echo "==> downloading $n_idx proteomes in $n_batch batches of $BATCH"
+  bi=0
+  for bf in "$OUT/_batches"/b*; do
+    bi=$((bi+1))
+    # Already have every accession in this batch? then skip it.
+    missing=0
+    while read -r acc; do
+      [ -s "$OUT/proteomes/${acc}.faa" ] || missing=1
+    done < "$bf"
+    [ "$missing" -eq 0 ] && { echo "    batch $bi/$n_batch already present"; continue; }
+
+    ok=0
+    for try in $(seq 1 "$RETRIES"); do
+      rm -f "$OUT/_b.zip"
+      if datasets download genome accession --inputfile "$bf" \
+            --include protein --filename "$OUT/_b.zip" --no-progressbar 2>/dev/null \
+         && unzip -tq "$OUT/_b.zip" >/dev/null 2>&1; then
+        ok=1; break
+      fi
+      echo "    batch $bi attempt $try failed; retrying" >&2
+      sleep $(( try * 5 ))
+    done
+    [ "$ok" -eq 1 ] || { echo "!! batch $bi failed after $RETRIES attempts" >&2; continue; }
+
+    rm -rf "$OUT/_unzip"; mkdir -p "$OUT/_unzip"
+    unzip -q -o "$OUT/_b.zip" -d "$OUT/_unzip"
+    for d in "$OUT/_unzip"/ncbi_dataset/data/*/; do
+      acc=$(basename "$d")
+      [ -s "$d/protein.faa" ] && mv "$d/protein.faa" "$OUT/proteomes/${acc}.faa"
+    done
+    rm -rf "$OUT/_unzip" "$OUT/_b.zip"
+    echo "    batch $bi/$n_batch -> $(ls "$OUT/proteomes"/*.faa 2>/dev/null | wc -l) proteomes so far"
   done
-  rm -rf "$OUT/_unzip" "$OUT/catalogue.zip"
-  echo "$n" > "$OUT/proteomes/.complete"
-  echo "==> $n proteomes written"
+  rm -rf "$OUT/_batches"
+  ls "$OUT/proteomes"/*.faa 2>/dev/null | wc -l > "$OUT/proteomes/.complete"
 fi
 echo "==> proteomes: $(ls "$OUT/proteomes"/*.faa 2>/dev/null | wc -l)"
 
