@@ -1,0 +1,8 @@
+# Real anaerobic-digester MAGs, PRJEB31310 (digester response to short-chain
+# fatty acids, genome-centric metatranscriptomics). NCBI taxid 1263854.
+# These are the only ANNOTATED genome-sized assemblies under that taxid --
+# everything else there is a whole metagenome assembly of 300+ Mbp.
+#label	accession	note
+DIG_F70	GCA_900750585.1	digester MAG F70, 2.01 Mbp
+DIG_F81	GCA_900750605.1	digester MAG F81, 3.24 Mbp
+DIG_R76	GCA_900750655.1	digester MAG R76, 2.97 Mbp
