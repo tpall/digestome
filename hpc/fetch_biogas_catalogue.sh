@@ -57,11 +57,24 @@ while True:
     print(f"    page {page}: {len(rows)} cumulative", file=sys.stderr)
     if not token:
         break
+# The bioproject carries both GenBank and RefSeq deposits of some genomes
+# (GCA_012517695.1 and GCF_012517695.1 are one MAG, not two). Counting both
+# double-weights those genomes in every community statistic, so keep one --
+# RefSeq where it exists, since that is the curated copy.
+by_id = {}
+for a, o, b in rows:
+    key = a.split('_', 1)[1].split('.')[0]
+    prev = by_id.get(key)
+    if prev is None or (a.startswith('GCF_') and not prev[0].startswith('GCF_')):
+        by_id[key] = (a, o, b)
+deduped = sorted(by_id.values())
+n_dup = len(rows) - len(deduped)
 with open(dest, 'w') as fh:
     fh.write("#accession\torganism\ttotal_bp\n")
-    for a, o, b in rows:
+    for a, o, b in deduped:
         fh.write(f"{a}\t{o}\t{b}\n")
-print(f"    {len(rows)} assemblies indexed", file=sys.stderr)
+print(f"    {len(rows)} assemblies indexed, {n_dup} GCA/GCF duplicates dropped, "
+      f"{len(deduped)} kept", file=sys.stderr)
 PY
 fi
 n_idx=$(( $(wc -l < "$OUT/catalogue_index.tsv") - 1 ))
