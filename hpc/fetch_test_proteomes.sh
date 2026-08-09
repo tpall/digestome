@@ -10,7 +10,8 @@ set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 GENOMES="${GENOMES:-$HERE/tests/genomes.tsv}"
-OUT="${PROTEOMES:-/gpfs/space/projects/preterm/databases/ad_panel_test/proteomes}"
+: "${DB:?set DB to a database root with room for the panel, e.g. export DB=/path/to/databases}"
+OUT="${PROTEOMES:-$DB/ad_panel_test/proteomes}"
 BASE=https://ftp.ncbi.nlm.nih.gov/genomes/all
 
 mkdir -p "$OUT"

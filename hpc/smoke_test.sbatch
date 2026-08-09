@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 #SBATCH --job-name=ad-panel-smoke
-#SBATCH --partition=main
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=8G
 #SBATCH --time=1:00:00
 #SBATCH --output=logs/ad-panel-smoke-%j.out
 #SBATCH --error=logs/ad-panel-smoke-%j.err
+# No --partition/--account here: those are site-specific. Pass them at submit
+# time (sbatch -p <partition> -A <account> ...) or export SBATCH_PARTITION and
+# SBATCH_ACCOUNT, which SLURM picks up automatically.
 # End-to-end smoke test: reference proteomes -> hmmsearch -> panel_scored.py,
 # checked against known biology.
 #
@@ -22,8 +24,17 @@
 # Submit from the worktree root:
 #   sbatch kegg-less/hpc/smoke_test.sbatch
 set -euo pipefail
-module purge
-module load hmmer/3.3.2
+# hmmsearch may come from a module, a conda env or a container. Only touch the
+# module system when hmmsearch is not already on PATH, so this runs unchanged on
+# sites with different module names, or none at all.
+if ! command -v hmmsearch >/dev/null 2>&1 && command -v module >/dev/null 2>&1; then
+  module load "${HMMER_MODULE:-hmmer}" 2>/dev/null || true
+fi
+command -v hmmsearch >/dev/null 2>&1 || {
+  echo "!! hmmsearch not found on PATH." >&2
+  echo "   Load HMMER first (module load <your hmmer module>, or activate a conda" >&2
+  echo "   env providing it), or set HMMER_MODULE to your site's module name." >&2
+  exit 1; }
 
 if [ -n "${SLURM_SUBMIT_DIR:-}" ]; then
   KEGGLESS="$SLURM_SUBMIT_DIR/kegg-less"
@@ -34,7 +45,7 @@ fi
   echo "!! cannot find panel_scored.py under $KEGGLESS -- submit from the worktree root" >&2
   exit 1; }
 
-DB="${DB:-/gpfs/space/projects/preterm/databases}"
+: "${DB:?set DB to a database root with room for the panel, e.g. export DB=/path/to/databases}"
 PANEL="$KEGGLESS/AD_methanogenesis_panel.tsv"
 HMM="$DB/ad_panel/ad_panel.hmm"
 MAP="$DB/ad_panel/ad_panel_map.tsv"

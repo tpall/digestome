@@ -15,7 +15,8 @@ set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 LIST="${MAGLIST:-$HERE/tests/digester_mags.tsv}"
-OUT="${MAGPROT:-/gpfs/space/projects/preterm/databases/ad_panel_test/digester_mags}"
+: "${DB:?set DB to a database root with room for the panel, e.g. export DB=/path/to/databases}"
+OUT="${MAGPROT:-$DB/ad_panel_test/digester_mags}"
 BASE=https://ftp.ncbi.nlm.nih.gov/genomes/all
 
 mkdir -p "$OUT"

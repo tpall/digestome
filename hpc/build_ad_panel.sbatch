@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 #SBATCH --job-name=build-ad-panel
-#SBATCH --partition=main
 #SBATCH --cpus-per-task=2
 #SBATCH --mem=16G
 #SBATCH --time=2:00:00
 #SBATCH --output=logs/build-ad-panel-%j.out
 #SBATCH --error=logs/build-ad-panel-%j.err
+# No --partition/--account here: those are site-specific. Pass them at submit
+# time (sbatch -p <partition> -A <account> ...) or export SBATCH_PARTITION and
+# SBATCH_ACCOUNT, which SLURM picks up automatically.
 # First LIVE build of the KEGG-less AD panel HMM DB against current NCBIfam.
 #
 # The point of this run is verification, not just artifacts. build_ad_hmm_db.sh
@@ -21,8 +23,17 @@
 # Submit from the worktree root:
 #   sbatch kegg-less/hpc/build_ad_panel.sbatch
 set -euo pipefail
-module purge
-module load hmmer/3.3.2
+# hmmsearch may come from a module, a conda env or a container. Only touch the
+# module system when hmmsearch is not already on PATH, so this runs unchanged on
+# sites with different module names, or none at all.
+if ! command -v hmmsearch >/dev/null 2>&1 && command -v module >/dev/null 2>&1; then
+  module load "${HMMER_MODULE:-hmmer}" 2>/dev/null || true
+fi
+command -v hmmsearch >/dev/null 2>&1 || {
+  echo "!! hmmsearch not found on PATH." >&2
+  echo "   Load HMMER first (module load <your hmmer module>, or activate a conda" >&2
+  echo "   env providing it), or set HMMER_MODULE to your site's module name." >&2
+  exit 1; }
 
 # SLURM copies the batch script into its spool dir, so BASH_SOURCE does NOT
 # point into the repo under sbatch -- use the submit dir there, and fall back to
@@ -37,7 +48,7 @@ fi
   echo "   submit from the worktree root: sbatch kegg-less/hpc/build_ad_panel.sbatch" >&2
   exit 1
 }
-DB="${DB:-/gpfs/space/projects/preterm/databases}"
+: "${DB:?set DB to a database root with room for the panel, e.g. export DB=/path/to/databases}"
 export PANEL="$KEGGLESS/AD_methanogenesis_panel.tsv"
 export WORK="${WORK:-$DB/ncbifam/_work}"
 export OUT="${OUT:-$DB/ad_panel}"

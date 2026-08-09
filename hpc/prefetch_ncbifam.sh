@@ -7,7 +7,9 @@
 # (curl -C -), so re-running after an interrupted transfer is safe.
 set -euo pipefail
 
-DB="${DB:-/gpfs/space/projects/preterm/databases}"
+# Database root is site-specific, so it is required rather than defaulted: a
+# default that happens to exist on one cluster is a trap everywhere else.
+: "${DB:?set DB to a database root with room for the panel, e.g. export DB=/path/to/databases}"
 WORK="${WORK:-$DB/ncbifam/_work}"
 OUT="${OUT:-$DB/ad_panel}"
 NCBIFAM_BASE="${NCBIFAM_BASE:-https://ftp.ncbi.nlm.nih.gov/hmm/current}"
