@@ -270,9 +270,14 @@ def main():
         ('methanogenesis: acetoclastic',
          has('mcrA') and has('cdhA') and (has('acs') or (has('ackA') and has('pta'))),
          [('mcrA',), ('cdhA',), ('acs','ackA'), ('acs','pta')]),
+        # MEG-METHYL:comMT is the terminal MT2 step, shared by every methylotrophic
+        # route, and catches obligate methylotrophs whose substrate-specific
+        # methyltransferase has no licence-clean model. Its model is subfamily-level
+        # and hits ~30 bacteria on its own, so it is ONLY sound behind the mandatory
+        # mcrA term here. Do not lift it out of this gate, and do not drop mcrA.
         ('methanogenesis: methylotrophic',
-         has('mcrA') and has('mtaB','mttB','mtbB','mtmB','mtsA'),
-         [('mcrA',), ('mtaB','mttB','mtbB','mtmB','mtsA')]),
+         has('mcrA') and has('mtaB','mttB','mtbB','mtmB','mtsA','MEG-METHYL:comMT'),
+         [('mcrA',), ('mtaB','mttB','mtbB','mtmB','mtsA','MEG-METHYL:comMT')]),
         ('acetogenesis: Wood-Ljungdahl',
          has('fhs') and (has('acsB') or has('cdhC')) and has('cooS','acsA'),
          [('fhs',), ('acsB','cdhC'), ('cooS','acsA')]),
