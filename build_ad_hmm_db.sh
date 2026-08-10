@@ -18,6 +18,7 @@ PANEL="${PANEL:-$HERE/AD_methanogenesis_panel.tsv}"
 OUT="${OUT:-$HERE/db}"
 WORK="${WORK:-$OUT/_work}"
 NCBIFAM_BASE="${NCBIFAM_BASE:-https://ftp.ncbi.nlm.nih.gov/hmm/current}"
+DB_PFAM="${DB_PFAM:-$(dirname "$OUT")/pfam}"
 RHEA_EC_URL="${RHEA_EC_URL:-https://ftp.expasy.org/databases/rhea/tsv/rhea2ec.tsv}"
 
 for t in curl tar hmmfetch hmmpress python3; do
@@ -62,8 +63,9 @@ fi
 
 echo "==> 3. Match panel genes/EC to NCBIfam models -> keylist + map"
 PANEL="$PANEL" NCBIFAM_TSV="$WORK/hmm_PGAP.tsv" KEYS="$WORK/keys.txt" MAP="$OUT/ad_panel_map.tsv" \
+PFAM_HMM="${PFAM_HMM:-$DB_PFAM/panel_pfam.hmm}" PFAM_KEYS="$WORK/keys_pfam.txt" \
 python3 - <<'PY'
-import csv, os, re
+import csv, os, re, sys
 panel_path = os.environ['PANEL']; ncbi_path = os.environ['NCBIFAM_TSV']
 keys_path  = os.environ['KEYS'];  map_path  = os.environ['MAP']
 
@@ -89,7 +91,7 @@ panel_genes = {}   # gene token (lower) -> set(marker_id)
 panel_ec    = {}   # ec               -> set(marker_id)
 curated     = {}   # bare accession   -> set(marker_id)
 marker      = {}   # marker_id        -> (gene, module)
-ACC_RE = re.compile(r'\b(?:TIGR\d{5}|NF\d{6})\b')
+ACC_RE = re.compile(r'\b(?:TIGR\d{5}|NF\d{6}|PF\d{5})\b')
 
 for r in csv.DictReader(open(panel_path), delimiter='\t'):
     mid = (r.get('marker_id') or '').strip()
@@ -174,6 +176,40 @@ for r in reader:
             gene, mod = marker.get(mid, ('', ''))
             maprows.append((acc, name, mid, gene, mod, basis))
 
+# --- Pfam-pinned markers ---
+# Pfam models live in their own file, not in hmm_PGAP.tsv, so the scan above
+# cannot reach them. Emit their map rows here from the cached HMMs, keyed on the
+# ACC line, which is what hmmsearch reports in the tblout.
+pfam_path = os.environ.get('PFAM_HMM', '')
+pfam_acc = {}            # bare PFxxxxx -> (versioned acc, model name)
+if pfam_path and os.path.exists(pfam_path):
+    name = acc_v = None
+    for line in open(pfam_path):
+        if line.startswith('NAME '):
+            name = line.split(None, 1)[1].strip()
+        elif line.startswith('ACC '):
+            acc_v = line.split(None, 1)[1].strip()
+            bare = re.sub(r'\.\d+$', '', acc_v)
+            pfam_acc[bare] = (acc_v, name or bare)
+pfam_keys = []
+for bare, mids in curated.items():
+    if not bare.startswith('PF'):
+        continue
+    if bare not in pfam_acc:
+        print(f"   !! {bare} is pinned in the panel but not cached -- "
+              f"run hpc/prefetch_pfam.sh", file=sys.stderr)
+        continue
+    acc_v, mname = pfam_acc[bare]
+    curated_hits.add(bare)
+    pfam_keys.append(acc_v)
+    for mid in sorted(mids):
+        gene, mod = marker.get(mid, ('', ''))
+        maprows.append((acc_v, mname, mid, gene, mod, 'curated'))
+with open(os.environ['PFAM_KEYS'], 'w') as fh:
+    fh.write('\n'.join(sorted(set(pfam_keys))))
+    if pfam_keys:
+        fh.write('\n')
+
 with open(keys_path, 'w') as fh:
     fh.write('\n'.join(sorted(keys)) + '\n')
 with open(map_path, 'w') as fh:
@@ -236,6 +272,16 @@ if [ "$n_missing" -gt 0 ]; then
 fi
 
 hmmfetch -f "$WORK/ncbifam_all.hmm" "$WORK/keys_present.txt" > "$OUT/ad_panel.hmm"
+
+# Merge the Pfam-pinned models. Their NC was set to GA at fetch time, so the
+# single `hmmsearch --cut_nc` the panel documents applies each source's own
+# curated threshold rather than mixing conventions.
+PFAM_HMM="${PFAM_HMM:-$DB_PFAM/panel_pfam.hmm}"
+if [ -s "$PFAM_HMM" ]; then
+  cat "$PFAM_HMM" >> "$OUT/ad_panel.hmm"
+  echo "    merged $(grep -c '^NAME ' "$PFAM_HMM") Pfam model(s) from $PFAM_HMM"
+  cat "$WORK/keys_pfam.txt" >> "$WORK/keys_present.txt"
+fi
 hmmpress -f "$OUT/ad_panel.hmm"
 
 # The documented run mode is `hmmsearch --cut_nc`, which uses each model's own
