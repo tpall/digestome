@@ -29,7 +29,21 @@ API="${INTERPRO_API:-https://www.ebi.ac.uk/interpro/api}"
 
 mkdir -p "$OUT/models"
 
-accs=$(grep -o 'PF[0-9]\{5\}' "$PANEL" | sort -u)
+# ONLY the curated-pin column. The panel's separate `pfam` column names a family
+# for most rows as documentation, and many of those are superfamily-wide
+# (PF00378 enoyl-CoA hydratase/isomerase, PF00441 acyl-CoA dehydrogenase).
+# Fetching those would resolve rows while matching dozens of unrelated enzymes
+# per genome -- the wildcard-EC mistake again. A Pfam family enters the panel
+# only by being pinned in ncbifam_tigrfam, after its specificity is measured.
+accs=$(python3 - "$PANEL" <<'PYX'
+import csv, re, sys
+col = 'ncbifam_tigrfam'
+out = set()
+for r in csv.DictReader(open(sys.argv[1]), delimiter='\t'):
+    out.update(re.findall(r'PF\d{5}', r.get(col) or ''))
+print(' '.join(sorted(out)))
+PYX
+)
 [ -n "$accs" ] || { echo "==> no PF accessions pinned in the panel; nothing to do"; exit 0; }
 echo "==> panel pins $(echo "$accs" | wc -w) Pfam accession(s)"
 
