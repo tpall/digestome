@@ -19,10 +19,10 @@
 # branch, and any methanogenesis gate firing on it is a live bug.
 #
 # Prereqs (login node):
-#   bash kegg-less/hpc/fetch_test_proteomes.sh
+#   bash hpc/fetch_test_proteomes.sh
 #   mkdir -p logs
 # Submit from the worktree root:
-#   sbatch kegg-less/hpc/smoke_test.sbatch
+#   sbatch hpc/smoke_test.sbatch
 set -euo pipefail
 # hmmsearch may come from a module, a conda env or a container. Only touch the
 # module system when hmmsearch is not already on PATH, so this runs unchanged on
@@ -37,16 +37,16 @@ command -v hmmsearch >/dev/null 2>&1 || {
   exit 1; }
 
 if [ -n "${SLURM_SUBMIT_DIR:-}" ]; then
-  KEGGLESS="$SLURM_SUBMIT_DIR/kegg-less"
+  ROOT="$SLURM_SUBMIT_DIR"
 else
-  KEGGLESS="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+  ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 fi
-[ -f "$KEGGLESS/panel_scored.py" ] || {
+[ -f "$ROOT/panel_scored.py" ] || {
   echo "!! cannot find panel_scored.py under $KEGGLESS -- submit from the worktree root" >&2
   exit 1; }
 
 : "${DB:?set DB to a database root with room for the panel, e.g. export DB=/path/to/databases}"
-PANEL="$KEGGLESS/AD_methanogenesis_panel.tsv"
+PANEL="$ROOT/AD_methanogenesis_panel.tsv"
 HMM="$DB/ad_panel/ad_panel.hmm"
 MAP="$DB/ad_panel/ad_panel_map.tsv"
 PROT="${PROTEOMES:-$DB/ad_panel_test/proteomes}"
@@ -76,21 +76,21 @@ while IFS=$'\t' read -r label acc organism role; do
   hmmsearch --cpu "$THREADS" --cut_nc \
             --tblout "$WORK/${label}.tblout" "$HMM" "$faa" > /dev/null
 
-  python3 "$KEGGLESS/panel_scored.py" \
+  python3 "$ROOT/panel_scored.py" \
       --tblout "$WORK/${label}.tblout" --map "$MAP" --panel "$PANEL" \
       --name "$label" --out "$WORK/${label}.modules.tsv" \
-      --gtdbtk "$KEGGLESS/tests/gtdbtk_fixture.tsv" \
-      --secretion "$KEGGLESS/secretion_modules.tsv" \
+      --gtdbtk "$ROOT/tests/gtdbtk_fixture.tsv" \
+      --secretion "$ROOT/secretion_modules.tsv" \
       | tee "$WORK/${label}.summary.txt"
 
   echo "  --- assertions ---"
-  if python3 "$KEGGLESS/tests/check_expectations.py" \
+  if python3 "$ROOT/tests/check_expectations.py" \
         --label "$label" --summary "$WORK/${label}.summary.txt" \
-        --expect "$KEGGLESS/tests/expectations.tsv"; then :; else
+        --expect "$ROOT/tests/expectations.tsv"; then :; else
     fails=$((fails+1))
   fi
   echo
-done < "$KEGGLESS/tests/genomes.tsv"
+done < "$ROOT/tests/genomes.tsv"
 
 echo "================ RESULT ================"
 if [ "$fails" -eq 0 ]; then

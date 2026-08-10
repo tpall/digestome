@@ -173,4 +173,4 @@ PY
 
 echo
 echo "==> catalogue ready in $OUT"
-echo "Next: mkdir -p logs && sbatch -p <partition> kegg-less/hpc/score_catalogue.sbatch"
+echo "Next: mkdir -p logs && sbatch -p <partition> hpc/score_catalogue.sbatch"

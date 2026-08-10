@@ -1,1 +1,7 @@
 /.quarto/
+
+# rendered outputs
+README.html
+MANUSCRIPT.html
+MANUSCRIPT_files/
+*_files/

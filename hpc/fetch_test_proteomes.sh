@@ -43,4 +43,4 @@ done < "$GENOMES"
 
 echo
 echo "==> $n proteomes in $OUT"
-echo "Next: mkdir -p logs && sbatch kegg-less/hpc/smoke_test.sbatch"
+echo "Next: mkdir -p logs && sbatch hpc/smoke_test.sbatch"

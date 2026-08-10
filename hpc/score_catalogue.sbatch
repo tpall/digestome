@@ -19,9 +19,9 @@ command -v hmmsearch >/dev/null 2>&1 || {
   echo "!! hmmsearch not on PATH; load HMMER or set HMMER_MODULE" >&2; exit 1; }
 
 if [ -n "${SLURM_SUBMIT_DIR:-}" ]; then
-  KEGGLESS="$SLURM_SUBMIT_DIR/kegg-less"
+  ROOT="$SLURM_SUBMIT_DIR"
 else
-  KEGGLESS="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+  ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 fi
 : "${DB:?set DB to the database root}"
 
@@ -29,7 +29,7 @@ CAT="${CATALOGUE:-$DB/ad_panel_test/biogas_catalogue}"
 PROT="$CAT/proteomes"
 TAX="$CAT/catalogue_taxonomy.tsv"
 OUTD="${CATOUT:-$CAT/scored}"
-PANEL="$KEGGLESS/AD_methanogenesis_panel.tsv"
+PANEL="$ROOT/AD_methanogenesis_panel.tsv"
 HMM="$DB/ad_panel/ad_panel.hmm"
 MAP="$DB/ad_panel/ad_panel_map.tsv"
 
@@ -51,10 +51,10 @@ score_one() {
   # Skip work already done, so the job is resumable after a timeout.
   [ -s "$OUTD/${label}.summary.txt" ] && return 0
   hmmsearch --cpu 2 --cut_nc --tblout "$OUTD/${label}.tblout" "$HMM" "$faa" > /dev/null 2>&1 || return 0
-  python3 "$KEGGLESS/panel_scored.py" \
+  python3 "$ROOT/panel_scored.py" \
       --tblout "$OUTD/${label}.tblout" --map "$MAP" --panel "$PANEL" \
       --name "$label" --gtdbtk "$TAX" \
-      --secretion "$KEGGLESS/secretion_modules.tsv" \
+      --secretion "$ROOT/secretion_modules.tsv" \
       --out "$OUTD/${label}.modules.tsv" > "$OUTD/${label}.summary.txt" 2>/dev/null || true
   rm -f "$OUTD/${label}.tblout"     # ~1400 tblouts is a lot of small files
 }
@@ -64,7 +64,7 @@ ls "$PROT"/*.faa | xargs -P "$PAR" -I{} bash -c 'score_one "$@"' _ {}
 
 echo "==> scored $(ls "$OUTD"/*.summary.txt 2>/dev/null | wc -l) genomes"
 echo
-python3 "$KEGGLESS/aggregate_community.py" \
+python3 "$ROOT/aggregate_community.py" \
     --dir "$OUTD" \
     --sample "Biogas microbiome catalogue (PRJNA602310)" \
     --description "Campanaro/Treu MAG catalogue: MHQ+HQ bins from 134 anaerobic digester metagenomes across multiple plants, feedstocks and temperatures. Taxonomy derived from NCBI organism names, not GTDB-Tk." \

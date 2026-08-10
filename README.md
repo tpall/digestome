@@ -1,10 +1,9 @@
 # Anaerobic-Digestion / Methanogenesis marker-gene panel
 
-> **Part of DRAM's experimental KEGG-less workflow** (branch `feature/kegg-less-ad`).
-> Goal: distill microbial metabolism using only
-> commercially-licensable databases (Pfam CC0, NCBIfam public-domain, Rhea
-> CC BY, dbCAN) — no KEGG/KOfam, no MetaCyc. This panel is the curated scaffold
-> the KEGG-less distill step scores against.
+> **Standalone.** Requires only HMMER and Python 3 (standard library); no other
+> software and no licensed database at any stage. Inspired by DRAM's idea of
+> distilling annotations into pathway-level statements, but it shares no code with
+> DRAM and does not depend on it.
 
 A **license-clean** functional scaffold for biogas/AD microbiome analysis: which genes mark each step of anaerobic digestion, how to detect them with free HMMs, and how to score pathway completeness for a "digester microbiome health check" report. No KEGG, no MetaCyc.
 
@@ -22,24 +21,24 @@ Four steps: fetch the source databases, build the HMM panel, score genomes, aggr
 export DB=/path/to/databases
 
 # 1. Download NCBIfam + Rhea (needs internet; run on a login node)
-bash kegg-less/hpc/prefetch_ncbifam.sh
+bash hpc/prefetch_ncbifam.sh
 
 # 2. Build the pressed HMM panel -> $DB/ad_panel/
 mkdir -p logs
-sbatch -p <partition> kegg-less/hpc/build_ad_panel.sbatch
+sbatch -p <partition> hpc/build_ad_panel.sbatch
 
 # 3. Score one genome
 hmmsearch --cut_nc --tblout hits.tblout $DB/ad_panel/ad_panel.hmm proteins.faa
-python3 kegg-less/panel_scored.py \
+python3 panel_scored.py \
     --tblout hits.tblout \
     --map    $DB/ad_panel/ad_panel_map.tsv \
-    --panel  kegg-less/AD_methanogenesis_panel.tsv \
+    --panel  AD_methanogenesis_panel.tsv \
     --name   MAG001 \
     --gtdbtk gtdbtk.bac120.summary.tsv \
     --out    MAG001.modules.tsv          # summary goes to stdout
 
 # 4. Aggregate a directory of scored MAGs into one digester profile
-python3 kegg-less/aggregate_community.py \
+python3 aggregate_community.py \
     --dir scored/ --sample digester_A \
     --out-json profile.json --out-txt profile.txt
 ```
@@ -121,8 +120,8 @@ rather than a drifted snapshot.
 
 ```bash
 export DB=/path/to/databases
-bash kegg-less/hpc/fetch_test_proteomes.sh
-mkdir -p logs && sbatch -p <partition> kegg-less/hpc/smoke_test.sbatch
+bash hpc/fetch_test_proteomes.sh
+mkdir -p logs && sbatch -p <partition> hpc/smoke_test.sbatch
 ```
 
 - `tests/genomes.tsv` — the 7 genomes and their accessions

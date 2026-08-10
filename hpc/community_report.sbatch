@@ -32,15 +32,15 @@ command -v hmmsearch >/dev/null 2>&1 || {
   exit 1; }
 
 if [ -n "${SLURM_SUBMIT_DIR:-}" ]; then
-  KEGGLESS="$SLURM_SUBMIT_DIR/kegg-less"
+  ROOT="$SLURM_SUBMIT_DIR"
 else
-  KEGGLESS="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+  ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 fi
-[ -f "$KEGGLESS/aggregate_community.py" ] || {
+[ -f "$ROOT/aggregate_community.py" ] || {
   echo "!! run from the worktree root" >&2; exit 1; }
 
 : "${DB:?set DB to a database root with room for the panel, e.g. export DB=/path/to/databases}"
-PANEL="$KEGGLESS/AD_methanogenesis_panel.tsv"
+PANEL="$ROOT/AD_methanogenesis_panel.tsv"
 HMM="$DB/ad_panel/ad_panel.hmm"
 MAP="$DB/ad_panel/ad_panel_map.tsv"
 THREADS="${SLURM_CPUS_PER_TASK:-4}"
@@ -55,15 +55,15 @@ score_set() {                       # $1=proteome dir  $2=sample name  $3=out di
     hmmsearch --cpu "$THREADS" --cut_nc \
               --tblout "$out/${label}.tblout" "$HMM" "$faa" > /dev/null
     local gt=(); [ -n "$gtdb" ] && gt=(--gtdbtk "$gtdb")
-    python3 "$KEGGLESS/panel_scored.py" \
+    python3 "$ROOT/panel_scored.py" \
         --tblout "$out/${label}.tblout" --map "$MAP" --panel "$PANEL" \
         --name "$label" --out "$out/${label}.modules.tsv" "${gt[@]}" \
-        --secretion "$KEGGLESS/secretion_modules.tsv" \
+        --secretion "$ROOT/secretion_modules.tsv" \
         > "$out/${label}.summary.txt"
     n=$((n+1))
   done
   echo "  scored $n MAG(s) from $prot"
-  python3 "$KEGGLESS/aggregate_community.py" \
+  python3 "$ROOT/aggregate_community.py" \
       --dir "$out" --sample "$sample" --description "$desc" \
       --out-json "$out/profile.json" --out-txt "$out/profile.txt"
 }
@@ -84,7 +84,7 @@ score_set "$DB/ad_panel_test/proteomes" \
           "Mock digester community" \
           "$DB/ad_panel_test/community_mock" \
           "MOCK community of 7 reference genomes, not a real sample. Used to show the report shape when methanogens of each route are present." \
-          "$KEGGLESS/tests/gtdbtk_fixture.tsv"
+          "$ROOT/tests/gtdbtk_fixture.tsv"
 
 echo
 echo "==> done $(date)"

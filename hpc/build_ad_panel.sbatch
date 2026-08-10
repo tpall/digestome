@@ -18,10 +18,10 @@
 # here is trusted in a report.
 #
 # Prereqs (login node):
-#   bash kegg-less/hpc/prefetch_ncbifam.sh
+#   bash hpc/prefetch_ncbifam.sh
 #   mkdir -p logs
 # Submit from the worktree root:
-#   sbatch kegg-less/hpc/build_ad_panel.sbatch
+#   sbatch hpc/build_ad_panel.sbatch
 set -euo pipefail
 # hmmsearch may come from a module, a conda env or a container. Only touch the
 # module system when hmmsearch is not already on PATH, so this runs unchanged on
@@ -39,17 +39,17 @@ command -v hmmsearch >/dev/null 2>&1 || {
 # point into the repo under sbatch -- use the submit dir there, and fall back to
 # BASH_SOURCE when this is run directly with bash.
 if [ -n "${SLURM_SUBMIT_DIR:-}" ]; then
-  KEGGLESS="$SLURM_SUBMIT_DIR/kegg-less"
+  ROOT="$SLURM_SUBMIT_DIR"
 else
-  KEGGLESS="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+  ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 fi
-[ -f "$KEGGLESS/build_ad_hmm_db.sh" ] || {
+[ -f "$ROOT/build_ad_hmm_db.sh" ] || {
   echo "!! cannot find build_ad_hmm_db.sh under $KEGGLESS" >&2
-  echo "   submit from the worktree root: sbatch kegg-less/hpc/build_ad_panel.sbatch" >&2
+  echo "   submit from the worktree root: sbatch hpc/build_ad_panel.sbatch" >&2
   exit 1
 }
 : "${DB:?set DB to a database root with room for the panel, e.g. export DB=/path/to/databases}"
-export PANEL="$KEGGLESS/AD_methanogenesis_panel.tsv"
+export PANEL="$ROOT/AD_methanogenesis_panel.tsv"
 export WORK="${WORK:-$DB/ncbifam/_work}"
 export OUT="${OUT:-$DB/ad_panel}"
 
@@ -59,7 +59,7 @@ echo "==> panel=$PANEL"
 echo "==> work=$WORK  out=$OUT"
 echo
 
-bash "$KEGGLESS/build_ad_hmm_db.sh"
+bash "$ROOT/build_ad_hmm_db.sh"
 
 echo
 echo "================ A. NCBIfam metadata columns ================"

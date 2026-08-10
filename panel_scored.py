@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Score AD/methanogenesis pathway completeness from hmmsearch (+ optional dbCAN)
-output against the KEGG-less marker-gene panel. Part of DRAM feature/kegg-less-ad.
+output against the KEGG-less marker-gene panel. Standalone: requires only HMMER and Python 3.
 
 Inputs:
   --tblout   hmmsearch --tblout produced with db/ad_panel.hmm (run hmmsearch with

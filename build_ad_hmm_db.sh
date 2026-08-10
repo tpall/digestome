@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # build_ad_hmm_db.sh — assemble a license-clean HMM profile DB for the
 # AD/methanogenesis panel from NCBIfam (public-domain) models, and fetch the
-# EC->Rhea map (CC BY). Part of DRAM branch feature/kegg-less-ad.
+# EC->Rhea map (CC BY). Standalone: requires only HMMER and Python 3.
 #
 # Outputs (under $OUT, default ./db):
 #   ad_panel.hmm(.h3*)   pressed HMMER DB for hmmsearch

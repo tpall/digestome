@@ -110,13 +110,17 @@ tool of this kind consumes.
 
 ### Relationship to DRAM
 
-This work is not an alternative to DRAM but a distillation layer developed inside a fork of it
-(`tpall/DRAM`), and it inherits DRAM's framing of turning annotations into pathway-level
-statements. What it replaces is the reference basis and the interpretation: an AD-specific
-curated pathway model in place of generic module definitions, and sources chosen so that no
-component of the stack carries a commercial restriction. The panel, builder and scorer are
-currently standalone scripts within that repository rather than steps in its Nextflow DAG;
-integration as a distill mode is the obvious next step and is not claimed here.
+DRAM established the pattern this work follows: take per-gene annotations and distil them into
+statements about pathways, at genome resolution and at scale. That framing is the starting
+point here, and DRAM remains the more general tool, covering metabolism far beyond anaerobic
+digestion.
+
+The panel described here is nevertheless an independent implementation. It shares no code with
+DRAM, does not call it, and requires only HMMER and a Python interpreter. What differs is the
+reference basis and the interpretation: a curated pathway model specific to anaerobic digestion
+in place of general module definitions, sources chosen so that no component carries a
+commercial restriction, and the reporting guarantees described below. It began as a branch of
+DRAM and was separated once it became clear that nothing in it depended on the host.
 
 The second obstacle is interpretive. Marker-gene profiling reports what a genome *carries*.
 Three gaps routinely open between that and what an operator needs to know: a gene may be
@@ -308,8 +312,7 @@ taxonomy it degrades to gene evidence, which over-calls.
 
 ## 5 Availability
 
-Panel, scorer, build and validation scripts are in the `kegg-less/` directory of
-`https://github.com/tpall/DRAM` (branch `feature/kegg-less-ad`). They run as standalone
+Panel, scorer, build and validation scripts are in this repository. They run as standalone
 command-line steps; the scorer and aggregator are Python 3 standard library only, so they carry
 no dependency beyond HMMER and a Python interpreter. Reference data are downloaded by the provided scripts from NCBIfam,
 InterPro/Pfam and Rhea; no licensed database is required at any stage.
