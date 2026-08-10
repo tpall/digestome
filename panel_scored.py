@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Score AD/methanogenesis pathway completeness from hmmsearch (+ optional dbCAN)
-output against the KEGG-less marker-gene panel. Standalone: requires only HMMER and Python 3.
+output against the digestome marker-gene panel. Standalone: requires only HMMER and Python 3.
 
 Inputs:
   --tblout   hmmsearch --tblout produced with db/ad_panel.hmm (run hmmsearch with
@@ -398,7 +398,7 @@ def main():
                         'NA' if pct is None else pct, status])
 
     # ---- stdout summary ----
-    print(f"# {a.name} — AD/methanogenesis KEGG-less summary")
+    print(f"# {a.name} — digestome: anaerobic digestion functional summary")
     print(f"mcrA (master methanogen marker): {'PRESENT' if has('mcrA') else 'absent'}")
     print(f"taxonomy: {lineage or '(none supplied — pass --gtdbtk)'}")
     print(f"acetoclastic genus hint: {genus_hint}")

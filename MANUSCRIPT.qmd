@@ -1,5 +1,5 @@
 ---
-title: "A licence-clean marker-gene panel for functional profiling of anaerobic digestion microbiomes"
+title: "digestome: a licence-clean marker-gene panel for functional profiling of anaerobic digestion microbiomes"
 author:
   - name: Taavi Päll
     affiliations:
@@ -10,7 +10,7 @@ abstract: |
   Functional profiling of anaerobic digestion (AD) microbiomes is routinely performed
   against KEGG or MetaCyc, both of which require a paid licence for commercial use. This
   blocks fee-for-service analysis for biogas operators, the setting where the results have
-  the most immediate operational value. We present a curated marker-gene panel for
+  the most immediate operational value. We present `digestome`, a curated marker-gene panel for
   anaerobic digestion built exclusively on sources that are free for commercial use
   (NCBIfam, public domain; Pfam, CC0; Rhea, CC BY), together with a scorer that
   reports pathway completeness, branch capability and, for hydrolysis, whether the enzyme
@@ -312,7 +312,7 @@ taxonomy it degrades to gene evidence, which over-calls.
 
 ## 5 Availability
 
-Panel, scorer, build and validation scripts are in this repository. They run as standalone
+Panel, scorer, build and validation scripts are distributed as `digestome`. They run as standalone
 command-line steps; the scorer and aggregator are Python 3 standard library only, so they carry
 no dependency beyond HMMER and a Python interpreter. Reference data are downloaded by the provided scripts from NCBIfam,
 InterPro/Pfam and Rhea; no licensed database is required at any stage.

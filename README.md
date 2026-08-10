@@ -1,4 +1,6 @@
-# Anaerobic-Digestion / Methanogenesis marker-gene panel
+# digestome
+
+**Licence-clean functional profiling of anaerobic digestion microbiomes.**
 
 > **Standalone.** Requires only HMMER and Python 3 (standard library); no other
 > software and no licensed database at any stage. Inspired by DRAM's idea of

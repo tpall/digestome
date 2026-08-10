@@ -8,7 +8,7 @@
 # No --partition/--account here: those are site-specific. Pass them at submit
 # time (sbatch -p <partition> -A <account> ...) or export SBATCH_PARTITION and
 # SBATCH_ACCOUNT, which SLURM picks up automatically.
-# First LIVE build of the KEGG-less AD panel HMM DB against current NCBIfam.
+# Build the digestome panel HMM DB against current NCBIfam.
 #
 # The point of this run is verification, not just artifacts. build_ad_hmm_db.sh
 # was written as a scaffold that GUESSES at two things it could not check
