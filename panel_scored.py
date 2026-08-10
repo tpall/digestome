@@ -132,14 +132,23 @@ def load_map(path):
     return acc2mid, name2mid
 
 def parse_tblout(path, evalue):
-    hits = set()
+    """-> (set of (model_acc, model_name), {protein: set((model_acc, model_name))}).
+
+    The per-protein grouping is what makes secretion evidence possible: a
+    catalytic domain and a dockerin on the SAME polypeptide is a cellulosomal
+    enzyme, while the same two domains in one genome but different proteins mean
+    nothing. Earlier versions collapsed straight to genome level and threw the
+    target column away.
+    """
+    hits, by_protein = set(), {}
     for line in open(path):
         if line.startswith('#') or not line.strip():
             continue
         f = line.split()
         if len(f) < 6:
             continue
-        qname, qacc = f[2], f[3]            # --tblout: query = the HMM model
+        target = f[0]                       # --tblout: the protein that was hit
+        qname, qacc = f[2], f[3]            # query = the HMM model
         try:
             ev = float(f[4])
         except ValueError:
@@ -147,7 +156,32 @@ def parse_tblout(path, evalue):
         if evalue is not None and ev > evalue:
             continue
         hits.add((qacc, qname))
-    return hits
+        by_protein.setdefault(target, set()).add((qacc, qname))
+    return hits, by_protein
+
+
+def load_secretion(path):
+    """Model accessions/names that mark a protein as extracellular-targeted."""
+    accs, names = set(), set()
+    if not path:
+        return accs, names
+    try:
+        fh = open(path)
+    except OSError:
+        print(f"!! cannot read secretion modules {path}", file=sys.stderr)
+        return accs, names
+    with fh:
+        for line in fh:
+            if line.startswith('#') or not line.strip():
+                continue
+            f = line.rstrip('\n').split('\t')
+            if not f or f[0].startswith('accession'):
+                continue
+            if f[0].strip():
+                accs.add(re.sub(r'\.\d+$', '', f[0].strip()))
+            if len(f) > 1 and f[1].strip():
+                names.add(f[1].strip())
+    return accs, names
 
 def main():
     ap = argparse.ArgumentParser()
@@ -159,6 +193,10 @@ def main():
     ap.add_argument('--dbcan', help='optional run_dbcan overview.txt for HYDROL-CARB')
     ap.add_argument('--evalue', type=float, default=None,
                     help='E-value cutoff; omit if hmmsearch used --cut_nc')
+    ap.add_argument('--secretion', metavar='SECRETION_MODULES.TSV',
+                    help='Pfam modules that mark a protein as extracellular '
+                         '(dockerin, cohesin, CBM, SLH). Enables the '
+                         'secretion-supported column; without it that column is NA.')
     ap.add_argument('--gtdbtk', action='append', metavar='SUMMARY.TSV',
                     help='GTDB-Tk summary.tsv (repeatable for ar53 + bac120). '
                          'Used to confirm the acetoclastic call, which gene '
@@ -168,15 +206,31 @@ def main():
     lineage = load_lineage(a.gtdbtk, a.name)
     modules, by_gene = load_panel(a.panel)
     acc2mid, name2mid = load_map(a.map)
-    hits = parse_tblout(a.tblout, a.evalue)
+    hits, by_protein = parse_tblout(a.tblout, a.evalue)
+    sec_accs, sec_names = load_secretion(a.secretion)
 
-    found = set()                                  # marker_ids, not gene names
-    for qacc, qname in hits:
+    def markers_of(qacc, qname):
         for src in (acc2mid.get(qacc), name2mid.get(qname),
                     name2mid.get(qacc), acc2mid.get(qname)):
             if src:
-                found |= src
-                break
+                return src
+        return set()
+
+    found = set()                                  # marker_ids, not gene names
+    for qacc, qname in hits:
+        found |= markers_of(qacc, qname)
+
+    # A marker is secretion-supported when at least one protein carrying it also
+    # carries an extracellular-targeting module. Per protein, never per genome.
+    secreted = set()
+    if sec_accs or sec_names:
+        for models in by_protein.values():
+            has_sec = any(re.sub(r'\.\d+$', '', qa) in sec_accs or qn in sec_names
+                          for qa, qn in models)
+            if not has_sec:
+                continue
+            for qacc, qname in models:
+                secreted |= markers_of(qacc, qname)
 
     # Markers that COULD be hit, i.e. have at least one model in the pressed DB.
     # Distinguishing "looked for and absent" from "never looked for" is the whole
@@ -237,13 +291,17 @@ def main():
         # this, not against exp. MEG-CORE can never exceed 10/11 while mvhA has
         # no detector, and 90.9% should not read as a missing gene.
         det = len(d['core'] & detectable)
+        # How many of the found core markers sit on a secretion-competent
+        # protein. NA when no secretion modules were supplied, so "not measured"
+        # stays distinct from "measured, none" -- same rule as everywhere else.
+        sec = len(d['core'] & found & secreted) if (sec_accs or sec_names) else None
         if status == 'scored' and exp and not det:
             # Module-level twin of the dead gate: every core marker lacks a
             # model, so 0.0% would be a measurement that never happened.
             exp = fc = 0
             status = 'no-detector-for-core'
         pct = round(100 * fc / exp, 1) if exp else None
-        rows.append((m, d['branch'], exp, det, fc, pct, status))
+        rows.append((m, d['branch'], exp, det, fc, sec, pct, status))
 
     # ---- branch gates (own logic, replacing KEGG modules) ----
     # A gate whose requirements include a marker with NO model in the DB cannot
@@ -333,9 +391,10 @@ def main():
     with open(a.out, 'w', newline='') as fh:
         w = csv.writer(fh, delimiter='\t')
         w.writerow(['genome','module','branch','core_expected','core_detectable',
-                    'core_found','pct_complete','status'])
-        for m, b, exp, det, fc, pct, status in rows:
+                    'core_found','core_secreted','pct_complete','status'])
+        for m, b, exp, det, fc, sec, pct, status in rows:
             w.writerow([a.name, m, b, exp, det, fc,
+                        'NA' if sec is None else sec,
                         'NA' if pct is None else pct, status])
 
     # ---- stdout summary ----
@@ -357,7 +416,16 @@ def main():
     if cazyme_families:
         print(f"CAZyme families (hydrolysis): {', '.join(sorted(cazyme_families))}")
 
-    unscored = [(m, s) for m, _b, _e, _d, _f, pct, s in rows if pct is None]
+    if sec_accs or sec_names:
+        sup = [(m, sec, fc) for m, _b, _e, _d, fc, sec, pct, _s in rows
+               if sec is not None and fc]
+        if sup:
+            print("secretion-supported markers (catalytic domain on the same protein")
+            print("as a dockerin / cohesin / CBM / S-layer module):")
+            for m, sec, fc in sorted(sup):
+                flag = '' if sec else '   <-- none; family present but no export signal'
+                print(f"  {m:<14} {sec}/{fc} of the found core markers{flag}")
+    unscored = [(m, s) for m, _b, _e, _d, _f, _sec, pct, s in rows if pct is None]
     if unscored:
         print(f"not scored ({len(unscored)}/{len(rows)} modules) — absent from the "
               f"percentages above, NOT zero:")

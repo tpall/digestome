@@ -58,6 +58,7 @@ score_set() {                       # $1=proteome dir  $2=sample name  $3=out di
     python3 "$KEGGLESS/panel_scored.py" \
         --tblout "$out/${label}.tblout" --map "$MAP" --panel "$PANEL" \
         --name "$label" --out "$out/${label}.modules.tsv" "${gt[@]}" \
+        --secretion "$KEGGLESS/secretion_modules.tsv" \
         > "$out/${label}.summary.txt"
     n=$((n+1))
   done

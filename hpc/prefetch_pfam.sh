@@ -44,6 +44,15 @@ for r in csv.DictReader(open(sys.argv[1]), delimiter='\t'):
 print(' '.join(sorted(out)))
 PYX
 )
+# Extracellular-targeting modules are fetched alongside the panel pins. They are
+# not markers and get no map rows; panel_scored.py uses them to qualify a marker
+# hit as secretion-competent. Same file, same cutoff normalisation.
+SECFILE="${SECRETION:-$HERE/secretion_modules.tsv}"
+if [ -s "$SECFILE" ]; then
+  sec=$(awk -F'\t' '!/^#/ && NF>1 {print $1}' "$SECFILE" | grep -o 'PF[0-9]\{5\}' | sort -u)
+  [ -n "$sec" ] && accs="$accs $sec"
+fi
+accs=$(echo $accs | tr ' ' '\n' | sort -u | tr '\n' ' ')
 [ -n "$accs" ] || { echo "==> no PF accessions pinned in the panel; nothing to do"; exit 0; }
 echo "==> panel pins $(echo "$accs" | wc -w) Pfam accession(s)"
 

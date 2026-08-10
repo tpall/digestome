@@ -54,6 +54,7 @@ score_one() {
   python3 "$KEGGLESS/panel_scored.py" \
       --tblout "$OUTD/${label}.tblout" --map "$MAP" --panel "$PANEL" \
       --name "$label" --gtdbtk "$TAX" \
+      --secretion "$KEGGLESS/secretion_modules.tsv" \
       --out "$OUTD/${label}.modules.tsv" > "$OUTD/${label}.summary.txt" 2>/dev/null || true
   rm -f "$OUTD/${label}.tblout"     # ~1400 tblouts is a lot of small files
 }
