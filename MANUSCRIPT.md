@@ -1,0 +1,242 @@
+# A licence-clean marker-gene panel for functional profiling of anaerobic digestion microbiomes
+
+**DRAFT — not submitted.** Figures are the measured values as of 2026-08-10; every number
+below is reproducible from the scripts in this directory. Author list, funding and
+acknowledgements deliberately left blank.
+
+Taavi Päll¹ · *(co-authors TBD)*
+¹ Magrittr OÜ / University of Tartu
+
+---
+
+## Abstract
+
+Functional profiling of anaerobic digestion (AD) microbiomes is routinely performed against
+KEGG or MetaCyc, both of which require a paid licence for commercial work. This blocks
+fee-for-service analysis for biogas operators, the setting where the results have the most
+immediate operational value. We present a curated marker-gene panel for anaerobic digestion
+built exclusively on sources that are free for commercial use — NCBIfam (public domain),
+Pfam (CC0) and Rhea (CC BY) — together with a scorer that reports pathway completeness,
+branch capability and, for hydrolysis, whether the enzyme is built for export.
+
+The panel comprises 86 markers across 20 modules spanning hydrolysis, acidogenesis,
+acetogenesis and all three methanogenesis branches, resolving to 143 profile HMMs. Two design
+decisions distinguish it from a conventional marker set. First, **absence and non-measurement
+are reported separately**: a module with no licence-clean detector returns `NA` with a reason
+rather than zero, because a missing detector rendered as zero systematically reports healthy
+pathways as absent. Second, **pathway calls that gene content cannot resolve are refused**: the
+acetoclastic methanogenesis gate additionally requires a confirming lineage, because the ACDS/CODH
+complex is reversible and autotrophic hydrogenotrophs carry it for carbon fixation.
+
+Benchmarked against 1,401 metagenome-assembled genomes from 134 anaerobic digesters, the panel
+assigned no methanogenesis route to any of 1,361 non-methanogens, and every acetoclastic call
+fell within *Methanosarcina* or *Methanothrix*. For hydrolysis, testing whether a catalytic
+domain shares a polypeptide with an export module reduced the number of genomes credited with
+cellulolytic capacity from 597 to 50 — a distinction that alters the headline figure of a
+digester report roughly twelvefold.
+
+---
+
+## 1 Background
+
+Anaerobic digestion is frequently described as a black box: operators manage a microbial process
+they cannot observe, using physicochemical proxies — volatile fatty acids, the VOA/TIC ratio,
+ammonium, gas composition — that register a disturbance only after it has occurred. Genome-resolved
+metagenomics is widely proposed as the route to leading rather than lagging indicators.
+
+Two obstacles stand between that proposal and a commercial service.
+
+The first is licensing. The reference resources that make functional annotation convenient —
+KEGG, MetaCyc, and for carbohydrate-active enzymes CAZy/dbCAN — are all restricted for
+commercial use. A consultancy producing a paid report for a biogas plant is squarely within the
+triggering case for each, and clearing them means separate negotiations with separate
+institutions before any revenue exists.
+
+The second is interpretive. Marker-gene profiling reports what a genome *carries*. Three gaps
+routinely open between that and what an operator needs to know: a gene may be present but the
+pathway it serves may run in the opposite direction; an enzyme may be encoded but never leave
+the cell, which for hydrolysis means it never meets the substrate at all; and a marker for
+which no detector exists is easily rendered as a zero, which reads as pathway absence.
+
+We addressed both. The panel uses only commercially usable sources, and the scorer is built so
+that each of the three gaps above produces an explicit statement rather than a misleading number.
+
+## 2 Implementation
+
+### 2.1 Panel structure and marker identity
+
+The panel is a tab-separated table of 86 markers across 20 modules (53 core-tier, 33
+accessory-tier), covering hydrolysis of carbohydrate, protein and lipid; acidogenesis to acetate,
+butyrate, propionate, lactate, ethanol, hydrogen and via ethanolamine; acetogenesis including the
+Wood–Ljungdahl pathway and syntrophic oxidation; and hydrogenotrophic, acetoclastic and
+methylotrophic methanogenesis, with modules for energy conservation and direct interspecies
+electron transfer.
+
+Every row carries a unique `marker_id` of the form `MODULE:gene`, and all joins between panel,
+model map and scorer are on that identifier. Gene names are not used as keys. A three- or
+four-letter gene symbol is unique neither within a panel nor within a reference database, and
+using one as a join key produces errors that are difficult to see: an EC-based match collapses
+every model sharing that EC onto a single arbitrary gene name, and a model serving two panel
+rows can record only one of them, silently scoring the other as absent.
+
+### 2.2 Marker resolution
+
+Markers resolve to profile HMMs by three routes, in strict precedence.
+
+**Curated accessions** pin a row to named models. A pinned row is exclusive: its gene symbol and
+EC are not indexed at all. Exclusivity is load-bearing rather than tidy — the archaeal A₁A₀ ATP
+synthase row matched 120 models through EC 7.1.2.2, an EC that spans every subunit of F-, V- and
+A-type synthases in both domains.
+
+**Gene symbol** matches are used where no accession is pinned. This route is not automatically
+safe: `fmdA` is both the panel's formylmethanofuran dehydrogenase subunit A and a legitimate
+symbol for formamidase, an unrelated and common enzyme.
+
+**EC numbers** are the weakest route and are used last. Wildcard ECs (`2.1.1.-`, `3.4.-.-`) are
+excluded entirely; they name an enzyme class rather than a gene, and matching them imported 58
+unrelated peptidases, lipases and glycosidases.
+
+Of 152 model-to-marker assignments in the current build, 51 are curated, 57 by gene symbol and 44
+by EC. Every non-curated route is auditable: `audit_symbol_matches.py` compares the enzyme the
+panel requests against the product name of each matched model.
+
+### 2.3 Score thresholds
+
+Each model is applied at its own curated cutoff (`hmmsearch --cut_nc`) rather than a global
+threshold. Across the 143 models these span 20.8 to 1,400 bits (median 405), so no single
+threshold is defensible; a hardcoded cutoff of 450 bits, for instance, would silently discard
+more than half the panel. Pfam and NCBIfam use different conventions — Pfam curates a gathering
+threshold (GA) that sits above its noise cutoff (NC), NCBIfam curates NC — so on import each Pfam
+model's NC is set to its GA, allowing one search to apply each source's intended cutoff. The build
+asserts that every pressed model carries a curated cutoff.
+
+### 2.4 Pathway gates and taxonomic confirmation
+
+Branch capability is evaluated by explicit gates rather than completeness thresholds. Each gate
+declares its requirements as groups of alternatives, and gates evaluate to true, false, or
+**not assessable** when a required marker has no detector in the database at all.
+
+The acetoclastic gate additionally requires a confirming lineage. Gene content alone cannot
+resolve it: the ACDS/CODH complex is reversible, and autotrophic hydrogenotrophs carry it to *fix*
+carbon rather than to cleave acetyl-CoA. *Methanothermobacter thermautotrophicus*, an obligate
+hydrogenotroph, satisfies the gene test. Where taxonomy places a genome outside the clades known
+to perform acetoclastic methanogenesis, the gate is scored absent with the reason stated; where no
+taxonomy is supplied the gate falls back to gene evidence and says so. A genome missing from the
+taxonomy table is treated as unclassified, never as a negative.
+
+### 2.5 Secretion evidence
+
+Hydrolysis is the only extracellular step of anaerobic digestion, so an encoded but unexported
+enzyme contributes nothing to feedstock breakdown. The scorer therefore tests whether a catalytic
+domain and an export module — dockerin, cohesin, carbohydrate-binding module or S-layer domain —
+occur **on the same polypeptide**, which is the architecture of a cellulosome. The test is
+per-protein; the same two domains in one genome but on different proteins carry no such
+implication. All five export modules are Pfam families. Signal-peptide prediction was deliberately
+not used, the standard tool being fee-licensed for commercial work.
+
+### 2.6 Reporting non-measurement
+
+A module with nothing measurable reports `NA` and a status, never `0.0`. Statuses distinguish a
+marker that is assumed present because it is universal central metabolism, one whose detector is
+absent from the reference release, one defined only by accessory-tier markers, and one awaiting a
+licence-clean source. The same rule applies to gates and, through `core_detectable`, to
+completeness percentages, which must be read against what could be detected rather than against
+what the panel defines.
+
+## 3 Validation
+
+### 3.1 Reference genomes
+
+An assertion suite runs the full path — proteome, `hmmsearch`, scorer — over seven reference
+genomes of known metabolism and checks 24 statements about gates, markers and genus assignment.
+The set is chosen to be falsifiable: a metabolic generalist (*Methanosarcina barkeri*), an
+obligate acetoclastic methanogen (*Methanothrix soehngenii*), two obligate hydrogenotrophs
+(*Methanoculleus bourgensis*, *M. thermautotrophicus*), an acetogen (*Clostridium ljungdahlii*), a
+syntrophic fatty-acid oxidiser (*Syntrophomonas wolfei*), and *Escherichia coli* as a specificity
+control. *E. coli* carries `pta`, `ackA`, `folD`, `atoB` and the complete *eut* operon, exercising
+most of the gene-symbol collisions the panel guards against; any methanogenesis gate firing on it
+indicates a defect. The suite exits non-zero on disagreement and currently passes 24 of 24.
+
+One assertion is deliberately inverted: syntrophic butyrate oxidation must report *not assessable*
+in *S. wolfei*, an organism that performs the pathway, because two of its four required markers
+have no licence-clean model. Asserting the honest blank prevents it silently degrading into a
+false negative.
+
+### 3.2 Digester MAG benchmark
+
+The panel was applied to 1,401 metagenome-assembled genomes recovered from 134 anaerobic digesters
+spanning multiple plants, feedstocks and operating temperatures (Campanaro *et al.* 2020; NCBI
+BioProject PRJNA602310), scored in under eight minutes.
+
+| | |
+|---|---|
+| MAGs carrying `mcrA` | 40 of 1,401 |
+| Acetoclastic calls | 6 — all *Methanosarcina* or *Methanothrix* |
+| Acetoclastic calls outside those genera | **0** |
+| Non-methanogens assigned any methanogenesis route | **0 of 1,361** |
+| Methanogens with no route assigned | 0 of 40 |
+
+The absence of route assignments among 1,361 bacterial genomes is the principal specificity
+result. An earlier build of the panel, before gene-symbol collisions were audited, would not have
+achieved it.
+
+The benchmark also identified a genuine gap. Seven `mcrA`-carrying genomes initially received no
+route; all carried none of the eight C1 carriers, which is correct biology for the obligate
+methylotrophs among *Methanofastidiosia* and *Thermoplasmatales*, whose substrate-specific
+methyltransferases have no licence-clean model. Adding the terminal methylcobalamin:CoM
+methyltransferase — which detects methylotrophy without naming the substrate — resolved all seven.
+That model is subfamily-level and matches 30 bacterial genomes on its own; it is sound only
+because the gate independently requires `mcrA`, and it discriminated perfectly among methanogens.
+
+### 3.3 Secretion evidence
+
+Applying the per-protein export test across the same 1,401 genomes:
+
+| module | carry the family | export it | |
+|---|---|---|---|
+| Protein hydrolysis | 868 | 106 | 12.2% |
+| Carbohydrate hydrolysis | 597 | 50 | 8.4% |
+| Lipid hydrolysis | 129 | 7 | 5.4% |
+| All intracellular modules | up to 1,337 | **0** | 0.0% |
+
+The zero across every intracellular module is the control: the test fires only on hydrolysis, the
+sole exported step. The practical consequence is large — reporting family presence alone would
+credit 597 genomes with cellulolytic capacity where 50 is defensible, in the module most often
+identified as rate-limiting for fibrous feedstocks.
+
+## 4 Limitations
+
+**Capacity, not activity.** The panel measures what a community is equipped to do. It cannot
+report expression, rate or flux; those require transcriptomics, proteomics or process measurement.
+Secretion evidence extends the claim from *encoded* to *encoded and built for export*, which is
+still not *active*.
+
+**Markers with no licence-clean detector.** Ten of 86 markers remain unresolved. Two cases are
+instructive. `bcd` and `crt` have no model in either source, so syntrophic butyrate oxidation is
+reported as unassessable rather than absent. `mtmB` cannot be detected at all from standard
+annotations: a correct, narrow Pfam family exists, but MtmB is a pyrrolysine protein whose in-frame
+amber codon standard annotation pipelines do not translate through. Across the 1,401 genomes,
+"monomethylamine methyltransferase" is annotated in none and no proteome contains a single
+pyrrolysine residue. No model can recover a protein the annotator never emitted; the fix would be
+amber read-through at gene calling.
+
+**Family-level resolution in hydrolysis.** Pfam families do not distinguish secreted from
+cytoplasmic enzymes on their own — hence the export test — nor do they resolve substrate
+specificity within a family. The export layer detects the cellulosomal and cell-surface-anchored
+routes; a plain Sec-secreted enzyme carrying no binding module would be missed.
+
+**Taxonomy dependence.** The acetoclastic call is only as good as the supplied lineage. Without
+taxonomy it degrades to gene evidence, which over-calls.
+
+## 5 Availability
+
+Panel, scorer, build and validation scripts are in the `kegg-less/` directory of
+`https://github.com/tpall/DRAM` (branch `feature/kegg-less-ad`). The scorer and aggregator are
+Python 3 standard library only. Reference data are downloaded by the provided scripts from NCBIfam,
+InterPro/Pfam and Rhea; no licensed database is required at any stage.
+
+## References
+
+*To be completed. Core citations: Campanaro et al. 2020 (Biotechnol Biofuels 13:25, MAG catalogue);
+Eddy 2011 (HMMER); Li et al. NCBIfam/PGAP; Mistry et al. 2021 (Pfam); Bansal et al. 2022 (Rhea);
+Chaumeil et al. 2022 (GTDB-Tk); Shaffer et al. 2020 (DRAM).*
