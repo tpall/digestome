@@ -146,7 +146,8 @@ rows can record only one of them, silently scoring the other as absent.
 
 Markers resolve to profile HMMs by three routes, in strict precedence.
 
-**Curated accessions** pin a row to named models. A pinned row is exclusive: its gene symbol and
+Models are drawn from NCBIfam and Pfam [@mistry2021pfam]. **Curated accessions** pin a row to
+named models. A pinned row is exclusive: its gene symbol and
 EC are not indexed at all. Exclusivity is load-bearing rather than tidy: the archaeal A₁A₀ ATP
 synthase row matched 120 models through EC 7.1.2.2, an EC that spans every subunit of F-, V- and
 A-type synthases in both domains.
@@ -168,7 +169,8 @@ panel requests against the product name of each matched model.
 
 ## Score thresholds
 
-Each model is applied at its own curated cutoff (`hmmsearch --cut_nc`) rather than a global
+Each model is applied at its own curated cutoff (`hmmsearch` from HMMER 3 [@eddy2011hmmer]
+with `--cut_nc`) rather than a global
 threshold, an approach shown to materially affect functional and metabolic inference
 [@hmmthresholds2025]. Across the 143 models these span 20.8 to 1,400 bits (median 405), so no single
 threshold is defensible; a hardcoded cutoff of 450 bits, for instance, would silently discard
@@ -190,8 +192,8 @@ Branch capability is evaluated by explicit gates rather than completeness thresh
 declares its requirements as groups of alternatives, and gates evaluate to true, false, or
 **not assessable** when a required marker has no detector in the database at all.
 
-The acetoclastic gate additionally requires a confirming lineage. Gene content alone cannot
-resolve it: the ACDS/CODH complex is reversible, and autotrophic hydrogenotrophs carry it to *fix*
+The acetoclastic gate additionally requires a confirming lineage, supplied as a GTDB-Tk
+classification [@chaumeil2022gtdbtk]. Gene content alone cannot resolve it: the ACDS/CODH complex is reversible, and autotrophic hydrogenotrophs carry it to *fix*
 carbon rather than to cleave acetyl-CoA. *Methanothermobacter thermautotrophicus*, an obligate
 hydrogenotroph, satisfies the gene test. Where taxonomy places a genome outside the clades known
 to perform acetoclastic methanogenesis, the gate is scored absent with the reason stated; where no
