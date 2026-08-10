@@ -24,28 +24,30 @@ bibliography: references.bib
 format:
   html:
     toc: true
-    toc-depth: 3
-    number-sections: true
+    toc-depth: 2
+    number-sections: false
     theme: cosmo
   docx:
     toc: false
-    number-sections: true
+    number-sections: false
   pdf:
     documentclass: article
     geometry: margin=1in
-    number-sections: true
+    number-sections: false
 execute:
   echo: false
 ---
 
 ::: {.callout-important}
 ## Draft
-Not submitted. Figures are the measured values as of 2026-08-10 and are reproducible from
-the scripts in this directory. Author list, funding and acknowledgements are incomplete;
-several `references.bib` entries need author lists completed from the published record.
+Not submitted. Values are as measured on 2026-08-10 and are reproducible from the scripts in
+this repository. Outstanding before submission: corresponding-author address; funding and
+acknowledgements; several `references.bib` entries need author lists completed from the
+published record; the source repository must be made public, since the availability statement
+below promises a working URL.
 :::
 
-## 1 Background
+# Introduction
 
 Anaerobic digestion is frequently described as a black box: operators manage a microbial process
 they cannot observe, using physicochemical proxies (volatile fatty acids, the VOA/TIC
@@ -108,32 +110,6 @@ catalogues without binning at all, directing users elsewhere for MAGs. Neither a
 module-level reconstruction; they produce, or stop just short of producing, the MAGs that a
 tool of this kind consumes.
 
-### Two entry points
-
-The panel, builder and scorer are command-line tools requiring only HMMER and a Python
-interpreter, with no third-party Python packages. A Nextflow workflow wraps the analysis path
-for scale and portability, giving per-genome parallelism, resumability and executor
-independence, so the same analysis runs on a laptop, a SLURM cluster or a cloud batch service
-without modification. The workflow invokes the same command-line tools rather than
-reimplementing them, so neither entry point is privileged: a user with three genomes needs no
-workflow engine, and a user with fourteen hundred does not hand-roll parallelism. Database
-staging and panel construction remain scripts, being one-time operations that need outbound
-network access and gain nothing from a task graph.
-
-### Relationship to DRAM
-
-DRAM established the pattern this work follows: take per-gene annotations and distil them into
-statements about pathways, at genome resolution and at scale. That framing is the starting
-point here, and DRAM remains the more general tool, covering metabolism far beyond anaerobic
-digestion.
-
-The panel described here is nevertheless an independent implementation. It shares no code with
-DRAM, does not call it, and requires only HMMER and a Python interpreter. What differs is the
-reference basis and the interpretation: a curated pathway model specific to anaerobic digestion
-in place of general module definitions, sources chosen so that no component carries a
-commercial restriction, and the reporting guarantees described below. It began as a branch of
-DRAM and was separated once it became clear that nothing in it depended on the host.
-
 The second obstacle is interpretive. Marker-gene profiling reports what a genome *carries*.
 Three gaps routinely open between that and what an operator needs to know: a gene may be
 present but the pathway it serves may run in the opposite direction; an enzyme may be encoded
@@ -141,12 +117,16 @@ but never leave the cell, which for hydrolysis means it never meets the substrat
 marker for which no detector exists is easily rendered as a zero, which reads as pathway
 absence.
 
-We addressed both. The panel uses only commercially usable sources, and the scorer is built so
-that each of the three gaps above produces an explicit statement rather than a misleading number.
+Here we address both obstacles. We describe a curated marker panel for anaerobic digestion
+drawing only on commercially usable sources, and a scorer built so that each of the three
+interpretive gaps produces an explicit statement rather than a misleading number. We then
+assess specificity against reference genomes of known metabolism and against 1,401
+metagenome-assembled genomes from full-scale digesters, and quantify how much the export
+test changes the hydrolytic capacity attributed to a community.
 
-## 2 Implementation
+# Methods
 
-### 2.1 Panel structure and marker identity
+## Panel structure and marker identity
 
 The panel is a tab-separated table of 86 markers across 20 modules (53 core-tier, 33
 accessory-tier), covering hydrolysis of carbohydrate, protein and lipid; acidogenesis to acetate,
@@ -162,7 +142,7 @@ using one as a join key produces errors that are difficult to see: an EC-based m
 every model sharing that EC onto a single arbitrary gene name, and a model serving two panel
 rows can record only one of them, silently scoring the other as absent.
 
-### 2.2 Marker resolution
+## Marker resolution
 
 Markers resolve to profile HMMs by three routes, in strict precedence.
 
@@ -186,7 +166,7 @@ Of 152 model-to-marker assignments in the current build, 51 are curated, 57 by g
 by EC. Every non-curated route is auditable: `audit_symbol_matches.py` compares the enzyme the
 panel requests against the product name of each matched model.
 
-### 2.3 Score thresholds
+## Score thresholds
 
 Each model is applied at its own curated cutoff (`hmmsearch --cut_nc`) rather than a global
 threshold, an approach shown to materially affect functional and metabolic inference
@@ -197,7 +177,7 @@ threshold (GA) that sits above its noise cutoff (NC), while NCBIfam curates NC, 
 model's NC is set to its GA, allowing one search to apply each source's intended cutoff. The build
 asserts that every pressed model carries a curated cutoff.
 
-### 2.4 Pathway gates and taxonomic confirmation
+## Pathway gates and taxonomic confirmation
 
 The distinction the gates draw is the one that carries operational meaning. Acetoclastic
 methanogens are more ammonia-sensitive than hydrogenotrophic ones, so a reactor under rising
@@ -218,7 +198,7 @@ to perform acetoclastic methanogenesis, the gate is scored absent with the reaso
 taxonomy is supplied the gate falls back to gene evidence and says so. A genome missing from the
 taxonomy table is treated as unclassified, never as a negative.
 
-### 2.5 Secretion evidence
+## Secretion evidence
 
 Hydrolysis is the only extracellular step of anaerobic digestion, so an encoded but unexported
 enzyme contributes nothing to feedstock breakdown. The scorer therefore tests whether a catalytic
@@ -228,7 +208,7 @@ per-protein; the same two domains in one genome but on different proteins carry 
 implication. All five export modules are Pfam families. Signal-peptide prediction was deliberately
 not used, the standard tool being fee-licensed for commercial work.
 
-### 2.6 Reporting non-measurement
+## Reporting non-measurement
 
 A module with nothing measurable reports `NA` and a status, never `0.0`. Statuses distinguish a
 marker that is assumed present because it is universal central metabolism, one whose detector is
@@ -237,30 +217,51 @@ licence-clean source. The same rule applies to gates and, through `core_detectab
 completeness percentages, which must be read against what could be detected rather than against
 what the panel defines.
 
-## 3 Validation
+## Software implementation
 
-### 3.1 Reference genomes
+The panel, builder and scorer are command-line tools requiring only HMMER and a Python
+interpreter, with no third-party Python packages. A Nextflow workflow wraps the analysis path
+for scale and portability, giving per-genome parallelism, resumability and executor
+independence, so the same analysis runs on a laptop, a SLURM cluster or a cloud batch service
+without modification. The workflow invokes the same command-line tools rather than
+reimplementing them, so neither entry point is privileged: a user with three genomes needs no
+workflow engine, and a user with fourteen hundred does not hand-roll parallelism. Database
+staging and panel construction remain scripts, being one-time operations that need outbound
+network access and gain nothing from a task graph.
 
-An assertion suite runs the full path (proteome, `hmmsearch`, scorer) over seven reference
-genomes of known metabolism and checks 24 statements about gates, markers and genus assignment.
-The set is chosen to be falsifiable: a metabolic generalist (*Methanosarcina barkeri*), an
-obligate acetoclastic methanogen (*Methanothrix soehngenii*), two obligate hydrogenotrophs
+## Validation datasets
+
+Two datasets were used. The first is a set of seven reference genomes of known metabolism,
+chosen to be falsifiable: a metabolic generalist (*Methanosarcina barkeri*), an obligate
+acetoclastic methanogen (*Methanothrix soehngenii*), two obligate hydrogenotrophs
 (*Methanoculleus bourgensis*, *M. thermautotrophicus*), an acetogen (*Clostridium ljungdahlii*), a
 syntrophic fatty-acid oxidiser (*Syntrophomonas wolfei*), and *Escherichia coli* as a specificity
 control. *E. coli* carries `pta`, `ackA`, `folD`, `atoB` and the complete *eut* operon, exercising
 most of the gene-symbol collisions the panel guards against; any methanogenesis gate firing on it
-indicates a defect. The suite exits non-zero on disagreement and currently passes 24 of 24.
+indicates a defect. An assertion suite runs the full path (proteome, `hmmsearch`, scorer) over
+these genomes and checks 24 statements about gates, markers and genus assignment, exiting
+non-zero on disagreement.
 
 One assertion is deliberately inverted: syntrophic butyrate oxidation must report *not assessable*
 in *S. wolfei*, an organism that performs the pathway, because two of its four required markers
 have no licence-clean model. Asserting the honest blank prevents it silently degrading into a
 false negative.
 
-### 3.2 Digester MAG benchmark
-
-The panel was applied to 1,401 metagenome-assembled genomes recovered from 134 anaerobic digesters
+The second dataset is 1,401 metagenome-assembled genomes recovered from 134 anaerobic digesters
 spanning multiple plants, feedstocks and operating temperatures [@campanaro2020; NCBI
-BioProject PRJNA602310], scored in under eight minutes.
+BioProject PRJNA602310]. Taxonomic assignments accompanying the catalogue were used for the
+lineage-confirmed gates.
+
+# Results
+
+## The panel passes all reference-genome assertions
+
+The assertion suite passes 24 of 24, including the inverted *S. wolfei* assertion and every
+negative assertion on *E. coli*.
+
+## No methanogenesis route is assigned to any non-methanogen
+
+The panel was applied to the 1,401 digester MAGs, scored in under eight minutes.
 
 | | |
 |---|---|
@@ -282,7 +283,7 @@ methyltransferase, which detects methylotrophy without naming the substrate, res
 That model is subfamily-level and matches 30 bacterial genomes on its own; it is sound only
 because the gate independently requires `mcrA`, and it discriminated perfectly among methanogens.
 
-### 3.3 Secretion evidence
+## The export test reduces attributed hydrolytic capacity
 
 Applying the per-protein export test across the same 1,401 genomes:
 
@@ -294,11 +295,43 @@ Applying the per-protein export test across the same 1,401 genomes:
 | All intracellular modules | up to 1,337 | **0** | 0.0% |
 
 The zero across every intracellular module is the control: the test fires only on hydrolysis, the
-sole exported step. The practical consequence is large: reporting family presence alone would
-credit 597 genomes with cellulolytic capacity where 50 is defensible, in the module most often
-identified as rate-limiting for fibrous feedstocks.
+sole exported step.
 
-## 4 Limitations
+# Discussion
+
+The specificity result is the load-bearing one. A panel of this kind fails in a characteristic
+way, by accumulating false positives through gene symbols and EC numbers that are shared across
+unrelated enzymes, and the failure is invisible without a large negative set. Scoring 1,361
+bacterial genomes and assigning none of them a methanogenesis route is the direct test of that,
+and it is a test the panel would not have passed before its symbol collisions were audited.
+
+The secretion result carries the larger practical consequence. Reporting family presence alone
+would credit 597 genomes with cellulolytic capacity where 50 is defensible, in the module most
+often identified as rate-limiting for fibrous feedstocks. An operator told that 43% of a
+community is cellulolytic will draw different conclusions than one told the figure is 4%, and
+only the second is supported by the evidence. The zero across intracellular modules indicates
+the test is measuring export architecture rather than domain co-occurrence generally.
+
+The finding that seven `mcrA`-carrying genomes initially received no route illustrates the value
+of reporting non-measurement explicitly. Had those genomes been scored as zero rather than as
+unassigned, the gap would have read as a biological result about *Methanofastidiosia* rather
+than as a missing detector, and would probably not have been investigated.
+
+## Relationship to DRAM
+
+DRAM established the pattern this work follows: take per-gene annotations and distil them into
+statements about pathways, at genome resolution and at scale. That framing is the starting
+point here, and DRAM remains the more general tool, covering metabolism far beyond anaerobic
+digestion.
+
+The panel described here is nevertheless an independent implementation. It shares no code with
+DRAM, does not call it, and requires only HMMER and a Python interpreter. What differs is the
+reference basis and the interpretation: a curated pathway model specific to anaerobic digestion
+in place of general module definitions, sources chosen so that no component carries a
+commercial restriction, and the reporting guarantees described above. It began as a branch of
+DRAM and was separated once it became clear that nothing in it depended on the host.
+
+## Limitations
 
 **Capacity, not activity.** The panel measures what a community is equipped to do. It cannot
 report expression, rate or flux; those require transcriptomics, proteomics or process measurement.
@@ -322,14 +355,31 @@ routes; a plain Sec-secreted enzyme carrying no binding module would be missed.
 **Taxonomy dependence.** The acetoclastic call is only as good as the supplied lineage. Without
 taxonomy it degrades to gene evidence, which over-calls.
 
-## 5 Availability
+**A single benchmark catalogue.** Specificity was assessed against one MAG collection, and
+although it spans 134 digesters, plants, feedstocks and temperatures, it was assembled and
+binned by a single group with one set of methods. Generalisation to catalogues built by other
+pipelines has not been tested.
+
+## Outlook
+
+The markers that remain unresolved are not evenly distributed: they concentrate in syntrophic
+fatty-acid oxidation and in substrate-specific methylotrophy, both of which matter for
+interpreting a stressed reactor. Closing them requires either new licence-clean models or, for
+the pyrrolysine case, a change upstream at gene calling rather than any change to the panel. The
+approach itself is not specific to anaerobic digestion; the same construction, a curated
+domain-scoped pathway model over public-domain and CC0 profile HMMs, applies to any setting
+where licensing rather than biology is the obstacle.
+
+# Data and code availability
 
 Panel, scorer, build and validation scripts are distributed as `digestome`. They run as standalone
 command-line steps; the scorer and aggregator are Python 3 standard library only, so they carry
 no dependency beyond HMMER and a Python interpreter. Reference data are downloaded by the provided scripts from NCBIfam,
-InterPro/Pfam and Rhea; no licensed database is required at any stage.
+InterPro/Pfam and Rhea; no licensed database is required at any stage. The benchmark catalogue is
+available from NCBI BioProject PRJNA602310 [@campanaro2020]. Code is released under the MIT
+licence and the curated panel under CC BY 4.0.
 
-## References {.unnumbered}
+# References {.unnumbered}
 
 ::: {#refs}
 :::
