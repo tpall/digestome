@@ -9,7 +9,7 @@
 # time (sbatch -p <partition> -A <account> ...) or export SBATCH_PARTITION and
 # SBATCH_ACCOUNT, which SLURM picks up automatically.
 # Score a set of MAG proteomes and aggregate them into one community profile --
-# the shape a client-facing "digester microbiome health check" would take.
+# the shape a "digester microbiome health check" report would take.
 #
 #   PROT=<dir of *.faa> SAMPLE=<name> [GTDBTK=<summary.tsv>] sbatch community_report.sbatch
 #

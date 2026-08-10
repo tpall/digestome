@@ -167,7 +167,7 @@ def main():
 
     # ---- risk reading ----
     # Deliberately conservative: these are capability statements about DNA, not
-    # measurements of activity. Wording matters in a client deliverable.
+    # measurements of activity, and the wording should not imply otherwise.
     aceto_n = routes['acetoclastic']['n_present']
     hydro_n = routes['hydrogenotrophic']['n_present']
     risks = []
