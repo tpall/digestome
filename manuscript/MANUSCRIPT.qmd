@@ -288,8 +288,7 @@ The panel was applied to the 1,401 digester MAGs (@tbl-specificity).
 : Methanogenesis route assignment across 1,401 digester MAGs. {#tbl-specificity}
 
 The absence of route assignments among 1,361 bacterial genomes is the principal specificity
-result. An earlier build of the panel, before gene-symbol collisions were audited, would not have
-achieved it.
+result.
 
 The benchmark also identified a genuine gap. Seven `mcrA`-carrying genomes initially received no
 route; all carried none of the eight C1 carriers, which is correct biology for the obligate
@@ -317,11 +316,18 @@ sole exported step.
 
 # Discussion
 
-The specificity result is the load-bearing one. A panel of this kind fails in a characteristic
-way, by accumulating false positives through gene symbols and EC numbers that are shared across
-unrelated enzymes, and the failure is invisible without a large negative set. Scoring 1,361
-bacterial genomes and assigning none of them a methanogenesis route is the direct test of that,
-and it is a test the panel would not have passed before its symbol collisions were audited.
+The specificity result is the load-bearing one, and it is worth being precise about what
+produces it. Every methanogenesis gate carries a mandatory `mcrA` term, and `mcrA` is pinned
+exclusively to a gene-specific model, so a shared gene symbol or EC elsewhere in the panel cannot
+by itself place a bacterium on a methanogenesis route. The gates are structurally protected in a
+way that module completeness is not: a collision inflates a percentage quietly, whereas firing a
+gate requires the one marker that is hardest to match by accident. This is a design choice rather
+than a fortunate outcome, and it is the reason the two audits described in the methods, of curated
+accessions and of symbol matches, are aimed at completeness figures rather than at the gates.
+
+Scoring 1,361 bacterial genomes and assigning none of them a route tests that design directly.
+What the test cannot do is establish the same for module percentages, which have no equivalent
+gatekeeper and are correspondingly more exposed to the collisions the audits are there to catch.
 
 The secretion result carries the larger practical consequence. Reporting family presence alone
 would credit 597 genomes with cellulolytic capacity where 50 is defensible, in the module most
