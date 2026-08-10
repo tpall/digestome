@@ -1,62 +1,96 @@
-# A licence-clean marker-gene panel for functional profiling of anaerobic digestion microbiomes
-
-**DRAFT — not submitted.** Figures are the measured values as of 2026-08-10; every number
-below is reproducible from the scripts in this directory. Author list, funding and
-acknowledgements deliberately left blank.
-
-Taavi Päll¹ · *(co-authors TBD)*
-¹ Magrittr OÜ / University of Tartu
-
+---
+title: "A licence-clean marker-gene panel for functional profiling of anaerobic digestion microbiomes"
+author:
+  - name: Taavi Päll
+    affiliations:
+      - Magrittr OÜ
+      - University of Tartu
+date: last-modified
+abstract: |
+  Functional profiling of anaerobic digestion (AD) microbiomes is routinely performed
+  against KEGG or MetaCyc, both of which require a paid licence for commercial use. This
+  blocks fee-for-service analysis for biogas operators, the setting where the results have
+  the most immediate operational value. We present a curated marker-gene panel for
+  anaerobic digestion built exclusively on sources that are free for commercial use
+  (NCBIfam, public domain; Pfam, CC0; Rhea, CC BY), together with a scorer that
+  reports pathway completeness, branch capability and, for hydrolysis, whether the enzyme
+  is built for export. Benchmarked against 1,401 metagenome-assembled genomes from 134
+  anaerobic digesters, the panel assigned no methanogenesis route to any of 1,361
+  non-methanogens, and every acetoclastic call fell within *Methanosarcina* or
+  *Methanothrix*. Testing whether a catalytic domain shares a polypeptide with an export
+  module reduced the genomes credited with cellulolytic capacity from 597 to 50.
+keywords: [anaerobic digestion, biogas, metagenomics, functional annotation, methanogenesis, open data]
+bibliography: references.bib
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    theme: cosmo
+  docx:
+    toc: false
+    number-sections: true
+  pdf:
+    documentclass: article
+    geometry: margin=1in
+    number-sections: true
+execute:
+  echo: false
 ---
 
-## Abstract
-
-Functional profiling of anaerobic digestion (AD) microbiomes is routinely performed against
-KEGG or MetaCyc, both of which require a paid licence for commercial work. This blocks
-fee-for-service analysis for biogas operators, the setting where the results have the most
-immediate operational value. We present a curated marker-gene panel for anaerobic digestion
-built exclusively on sources that are free for commercial use — NCBIfam (public domain),
-Pfam (CC0) and Rhea (CC BY) — together with a scorer that reports pathway completeness,
-branch capability and, for hydrolysis, whether the enzyme is built for export.
-
-The panel comprises 86 markers across 20 modules spanning hydrolysis, acidogenesis,
-acetogenesis and all three methanogenesis branches, resolving to 143 profile HMMs. Two design
-decisions distinguish it from a conventional marker set. First, **absence and non-measurement
-are reported separately**: a module with no licence-clean detector returns `NA` with a reason
-rather than zero, because a missing detector rendered as zero systematically reports healthy
-pathways as absent. Second, **pathway calls that gene content cannot resolve are refused**: the
-acetoclastic methanogenesis gate additionally requires a confirming lineage, because the ACDS/CODH
-complex is reversible and autotrophic hydrogenotrophs carry it for carbon fixation.
-
-Benchmarked against 1,401 metagenome-assembled genomes from 134 anaerobic digesters, the panel
-assigned no methanogenesis route to any of 1,361 non-methanogens, and every acetoclastic call
-fell within *Methanosarcina* or *Methanothrix*. For hydrolysis, testing whether a catalytic
-domain shares a polypeptide with an export module reduced the number of genomes credited with
-cellulolytic capacity from 597 to 50 — a distinction that alters the headline figure of a
-digester report roughly twelvefold.
-
----
+::: {.callout-important}
+## Draft
+Not submitted. Figures are the measured values as of 2026-08-10 and are reproducible from
+the scripts in this directory. Author list, funding and acknowledgements are incomplete;
+several `references.bib` entries need author lists completed from the published record.
+:::
 
 ## 1 Background
 
 Anaerobic digestion is frequently described as a black box: operators manage a microbial process
-they cannot observe, using physicochemical proxies — volatile fatty acids, the VOA/TIC ratio,
-ammonium, gas composition — that register a disturbance only after it has occurred. Genome-resolved
-metagenomics is widely proposed as the route to leading rather than lagging indicators.
+they cannot observe, using physicochemical proxies (volatile fatty acids, the VOA/TIC
+ratio, ammonium, gas composition) that register a disturbance only after it has occurred. Genome-resolved
+metagenomics is widely proposed as the route to leading rather than lagging indicators
+[@adblackbox2024].
 
 Two obstacles stand between that proposal and a commercial service.
 
-The first is licensing. The reference resources that make functional annotation convenient —
-KEGG, MetaCyc, and for carbohydrate-active enzymes CAZy/dbCAN — are all restricted for
-commercial use. A consultancy producing a paid report for a biogas plant is squarely within the
-triggering case for each, and clearing them means separate negotiations with separate
-institutions before any revenue exists.
+The first is licensing. The reference resources that make functional annotation convenient
+are all restricted for commercial use. KEGG is not publicly funded: its FTP distribution has
+been subscription-only since 2011, academic access is USD 2,000–5,000 per year, and
+non-academic use requires a separate commercial licence [@kegglicensing]. MetaCyc and BRENDA
+carry comparable restrictions, and for carbohydrate-active enzymes CAZy and dbCAN are
+non-commercial in their public form, requiring separate agreements with two institutions
+[@cazylicensing]. A consultancy producing a paid report for a biogas plant is squarely within
+the triggering case for each. This is not a hypothetical constraint on the AD field: published
+reconstructions of digestion pathways build their references from KEGG, MetaCyc and BRENDA,
+so the standard route to a pathway-level answer is closed to commercial work by construction.
 
-The second is interpretive. Marker-gene profiling reports what a genome *carries*. Three gaps
-routinely open between that and what an operator needs to know: a gene may be present but the
-pathway it serves may run in the opposite direction; an enzyme may be encoded but never leave
-the cell, which for hydrolysis means it never meets the substrate at all; and a marker for
-which no detector exists is easily rendered as a zero, which reads as pathway absence.
+No existing tool closes the gap, and the reason is structural rather than accidental: each
+available option satisfies three of the four requirements and misses a different one.
+
+| | workflow-managed | MAG-level | module-level | licence-clean |
+|---|---|---|---|---|
+| DRAM [@shaffer2020dram] | ✗ | ✓ | ✓ | ✗ (dbCAN, MEROPS) |
+| METABOLIC [@zhou2022metabolic] | ✗ | ✓ | ✓ | ✗ (KEGG KOfam) |
+| nf-core/mag [@krakau2022mag] | ✓ | ✓ | ✗ | ✗ (KEGG) |
+| nf-core/metatdenovo [@metatdenovo2025] | ✓ | ✗ | ✗ | ✗ (eggNOG, KofamScan) |
+| this work | ✓ | ✓ | ✓ | ✓ |
+
+METABOLIC and DRAM reconstruct metabolism at module level but resolve it through KEGG, and
+DRAM additionally depends on dbCAN and MEROPS for carbohydrate and peptidase annotation. The
+Nextflow pipelines that exist stop earlier: nf-core/mag ends at binning and taxonomic
+classification, and nf-core/metatdenovo produces per-gene annotated catalogues without binning,
+explicitly directing users elsewhere for MAGs. Both route functional annotation through KEGG or
+eggNOG. Routing through eggNOG-mapper does not evade the constraint, since the KEGG orthology
+identifiers it emits are themselves KEGG content.
+
+The second obstacle is interpretive. Marker-gene profiling reports what a genome *carries*.
+Three gaps routinely open between that and what an operator needs to know: a gene may be
+present but the pathway it serves may run in the opposite direction; an enzyme may be encoded
+but never leave the cell, which for hydrolysis means it never meets the substrate at all; and a
+marker for which no detector exists is easily rendered as a zero, which reads as pathway
+absence.
 
 We addressed both. The panel uses only commercially usable sources, and the scorer is built so
 that each of the three gaps above produces an explicit statement rather than a misleading number.
@@ -84,11 +118,14 @@ rows can record only one of them, silently scoring the other as absent.
 Markers resolve to profile HMMs by three routes, in strict precedence.
 
 **Curated accessions** pin a row to named models. A pinned row is exclusive: its gene symbol and
-EC are not indexed at all. Exclusivity is load-bearing rather than tidy — the archaeal A₁A₀ ATP
+EC are not indexed at all. Exclusivity is load-bearing rather than tidy: the archaeal A₁A₀ ATP
 synthase row matched 120 models through EC 7.1.2.2, an EC that spans every subunit of F-, V- and
 A-type synthases in both domains.
 
-**Gene symbol** matches are used where no accession is pinned. This route is not automatically
+**Gene symbol** matches are used where no accession is pinned. Marker choice here follows
+the field where it has been tested directly: formyltetrahydrofolate synthetase outperforms 16S
+for tracking the acetogenic community in biogas reactors [@fthfs2021], and it is a pinned
+marker in this panel. This route is not automatically
 safe: `fmdA` is both the panel's formylmethanofuran dehydrogenase subunit A and a legitimate
 symbol for formamidase, an unrelated and common enzyme.
 
@@ -103,14 +140,22 @@ panel requests against the product name of each matched model.
 ### 2.3 Score thresholds
 
 Each model is applied at its own curated cutoff (`hmmsearch --cut_nc`) rather than a global
-threshold. Across the 143 models these span 20.8 to 1,400 bits (median 405), so no single
+threshold, an approach shown to materially affect functional and metabolic inference
+[@hmmthresholds2025]. Across the 143 models these span 20.8 to 1,400 bits (median 405), so no single
 threshold is defensible; a hardcoded cutoff of 450 bits, for instance, would silently discard
-more than half the panel. Pfam and NCBIfam use different conventions — Pfam curates a gathering
-threshold (GA) that sits above its noise cutoff (NC), NCBIfam curates NC — so on import each Pfam
+more than half the panel. Pfam and NCBIfam use different conventions. Pfam curates a gathering
+threshold (GA) that sits above its noise cutoff (NC), while NCBIfam curates NC, so on import each Pfam
 model's NC is set to its GA, allowing one search to apply each source's intended cutoff. The build
 asserts that every pressed model carries a curated cutoff.
 
 ### 2.4 Pathway gates and taxonomic confirmation
+
+The distinction the gates draw is the one that carries operational meaning. Acetoclastic
+methanogens are more ammonia-sensitive than hydrogenotrophic ones, so a reactor under rising
+ammonia load shifts from acetate-consuming methanogens towards syntrophic acetate oxidation
+coupled to hydrogenotrophic methanogenesis [@westerholm2015ammonia]. Which route a community
+can run is therefore not a taxonomic curiosity but the axis along which digester stress
+expresses itself.
 
 Branch capability is evaluated by explicit gates rather than completeness thresholds. Each gate
 declares its requirements as groups of alternatives, and gates evaluate to true, false, or
@@ -128,7 +173,7 @@ taxonomy table is treated as unclassified, never as a negative.
 
 Hydrolysis is the only extracellular step of anaerobic digestion, so an encoded but unexported
 enzyme contributes nothing to feedstock breakdown. The scorer therefore tests whether a catalytic
-domain and an export module — dockerin, cohesin, carbohydrate-binding module or S-layer domain —
+domain and an export module (dockerin, cohesin, carbohydrate-binding module or S-layer domain)
 occur **on the same polypeptide**, which is the architecture of a cellulosome. The test is
 per-protein; the same two domains in one genome but on different proteins carry no such
 implication. All five export modules are Pfam families. Signal-peptide prediction was deliberately
@@ -147,7 +192,7 @@ what the panel defines.
 
 ### 3.1 Reference genomes
 
-An assertion suite runs the full path — proteome, `hmmsearch`, scorer — over seven reference
+An assertion suite runs the full path (proteome, `hmmsearch`, scorer) over seven reference
 genomes of known metabolism and checks 24 statements about gates, markers and genus assignment.
 The set is chosen to be falsifiable: a metabolic generalist (*Methanosarcina barkeri*), an
 obligate acetoclastic methanogen (*Methanothrix soehngenii*), two obligate hydrogenotrophs
@@ -165,13 +210,13 @@ false negative.
 ### 3.2 Digester MAG benchmark
 
 The panel was applied to 1,401 metagenome-assembled genomes recovered from 134 anaerobic digesters
-spanning multiple plants, feedstocks and operating temperatures (Campanaro *et al.* 2020; NCBI
-BioProject PRJNA602310), scored in under eight minutes.
+spanning multiple plants, feedstocks and operating temperatures [@campanaro2020; NCBI
+BioProject PRJNA602310], scored in under eight minutes.
 
 | | |
 |---|---|
 | MAGs carrying `mcrA` | 40 of 1,401 |
-| Acetoclastic calls | 6 — all *Methanosarcina* or *Methanothrix* |
+| Acetoclastic calls | 6, all *Methanosarcina* or *Methanothrix* |
 | Acetoclastic calls outside those genera | **0** |
 | Non-methanogens assigned any methanogenesis route | **0 of 1,361** |
 | Methanogens with no route assigned | 0 of 40 |
@@ -184,7 +229,7 @@ The benchmark also identified a genuine gap. Seven `mcrA`-carrying genomes initi
 route; all carried none of the eight C1 carriers, which is correct biology for the obligate
 methylotrophs among *Methanofastidiosia* and *Thermoplasmatales*, whose substrate-specific
 methyltransferases have no licence-clean model. Adding the terminal methylcobalamin:CoM
-methyltransferase — which detects methylotrophy without naming the substrate — resolved all seven.
+methyltransferase, which detects methylotrophy without naming the substrate, resolved all seven.
 That model is subfamily-level and matches 30 bacterial genomes on its own; it is sound only
 because the gate independently requires `mcrA`, and it discriminated perfectly among methanogens.
 
@@ -200,7 +245,7 @@ Applying the per-protein export test across the same 1,401 genomes:
 | All intracellular modules | up to 1,337 | **0** | 0.0% |
 
 The zero across every intracellular module is the control: the test fires only on hydrolysis, the
-sole exported step. The practical consequence is large — reporting family presence alone would
+sole exported step. The practical consequence is large: reporting family presence alone would
 credit 597 genomes with cellulolytic capacity where 50 is defensible, in the module most often
 identified as rate-limiting for fibrous feedstocks.
 
@@ -221,7 +266,7 @@ pyrrolysine residue. No model can recover a protein the annotator never emitted;
 amber read-through at gene calling.
 
 **Family-level resolution in hydrolysis.** Pfam families do not distinguish secreted from
-cytoplasmic enzymes on their own — hence the export test — nor do they resolve substrate
+cytoplasmic enzymes on their own (hence the export test), nor do they resolve substrate
 specificity within a family. The export layer detects the cellulosomal and cell-surface-anchored
 routes; a plain Sec-secreted enzyme carrying no binding module would be missed.
 
@@ -235,8 +280,7 @@ Panel, scorer, build and validation scripts are in the `kegg-less/` directory of
 Python 3 standard library only. Reference data are downloaded by the provided scripts from NCBIfam,
 InterPro/Pfam and Rhea; no licensed database is required at any stage.
 
-## References
+## References {.unnumbered}
 
-*To be completed. Core citations: Campanaro et al. 2020 (Biotechnol Biofuels 13:25, MAG catalogue);
-Eddy 2011 (HMMER); Li et al. NCBIfam/PGAP; Mistry et al. 2021 (Pfam); Bansal et al. 2022 (Rhea);
-Chaumeil et al. 2022 (GTDB-Tk); Shaffer et al. 2020 (DRAM).*
+::: {#refs}
+:::
