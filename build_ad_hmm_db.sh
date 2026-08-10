@@ -197,7 +197,7 @@ for bare, mids in curated.items():
         continue
     if bare not in pfam_acc:
         print(f"   !! {bare} is pinned in the panel but not cached -- "
-              f"run hpc/prefetch_pfam.sh", file=sys.stderr)
+              f"run scripts/prefetch_pfam.sh", file=sys.stderr)
         continue
     acc_v, mname = pfam_acc[bare]
     curated_hits.add(bare)

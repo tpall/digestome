@@ -36,9 +36,9 @@ access, and it gains nothing from a task graph.
 ```bash
 export DB=/path/to/databases          # site-specific, required, never defaulted
 
-bash hpc/prefetch_ncbifam.sh          # NCBIfam + Rhea   (login node: needs internet)
-bash hpc/prefetch_pfam.sh             # pinned Pfam families
-mkdir -p logs && sbatch -p <partition> hpc/build_ad_panel.sbatch
+bash scripts/prefetch_ncbifam.sh          # NCBIfam + Rhea   (login node: needs internet)
+bash scripts/prefetch_pfam.sh             # pinned Pfam families
+mkdir -p logs && sbatch -p <partition> scripts/build_ad_panel.sbatch
 ```
 
 That writes `$DB/ad_panel/` with the pressed HMM database and the model map.
@@ -122,7 +122,7 @@ hydrogenotrophs carrying ACDS are called acetoclastic. See the
 
 | script | what it does |
 |---|---|
-| `hpc/prefetch_ncbifam.sh` | Downloads NCBIfam HMMs + `rhea2ec.tsv`. Login node (compute nodes may lack outbound internet). Idempotent and resumable. |
+| `scripts/prefetch_ncbifam.sh` | Downloads NCBIfam HMMs + `rhea2ec.tsv`. Login node (compute nodes may lack outbound internet). Idempotent and resumable. |
 | `build_ad_hmm_db.sh` | Matches the panel against NCBIfam, emits `ad_panel.hmm` (pressed), `ad_panel_map.tsv` (model → gene/module) and `rhea2ec.tsv`. Audits curated accessions and asserts every pressed model has an NC cutoff. |
 | `panel_scored.py` | Per genome: `hmmsearch --tblout` (+ optional dbCAN, GTDB-Tk) → per-module completeness table on `--out`, gates + diagnostic markers on stdout. |
 | `aggregate_community.py` | Many scored genomes → one community profile. Route balance, acetate-consumer presence, syntrophic capacity. JSON + text. |
@@ -156,9 +156,12 @@ Stdlib only, so it runs anywhere Python 3 does.
 
 ---
 
-## Running on a cluster
+## The scripts
 
-The `hpc/` scripts are the intended entry points. They are site-neutral:
+Setup and maintenance live in `scripts/`. Despite the `.sbatch` extension on some of
+them, none requires a scheduler: each falls back to sensible defaults when the SLURM
+variables are absent, so they run directly with `bash` and can equally be submitted
+with `sbatch`. They are site-neutral:
 
 - **`DB` is required** and everything derives from it (`ncbifam/`, `ad_panel/`, `ad_panel_test/`). Nothing is defaulted to a particular filesystem.
 - **No `--partition` or `--account`** in the sbatch headers. Pass them at submit time (`sbatch -p <partition> -A <account>`) or export `SBATCH_PARTITION` / `SBATCH_ACCOUNT`.
@@ -166,25 +169,25 @@ The `hpc/` scripts are the intended entry points. They are site-neutral:
 
 | script | run where | purpose |
 |---|---|---|
-| `hpc/prefetch_ncbifam.sh` | login | download NCBIfam + Rhea |
-| `hpc/build_ad_panel.sbatch` | batch | build + press the panel |
-| `hpc/fetch_test_proteomes.sh` | login | 7 reference proteomes for the smoke test |
-| `hpc/smoke_test.sbatch` | batch | end-to-end run + assertions |
-| `hpc/fetch_digester_mags.sh` | login | real digester MAGs (PRJEB31310) |
-| `hpc/community_report.sbatch` | batch | score a MAG set + aggregate to a profile |
+| `scripts/prefetch_ncbifam.sh` | login | download NCBIfam + Rhea |
+| `scripts/build_ad_panel.sbatch` | batch | build + press the panel |
+| `scripts/fetch_test_proteomes.sh` | login | 7 reference proteomes for the smoke test |
+| `scripts/smoke_test.sbatch` | batch | end-to-end run + assertions |
+| `scripts/fetch_digester_mags.sh` | login | real digester MAGs (PRJEB31310) |
+| `scripts/community_report.sbatch` | batch | score a MAG set + aggregate to a profile |
 
 ---
 
 ## Tests
 
-`hpc/smoke_test.sbatch` runs the full path on seven reference proteomes and
+`scripts/smoke_test.sbatch` runs the full path on seven reference proteomes and
 asserts against published biology, so a failure means a real disagreement
 rather than a drifted snapshot.
 
 ```bash
 export DB=/path/to/databases
-bash hpc/fetch_test_proteomes.sh
-mkdir -p logs && sbatch -p <partition> hpc/smoke_test.sbatch
+bash scripts/fetch_test_proteomes.sh
+mkdir -p logs && sbatch -p <partition> scripts/smoke_test.sbatch
 ```
 
 - `tests/genomes.tsv` — the 7 genomes and their accessions

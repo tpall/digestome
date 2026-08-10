@@ -28,4 +28,4 @@ echo
 echo "==> Fetched:"
 ls -lh "$WORK/hmm_PGAP.HMM.tgz" "$WORK/hmm_PGAP.tsv" "$OUT/rhea2ec.tsv"
 echo
-echo "Next: mkdir -p logs && sbatch hpc/build_ad_panel.sbatch"
+echo "Next: mkdir -p logs && sbatch scripts/build_ad_panel.sbatch"

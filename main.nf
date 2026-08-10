@@ -5,7 +5,7 @@
  *
  * This workflow covers the ANALYSIS path only: proteomes in, per-genome scores and
  * one community profile out. Database staging and panel construction stay as the
- * scripts in hpc/, because they are one-time, need login-node internet, and gain
+ * scripts in scripts/, because they are one-time, need internet access, and gain
  * nothing from being a DAG.
  *
  * The processes call the same command-line tools a user would run by hand. That is
@@ -26,7 +26,7 @@ def helpMessage() {
     Required:
       --proteomes     Glob of protein FASTA files, one per genome/MAG. Quote it.
                       Alternatively --input a CSV with columns: sample,faa
-      --db            Database root containing ad_panel/ (from hpc/build_ad_panel.sbatch)
+      --db            Database root containing ad_panel/ (from scripts/build_ad_panel.sbatch)
 
     Optional:
       --gtdbtk        GTDB-Tk summary.tsv. Strongly recommended: without it the
@@ -150,8 +150,8 @@ workflow {
     def dbdir = params.db ? file("${params.db}/ad_panel") : null
     if (!dbdir || !dbdir.exists()) {
         error "Panel database not found at \${params.db}/ad_panel. Build it first:\n" +
-              "  DB=<root> bash hpc/prefetch_ncbifam.sh && bash hpc/prefetch_pfam.sh\n" +
-              "  DB=<root> sbatch hpc/build_ad_panel.sbatch"
+              "  DB=<root> bash scripts/prefetch_ncbifam.sh && bash scripts/prefetch_pfam.sh\n" +
+              "  DB=<root> sbatch scripts/build_ad_panel.sbatch"
     }
 
     ch_hmm   = Channel.value(file("${params.db}/ad_panel/ad_panel.hmm",     checkIfExists: true))

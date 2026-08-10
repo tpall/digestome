@@ -19,10 +19,10 @@
 # branch, and any methanogenesis gate firing on it is a live bug.
 #
 # Prereqs (login node):
-#   bash hpc/fetch_test_proteomes.sh
+#   bash scripts/fetch_test_proteomes.sh
 #   mkdir -p logs
 # Submit from the worktree root:
-#   sbatch hpc/smoke_test.sbatch
+#   sbatch scripts/smoke_test.sbatch
 set -euo pipefail
 # hmmsearch may come from a module, a conda env or a container. Only touch the
 # module system when hmmsearch is not already on PATH, so this runs unchanged on

@@ -18,10 +18,10 @@
 # here is trusted in a report.
 #
 # Prereqs (login node):
-#   bash hpc/prefetch_ncbifam.sh
+#   bash scripts/prefetch_ncbifam.sh
 #   mkdir -p logs
 # Submit from the worktree root:
-#   sbatch hpc/build_ad_panel.sbatch
+#   sbatch scripts/build_ad_panel.sbatch
 set -euo pipefail
 # hmmsearch may come from a module, a conda env or a container. Only touch the
 # module system when hmmsearch is not already on PATH, so this runs unchanged on
@@ -45,7 +45,7 @@ else
 fi
 [ -f "$ROOT/build_ad_hmm_db.sh" ] || {
   echo "!! cannot find build_ad_hmm_db.sh under $KEGGLESS" >&2
-  echo "   submit from the worktree root: sbatch hpc/build_ad_panel.sbatch" >&2
+  echo "   submit from the worktree root: sbatch scripts/build_ad_panel.sbatch" >&2
   exit 1
 }
 : "${DB:?set DB to a database root with room for the panel, e.g. export DB=/path/to/databases}"
