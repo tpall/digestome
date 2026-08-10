@@ -5,3 +5,6 @@ README.html
 MANUSCRIPT.html
 MANUSCRIPT_files/
 *_files/
+work/
+results/
+.nextflow*
