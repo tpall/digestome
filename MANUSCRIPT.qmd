@@ -66,11 +66,11 @@ the triggering case for each. This is not a hypothetical constraint on the AD fi
 reconstructions of digestion pathways build their references from KEGG, MetaCyc and BRENDA,
 so the standard route to a pathway-level answer is closed to commercial work by construction.
 
-No existing tool closes the gap, and the distinction is finer than KEGG dependence alone.
-DRAM can already be run without KEGG, but its remaining annotation sources for carbohydrate
-and peptidase function are dbCAN and MEROPS, which are themselves restricted, so a KEGG-free
-configuration is still not a commercially clean one. That is the gap: not *KEGG-free*, but
-*free of every licence-encumbered dependency in the stack*.
+The gap that remains is finer than KEGG dependence alone. DRAM can already be run without
+KEGG, and that option is deliberate and useful; but its remaining annotation sources for
+carbohydrate and peptidase function are dbCAN and MEROPS, which carry their own restrictions,
+so a KEGG-free configuration is not yet a commercially clean one. The requirement is therefore
+not *KEGG-free* but *free of every licence-encumbered dependency in the stack*.
 
 | | module-level from MAGs | independent of KEGG | no restricted dependency anywhere | AD pathway model |
 |---|---|---|---|---|
@@ -80,14 +80,26 @@ configuration is still not a commercially clean one. That is the gap: not *KEGG-
 | MetaPathPredict [@metapathpredict2024] | ✓ | ✗ (KEGG Modules) | ✗ | ✗ |
 | this work | ✓ | ✓ | ✓ | ✓ |
 
-Every tool that reconstructs metabolism at module level from MAGs resolves it through KEGG.
-METABOLIC queries KOfam and interprets hits in the context of KEGG Modules; KEMET evaluates
-KEGG Module completeness and ships the KEGG licence with its source; MetaPathPredict predicts
-completeness of KEGG Modules directly. DRAM is the only one that can be run KEGG-free, and
-that configuration still depends on dbCAN and MEROPS. The dependency is not incidental to any
-of them: KEGG Modules *are* the pathway model, so removing KEGG means having no pathway
-definitions left, which is why a replacement has to supply its own curated model rather than
-simply swapping a database.
+Every tool that reconstructs metabolism at module level from MAGs resolves it through KEGG,
+and this reflects the maturity of KEGG Modules as a pathway model rather than any shortcoming
+in the tools. METABOLIC couples KOfam search to module context and adds motif validation of
+individual hits. MetaPathPredict takes the problem of incomplete genomes seriously enough to
+learn module presence rather than count genes. KEMET addresses the same difficulty directly and
+from the angle closest to our own concerns: it uses HMM profiles to recover orthologs that
+plain assignment misses, and reports that annotations recovered this way substantially improve
+draft genome-scale models built from MAGs, in some cases bringing them to the accuracy of
+models from complete genomes [@palu2022kemet]. That is a result about MAG incompleteness
+distorting module completeness, which is precisely the failure mode this panel guards against
+from the other direction, and KEMET distributes the KEGG licence alongside its source so that
+users inherit the terms transparently.
+
+The constraint these tools share is therefore contextual rather than technical. It bites only
+where the work is commercial, and it is inseparable from what makes them useful: KEGG Modules
+*are* the pathway model, so removing KEGG does not leave a tool missing a database, it leaves a
+tool with no pathway definitions at all. A licence-clean replacement cannot simply substitute a
+source; it has to supply a curated pathway model of its own. Doing that for one domain, rather
+than for all of metabolism, is what makes the problem tractable here, and it is the reason this
+panel is scoped to anaerobic digestion.
 
 The general metagenomic workflows are not comparators here and are better understood as
 upstream complements. nf-core/mag [@krakau2022mag] ends at binning and taxonomic
