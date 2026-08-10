@@ -2,12 +2,16 @@
 
 **Licence-clean functional profiling of anaerobic digestion microbiomes.**
 
-> **Standalone.** Requires only HMMER and Python 3 (standard library); no other
-> software and no licensed database at any stage. Inspired by DRAM's idea of
-> distilling annotations into pathway-level statements, but it shares no code with
-> DRAM and does not depend on it.
+> **Two entry points.** The command-line path needs only HMMER and Python 3
+> (standard library), with no licensed database at any stage. A Nextflow workflow
+> wraps the same tools for scale and executor portability. Inspired by DRAM's idea
+> of distilling annotations into pathway-level statements, but it shares no code
+> with DRAM and does not depend on it.
 
-A **license-clean** functional scaffold for biogas/AD microbiome analysis: which genes mark each step of anaerobic digestion, how to detect them with free HMMs, and how to score pathway completeness for a "digester microbiome health check" report. No KEGG, no MetaCyc.
+A licence-clean functional scaffold for biogas and anaerobic digestion microbiome
+analysis: which genes mark each step, how to detect them with freely usable HMMs,
+and how to score pathway completeness for a digester health-check report. No KEGG,
+no MetaCyc, no CAZy/dbCAN.
 
 Companion data file: **`AD_methanogenesis_panel.tsv`**.
 
@@ -22,35 +26,84 @@ redistributed here; the build scripts fetch NCBIfam, Pfam and Rhea from source.
 
 ## Quick start
 
-Four steps: fetch the source databases, build the HMM panel, score genomes, aggregate to a community profile.
+Two ways to run the same analysis. Either needs the panel built once first.
+
+### 0. Build the panel (once)
+
+Staging stays as scripts: it is a one-time operation that needs outbound network
+access, and it gains nothing from a task graph.
 
 ```bash
-# 0. Where the databases live. Required, and site-specific — nothing is
-#    defaulted, so this must be set before anything else.
-export DB=/path/to/databases
+export DB=/path/to/databases          # site-specific, required, never defaulted
 
-# 1. Download NCBIfam + Rhea (needs internet; run on a login node)
-bash hpc/prefetch_ncbifam.sh
+bash hpc/prefetch_ncbifam.sh          # NCBIfam + Rhea   (login node: needs internet)
+bash hpc/prefetch_pfam.sh             # pinned Pfam families
+mkdir -p logs && sbatch -p <partition> hpc/build_ad_panel.sbatch
+```
 
-# 2. Build the pressed HMM panel -> $DB/ad_panel/
-mkdir -p logs
-sbatch -p <partition> hpc/build_ad_panel.sbatch
+That writes `$DB/ad_panel/` with the pressed HMM database and the model map.
 
-# 3. Score one genome
-hmmsearch --cut_nc --tblout hits.tblout $DB/ad_panel/ad_panel.hmm proteins.faa
+### Option A: Nextflow, for many genomes
+
+Per-genome parallelism, resume, and executor independence: the same command runs
+on a laptop, a SLURM cluster or a cloud batch service.
+
+```bash
+nextflow run . \
+    --proteomes 'mags/*.faa' \
+    --db        $DB \
+    --gtdbtk    gtdbtk.bac120.summary.tsv \
+    --sample_name 'digester A' \
+    --outdir    results \
+    -profile    slurm            # or: standard | conda | singularity | docker
+```
+
+Writes `results/profile.txt` and `results/profile.json`, plus a Nextflow trace,
+timeline and report under `results/pipeline_info/`.
+
+A samplesheet works instead of a glob when names matter:
+
+```bash
+nextflow run . --input samples.csv --db $DB     # columns: sample,faa
+```
+
+To check the wiring without tools, data or a database:
+
+```bash
+nextflow run . -profile test -stub-run
+```
+
+### Option B: command line, for a handful of genomes
+
+No workflow engine, no Java. HMMER and Python 3 standard library is the whole
+dependency list, and this is exactly what the workflow calls underneath.
+
+```bash
+# 1. search one proteome against the panel
+hmmsearch --cut_nc --tblout MAG001.tblout $DB/ad_panel/ad_panel.hmm proteins.faa
+
+# 2. score it
 python3 panel_scored.py \
-    --tblout hits.tblout \
-    --map    $DB/ad_panel/ad_panel_map.tsv \
-    --panel  AD_methanogenesis_panel.tsv \
-    --name   MAG001 \
-    --gtdbtk gtdbtk.bac120.summary.tsv \
-    --out    MAG001.modules.tsv          # summary goes to stdout
+    --tblout    MAG001.tblout \
+    --map       $DB/ad_panel/ad_panel_map.tsv \
+    --panel     AD_methanogenesis_panel.tsv \
+    --secretion secretion_modules.tsv \
+    --gtdbtk    gtdbtk.bac120.summary.tsv \
+    --name      MAG001 \
+    --out       MAG001.modules.tsv          # summary goes to stdout
 
-# 4. Aggregate a directory of scored MAGs into one digester profile
+# 3. aggregate a directory of scored genomes into one community profile
 python3 aggregate_community.py \
-    --dir scored/ --sample digester_A \
+    --dir scored/ --sample 'digester A' \
     --out-json profile.json --out-txt profile.txt
 ```
+
+### Which to use
+
+Option B for a few genomes, for debugging, or where installing a workflow engine
+is not worth it. Option A once there are enough genomes that parallelism and
+resume matter, or when the same analysis has to move between a cluster and a
+single machine. They produce identical results because they run the same code.
 
 Use `--cut_nc`: every model in the panel carries a curated NCBIfam noise cutoff,
 and the build asserts this. Do not substitute a global `-T`; the curated cutoffs
@@ -73,6 +126,7 @@ hydrogenotrophs carrying ACDS are called acetoclastic. See the
 | `build_ad_hmm_db.sh` | Matches the panel against NCBIfam, emits `ad_panel.hmm` (pressed), `ad_panel_map.tsv` (model → gene/module) and `rhea2ec.tsv`. Audits curated accessions and asserts every pressed model has an NC cutoff. |
 | `panel_scored.py` | Per genome: `hmmsearch --tblout` (+ optional dbCAN, GTDB-Tk) → per-module completeness table on `--out`, gates + diagnostic markers on stdout. |
 | `aggregate_community.py` | Many scored genomes → one community profile. Route balance, acetate-consumer presence, syntrophic capacity. JSON + text. |
+| `main.nf`, `nextflow.config` | Nextflow workflow over the analysis path: HMMSEARCH, SCORE, AGGREGATE. Calls the same command-line tools rather than reimplementing them. |
 | `audit_symbol_matches.py` | Build-time audit: flags panel rows whose gene symbol collides with an unrelated enzyme. Run when editing the panel. |
 
 ### `panel_scored.py`

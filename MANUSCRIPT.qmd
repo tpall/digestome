@@ -72,13 +72,13 @@ carbohydrate and peptidase function are dbCAN and MEROPS, which carry their own 
 so a KEGG-free configuration is not yet a commercially clean one. The requirement is therefore
 not *KEGG-free* but *free of every licence-encumbered dependency in the stack*.
 
-| | module-level from MAGs | independent of KEGG | no restricted dependency anywhere | AD pathway model |
-|---|---|---|---|---|
-| DRAM [@shaffer2020dram] | ✓ | optional | ✗ (dbCAN, MEROPS) | ✗ |
-| METABOLIC [@zhou2022metabolic] | ✓ | ✗ (KOfam) | ✗ | ✗ |
-| KEMET [@palu2022kemet] | ✓ | ✗ (KEGG Modules) | ✗ | ✗ |
-| MetaPathPredict [@metapathpredict2024] | ✓ | ✗ (KEGG Modules) | ✗ | ✗ |
-| this work | ✓ | ✓ | ✓ | ✓ |
+| | module-level from MAGs | independent of KEGG | no restricted dependency anywhere | AD pathway model | workflow-managed |
+|---|---|---|---|---|---|
+| DRAM [@shaffer2020dram] | ✓ | optional | ✗ (dbCAN, MEROPS) | ✗ | ✗ |
+| METABOLIC [@zhou2022metabolic] | ✓ | ✗ (KOfam) | ✗ | ✗ | ✗ |
+| KEMET [@palu2022kemet] | ✓ | ✗ (KEGG Modules) | ✗ | ✗ | ✗ |
+| MetaPathPredict [@metapathpredict2024] | ✓ | ✗ (KEGG Modules) | ✗ | ✗ | ✗ |
+| this work | ✓ | ✓ | ✓ | ✓ | ✓ |
 
 Every tool that reconstructs metabolism at module level from MAGs resolves it through KEGG,
 and this reflects the maturity of KEGG Modules as a pathway model rather than any shortcoming
@@ -107,6 +107,18 @@ classification, and nf-core/metatdenovo [@metatdenovo2025] produces per-gene ann
 catalogues without binning at all, directing users elsewhere for MAGs. Neither attempts
 module-level reconstruction; they produce, or stop just short of producing, the MAGs that a
 tool of this kind consumes.
+
+### Two entry points
+
+The panel, builder and scorer are command-line tools requiring only HMMER and a Python
+interpreter, with no third-party Python packages. A Nextflow workflow wraps the analysis path
+for scale and portability, giving per-genome parallelism, resumability and executor
+independence, so the same analysis runs on a laptop, a SLURM cluster or a cloud batch service
+without modification. The workflow invokes the same command-line tools rather than
+reimplementing them, so neither entry point is privileged: a user with three genomes needs no
+workflow engine, and a user with fourteen hundred does not hand-roll parallelism. Database
+staging and panel construction remain scripts, being one-time operations that need outbound
+network access and gain nothing from a task graph.
 
 ### Relationship to DRAM
 
