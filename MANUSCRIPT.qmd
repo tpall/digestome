@@ -72,20 +72,29 @@ and peptidase function are dbCAN and MEROPS, which are themselves restricted, so
 configuration is still not a commercially clean one. That is the gap: not *KEGG-free*, but
 *free of every licence-encumbered dependency in the stack*.
 
-| | module-level reconstruction | independent of KEGG | no restricted dependency anywhere | AD pathway model |
+| | module-level from MAGs | independent of KEGG | no restricted dependency anywhere | AD pathway model |
 |---|---|---|---|---|
 | DRAM [@shaffer2020dram] | ✓ | optional | ✗ (dbCAN, MEROPS) | ✗ |
 | METABOLIC [@zhou2022metabolic] | ✓ | ✗ (KOfam) | ✗ | ✗ |
-| nf-core/mag [@krakau2022mag] | ✗ | ✗ | ✗ | ✗ |
-| nf-core/metatdenovo [@metatdenovo2025] | ✗ | ✗ (eggNOG, KofamScan) | ✗ | ✗ |
+| KEMET [@palu2022kemet] | ✓ | ✗ (KEGG Modules) | ✗ | ✗ |
+| MetaPathPredict [@metapathpredict2024] | ✓ | ✗ (KEGG Modules) | ✗ | ✗ |
 | this work | ✓ | ✓ | ✓ | ✓ |
 
-METABOLIC reconstructs at module level but resolves everything through KEGG KOfam. The
-metagenomic Nextflow pipelines stop earlier: nf-core/mag ends at binning and taxonomic
-classification, and nf-core/metatdenovo produces per-gene annotated catalogues without binning
-at all, explicitly directing users elsewhere for MAGs. Both route functional annotation through
-KEGG or eggNOG, and going via eggNOG-mapper does not evade the constraint, since the KEGG
-orthology identifiers it emits are themselves KEGG content.
+Every tool that reconstructs metabolism at module level from MAGs resolves it through KEGG.
+METABOLIC queries KOfam and interprets hits in the context of KEGG Modules; KEMET evaluates
+KEGG Module completeness and ships the KEGG licence with its source; MetaPathPredict predicts
+completeness of KEGG Modules directly. DRAM is the only one that can be run KEGG-free, and
+that configuration still depends on dbCAN and MEROPS. The dependency is not incidental to any
+of them: KEGG Modules *are* the pathway model, so removing KEGG means having no pathway
+definitions left, which is why a replacement has to supply its own curated model rather than
+simply swapping a database.
+
+The general metagenomic workflows are not comparators here and are better understood as
+upstream complements. nf-core/mag [@krakau2022mag] ends at binning and taxonomic
+classification, and nf-core/metatdenovo [@metatdenovo2025] produces per-gene annotated
+catalogues without binning at all, directing users elsewhere for MAGs. Neither attempts
+module-level reconstruction; they produce, or stop just short of producing, the MAGs that a
+tool of this kind consumes.
 
 ### Relationship to DRAM
 
