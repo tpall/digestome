@@ -75,7 +75,14 @@ for acc in $accs; do
     "$(awk '/^GA /{ g=$2; sub(/;$/,"",g); print g; exit }' "$dest")"
 done
 
-cat "$OUT/models"/*.hmm > "$OUT/panel_pfam.hmm" 2>/dev/null || true
+# Concatenate ONLY what is currently pinned, not everything ever cached. A family
+# that gets unpinned (mtmB/PF05369 was, once pyrrolysine made it undetectable)
+# must leave the panel DB, otherwise stale models linger in the pressed file with
+# no map rows behind them. The cache itself is kept, so re-pinning costs nothing.
+: > "$OUT/panel_pfam.hmm"
+for acc in $accs; do
+  [ -s "$OUT/models/${acc}.hmm" ] && cat "$OUT/models/${acc}.hmm" >> "$OUT/panel_pfam.hmm"
+done
 n=$(grep -c '^NAME ' "$OUT/panel_pfam.hmm" 2>/dev/null || echo 0)
 echo
 echo "==> $n Pfam model(s) in $OUT/panel_pfam.hmm"
