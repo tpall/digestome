@@ -66,24 +66,36 @@ the triggering case for each. This is not a hypothetical constraint on the AD fi
 reconstructions of digestion pathways build their references from KEGG, MetaCyc and BRENDA,
 so the standard route to a pathway-level answer is closed to commercial work by construction.
 
-No existing tool closes the gap, and the reason is structural rather than accidental: each
-available option satisfies three of the four requirements and misses a different one.
+No existing tool closes the gap, and the distinction is finer than KEGG dependence alone.
+DRAM can already be run without KEGG, but its remaining annotation sources for carbohydrate
+and peptidase function are dbCAN and MEROPS, which are themselves restricted, so a KEGG-free
+configuration is still not a commercially clean one. That is the gap: not *KEGG-free*, but
+*free of every licence-encumbered dependency in the stack*.
 
-| | workflow-managed | MAG-level | module-level | licence-clean |
+| | module-level reconstruction | independent of KEGG | no restricted dependency anywhere | AD pathway model |
 |---|---|---|---|---|
-| DRAM [@shaffer2020dram] | ✗ | ✓ | ✓ | ✗ (dbCAN, MEROPS) |
-| METABOLIC [@zhou2022metabolic] | ✗ | ✓ | ✓ | ✗ (KEGG KOfam) |
-| nf-core/mag [@krakau2022mag] | ✓ | ✓ | ✗ | ✗ (KEGG) |
-| nf-core/metatdenovo [@metatdenovo2025] | ✓ | ✗ | ✗ | ✗ (eggNOG, KofamScan) |
+| DRAM [@shaffer2020dram] | ✓ | optional | ✗ (dbCAN, MEROPS) | ✗ |
+| METABOLIC [@zhou2022metabolic] | ✓ | ✗ (KOfam) | ✗ | ✗ |
+| nf-core/mag [@krakau2022mag] | ✗ | ✗ | ✗ | ✗ |
+| nf-core/metatdenovo [@metatdenovo2025] | ✗ | ✗ (eggNOG, KofamScan) | ✗ | ✗ |
 | this work | ✓ | ✓ | ✓ | ✓ |
 
-METABOLIC and DRAM reconstruct metabolism at module level but resolve it through KEGG, and
-DRAM additionally depends on dbCAN and MEROPS for carbohydrate and peptidase annotation. The
-Nextflow pipelines that exist stop earlier: nf-core/mag ends at binning and taxonomic
-classification, and nf-core/metatdenovo produces per-gene annotated catalogues without binning,
-explicitly directing users elsewhere for MAGs. Both route functional annotation through KEGG or
-eggNOG. Routing through eggNOG-mapper does not evade the constraint, since the KEGG orthology
-identifiers it emits are themselves KEGG content.
+METABOLIC reconstructs at module level but resolves everything through KEGG KOfam. The
+metagenomic Nextflow pipelines stop earlier: nf-core/mag ends at binning and taxonomic
+classification, and nf-core/metatdenovo produces per-gene annotated catalogues without binning
+at all, explicitly directing users elsewhere for MAGs. Both route functional annotation through
+KEGG or eggNOG, and going via eggNOG-mapper does not evade the constraint, since the KEGG
+orthology identifiers it emits are themselves KEGG content.
+
+### Relationship to DRAM
+
+This work is not an alternative to DRAM but a distillation layer developed inside a fork of it
+(`tpall/DRAM`), and it inherits DRAM's framing of turning annotations into pathway-level
+statements. What it replaces is the reference basis and the interpretation: an AD-specific
+curated pathway model in place of generic module definitions, and sources chosen so that no
+component of the stack carries a commercial restriction. The panel, builder and scorer are
+currently standalone scripts within that repository rather than steps in its Nextflow DAG;
+integration as a distill mode is the obvious next step and is not claimed here.
 
 The second obstacle is interpretive. Marker-gene profiling reports what a genome *carries*.
 Three gaps routinely open between that and what an operator needs to know: a gene may be
@@ -276,8 +288,9 @@ taxonomy it degrades to gene evidence, which over-calls.
 ## 5 Availability
 
 Panel, scorer, build and validation scripts are in the `kegg-less/` directory of
-`https://github.com/tpall/DRAM` (branch `feature/kegg-less-ad`). The scorer and aggregator are
-Python 3 standard library only. Reference data are downloaded by the provided scripts from NCBIfam,
+`https://github.com/tpall/DRAM` (branch `feature/kegg-less-ad`). They run as standalone
+command-line steps; the scorer and aggregator are Python 3 standard library only, so they carry
+no dependency beyond HMMER and a Python interpreter. Reference data are downloaded by the provided scripts from NCBIfam,
 InterPro/Pfam and Rhea; no licensed database is required at any stage.
 
 ## References {.unnumbered}
