@@ -36,7 +36,7 @@ if [ -n "${SLURM_SUBMIT_DIR:-}" ]; then
 else
   ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 fi
-[ -f "$ROOT/aggregate_community.py" ] || {
+[ -f "$ROOT/bin/aggregate_community.py" ] || {
   echo "!! run from the worktree root" >&2; exit 1; }
 
 : "${DB:?set DB to a database root with room for the panel, e.g. export DB=/path/to/databases}"
@@ -55,7 +55,7 @@ score_set() {                       # $1=proteome dir  $2=sample name  $3=out di
     hmmsearch --cpu "$THREADS" --cut_nc \
               --tblout "$out/${label}.tblout" "$HMM" "$faa" > /dev/null
     local gt=(); [ -n "$gtdb" ] && gt=(--gtdbtk "$gtdb")
-    python3 "$ROOT/panel_scored.py" \
+    python3 "$ROOT/bin/panel_scored.py" \
         --tblout "$out/${label}.tblout" --map "$MAP" --panel "$PANEL" \
         --name "$label" --out "$out/${label}.modules.tsv" "${gt[@]}" \
         --secretion "$ROOT/secretion_modules.tsv" \
@@ -63,7 +63,7 @@ score_set() {                       # $1=proteome dir  $2=sample name  $3=out di
     n=$((n+1))
   done
   echo "  scored $n MAG(s) from $prot"
-  python3 "$ROOT/aggregate_community.py" \
+  python3 "$ROOT/bin/aggregate_community.py" \
       --dir "$out" --sample "$sample" --description "$desc" \
       --out-json "$out/profile.json" --out-txt "$out/profile.txt"
 }

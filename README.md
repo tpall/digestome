@@ -24,6 +24,22 @@ redistributed here; the build scripts fetch NCBIfam, Pfam and Rhea from source.
 
 ---
 
+## Layout
+
+```
+bin/         panel_scored.py, aggregate_community.py — the analysis tools.
+             Nextflow adds this to PATH in every task, so the workflow calls
+             them by name and needs no path into the project directory.
+scripts/     one-time setup: database staging, panel construction, curation
+             audits, and sbatch wrappers. None requires a scheduler.
+manuscript/  MANUSCRIPT.qmd and its bibliography.
+tests/       expectations and fixtures.
+```
+
+The panel itself (`AD_methanogenesis_panel.tsv`) and the secretion modules stay
+at the top level: they are the curated data this project exists to provide, not
+implementation detail.
+
 ## Quick start
 
 Two ways to run the same analysis. Either needs the panel built once first.
@@ -83,7 +99,7 @@ dependency list, and this is exactly what the workflow calls underneath.
 hmmsearch --cut_nc --tblout MAG001.tblout $DB/ad_panel/ad_panel.hmm proteins.faa
 
 # 2. score it
-python3 panel_scored.py \
+python3 bin/panel_scored.py \
     --tblout    MAG001.tblout \
     --map       $DB/ad_panel/ad_panel_map.tsv \
     --panel     AD_methanogenesis_panel.tsv \
@@ -93,7 +109,7 @@ python3 panel_scored.py \
     --out       MAG001.modules.tsv          # summary goes to stdout
 
 # 3. aggregate a directory of scored genomes into one community profile
-python3 aggregate_community.py \
+python3 bin/aggregate_community.py \
     --dir scored/ --sample 'digester A' \
     --out-json profile.json --out-txt profile.txt
 ```
@@ -118,14 +134,14 @@ hydrogenotrophs carrying ACDS are called acetoclastic. See the
 
 ---
 
-## Scripts
+## The tools
 
 | script | what it does |
 |---|---|
 | `scripts/prefetch_ncbifam.sh` | Downloads NCBIfam HMMs + `rhea2ec.tsv`. Login node (compute nodes may lack outbound internet). Idempotent and resumable. |
-| `build_ad_hmm_db.sh` | Matches the panel against NCBIfam, emits `ad_panel.hmm` (pressed), `ad_panel_map.tsv` (model → gene/module) and `rhea2ec.tsv`. Audits curated accessions and asserts every pressed model has an NC cutoff. |
-| `panel_scored.py` | Per genome: `hmmsearch --tblout` (+ optional dbCAN, GTDB-Tk) → per-module completeness table on `--out`, gates + diagnostic markers on stdout. |
-| `aggregate_community.py` | Many scored genomes → one community profile. Route balance, acetate-consumer presence, syntrophic capacity. JSON + text. |
+| `scripts/build_ad_hmm_db.sh` | Matches the panel against NCBIfam, emits `ad_panel.hmm` (pressed), `ad_panel_map.tsv` (model → gene/module) and `rhea2ec.tsv`. Audits curated accessions and asserts every pressed model has an NC cutoff. |
+| `bin/panel_scored.py` | Per genome: `hmmsearch --tblout` (+ optional dbCAN, GTDB-Tk) → per-module completeness table on `--out`, gates + diagnostic markers on stdout. |
+| `bin/aggregate_community.py` | Many scored genomes → one community profile. Route balance, acetate-consumer presence, syntrophic capacity. JSON + text. |
 | `main.nf`, `nextflow.config` | Nextflow workflow over the analysis path: HMMSEARCH, SCORE, AGGREGATE. Calls the same command-line tools rather than reimplementing them. |
 | `audit_symbol_matches.py` | Build-time audit: flags panel rows whose gene symbol collides with an unrelated enzyme. Run when editing the panel. |
 
@@ -156,9 +172,9 @@ Stdlib only, so it runs anywhere Python 3 does.
 
 ---
 
-## The scripts
+## Setup and maintenance
 
-Setup and maintenance live in `scripts/`. Despite the `.sbatch` extension on some of
+These live in `scripts/` alongside the panel builder. Despite the `.sbatch` extension on some of
 them, none requires a scheduler: each falls back to sensible defaults when the SLURM
 variables are absent, so they run directly with `bash` and can equally be submitted
 with `sbatch`. They are site-neutral:

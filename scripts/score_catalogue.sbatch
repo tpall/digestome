@@ -51,7 +51,7 @@ score_one() {
   # Skip work already done, so the job is resumable after a timeout.
   [ -s "$OUTD/${label}.summary.txt" ] && return 0
   hmmsearch --cpu 2 --cut_nc --tblout "$OUTD/${label}.tblout" "$HMM" "$faa" > /dev/null 2>&1 || return 0
-  python3 "$ROOT/panel_scored.py" \
+  python3 "$ROOT/bin/panel_scored.py" \
       --tblout "$OUTD/${label}.tblout" --map "$MAP" --panel "$PANEL" \
       --name "$label" --gtdbtk "$TAX" \
       --secretion "$ROOT/secretion_modules.tsv" \
@@ -64,7 +64,7 @@ ls "$PROT"/*.faa | xargs -P "$PAR" -I{} bash -c 'score_one "$@"' _ {}
 
 echo "==> scored $(ls "$OUTD"/*.summary.txt 2>/dev/null | wc -l) genomes"
 echo
-python3 "$ROOT/aggregate_community.py" \
+python3 "$ROOT/bin/aggregate_community.py" \
     --dir "$OUTD" \
     --sample "Biogas microbiome catalogue (PRJNA602310)" \
     --description "Campanaro/Treu MAG catalogue: MHQ+HQ bins from 134 anaerobic digester metagenomes across multiple plants, feedstocks and temperatures. Taxonomy derived from NCBI organism names, not GTDB-Tk." \

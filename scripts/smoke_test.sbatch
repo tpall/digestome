@@ -41,7 +41,7 @@ if [ -n "${SLURM_SUBMIT_DIR:-}" ]; then
 else
   ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 fi
-[ -f "$ROOT/panel_scored.py" ] || {
+[ -f "$ROOT/bin/panel_scored.py" ] || {
   echo "!! cannot find panel_scored.py under $KEGGLESS -- submit from the worktree root" >&2
   exit 1; }
 
@@ -76,7 +76,7 @@ while IFS=$'\t' read -r label acc organism role; do
   hmmsearch --cpu "$THREADS" --cut_nc \
             --tblout "$WORK/${label}.tblout" "$HMM" "$faa" > /dev/null
 
-  python3 "$ROOT/panel_scored.py" \
+  python3 "$ROOT/bin/panel_scored.py" \
       --tblout "$WORK/${label}.tblout" --map "$MAP" --panel "$PANEL" \
       --name "$label" --out "$WORK/${label}.modules.tsv" \
       --gtdbtk "$ROOT/tests/gtdbtk_fixture.tsv" \

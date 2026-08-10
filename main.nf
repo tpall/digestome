@@ -82,7 +82,7 @@ process SCORE {
     def sec = secretion.name != 'NO_FILE' ? "--secretion ${secretion}" : ''
     def tax = gtdbtk.name    != 'NO_FILE' ? "--gtdbtk ${gtdbtk}"      : ''
     """
-    python3 ${projectDir}/panel_scored.py \\
+    panel_scored.py \\
         --tblout ${tblout} --map ${map} --panel ${panel} \\
         --name ${sample} --out ${sample}.modules.tsv \\
         ${sec} ${tax} > ${sample}.summary.txt
@@ -108,7 +108,7 @@ process AGGREGATE {
 
     script:
     """
-    python3 ${projectDir}/aggregate_community.py \\
+    aggregate_community.py \\
         --dir scored \\
         --sample '${params.sample_name}' \\
         --description '${params.description}' \\

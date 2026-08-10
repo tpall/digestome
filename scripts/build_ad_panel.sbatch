@@ -43,7 +43,7 @@ if [ -n "${SLURM_SUBMIT_DIR:-}" ]; then
 else
   ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 fi
-[ -f "$ROOT/build_ad_hmm_db.sh" ] || {
+[ -f "$ROOT/scripts/build_ad_hmm_db.sh" ] || {
   echo "!! cannot find build_ad_hmm_db.sh under $KEGGLESS" >&2
   echo "   submit from the worktree root: sbatch scripts/build_ad_panel.sbatch" >&2
   exit 1
@@ -59,7 +59,7 @@ echo "==> panel=$PANEL"
 echo "==> work=$WORK  out=$OUT"
 echo
 
-bash "$ROOT/build_ad_hmm_db.sh"
+bash "$ROOT/scripts/build_ad_hmm_db.sh"
 
 echo
 echo "================ A. NCBIfam metadata columns ================"
