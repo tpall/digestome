@@ -139,7 +139,7 @@ hydrogenotrophs carrying ACDS are called acetoclastic. See the
 | `--out` | **required.** Per-module completeness TSV. |
 | `--name` | Genome label for the report. Default `genome`. |
 | `--gtdbtk` | GTDB-Tk `*.summary.tsv`. Repeatable (bac120 + ar53). Confirms the acetoclastic call and enables the genus hint. |
-| `--dbcan` | `run_dbcan` `overview.txt`, satisfies the `HYDROL-CARB` module. Without it that module reports `NA` / `no-detector`. |
+| `--dbcan` | Optional `run_dbcan` `overview.txt`. Only affects rows whose `scoring` column is `dbcan`; no panel row is currently set that way, since hydrolysis is detected with Pfam families. |
 | `--evalue` | Optional extra E-value cut on top of `--cut_nc`. Off by default; the curated cutoffs are the intended filter. |
 
 ### `aggregate_community.py`
@@ -208,7 +208,7 @@ The biology is curated and the panel is tested, but read the boundaries:
 
 - **Gene symbols, EC numbers, pathway branches and the module rules are authoritative.** They are curated, not inferred.
 - **Curated accessions are audited at build time.** Four wrong accessions were corrected, nine colliding gene symbols pinned, and the build asserts every pressed model carries a curated NC cutoff. This is no longer an open validation task.
-- **Non-curated (symbol- and EC-matched) rows are audited but weaker.** `audit_symbol_matches.py` flags collisions; gene-symbol matches are reliable, EC matches still warrant review before a client deliverable.
+- **Non-curated (symbol- and EC-matched) rows are audited but weaker.** `audit_symbol_matches.py` flags collisions; gene-symbol matches are reliable, EC matches still warrant review before results are relied upon.
 - **Some Pfam domains are shared across enzymes** (PF00871 = acetate *and* butyrate kinase; PF00374 = several [NiFe]-hydrogenases; PF06253 = the whole MttB superfamily). Gene-level calls on those need the NCBIfam gene-specific model, not the Pfam hit alone.
 - **Coverage is honest about its gaps.** Modules and gates with no license-clean detector report `NA` / `NOT ASSESSABLE`, never `0.0`.
 
@@ -217,12 +217,13 @@ The biology is curated and the panel is tested, but read the boundaries:
 ## Detection strategy (which tool for which row)
 | Row type | Detect with | Why |
 |---|---|---|
-| Carbohydrate hydrolysis (`HYDROL-CARB`) | **dbCAN / run_dbcan** | CAZy families, not single HMMs |
-| Peptidases / lipases | Pfam (avoid PROSITE/SMART — NC license) | clan-level is fine for "potential" |
+| Carbohydrate, protein and lipid hydrolysis | **Pfam catalytic families** (CC0) | curated one family per marker. CAZy/dbCAN and MEROPS are avoided: both are non-commercial in their public form |
+| Peptidases / lipases | Pfam (avoid PROSITE/SMART, non-commercial) | family level is the right resolution for capability |
 | Everything else | **NCBIfam (incl. TIGRFAM) gene HMMs** first, Pfam as fallback | NCBIfam HMMs are gene-specific + public domain |
-| Reactions/EC cross-ref | **Rhea** (CC BY 4.0) via EC | for reaction-level reporting in client outputs |
+| Reactions/EC cross-ref | **Rhea** (CC BY 4.0) via EC | reaction-level identifiers |
 
-Report in **gene symbol + EC + Pfam/NCBIfam + Rhea** identifiers. Never emit `K#####` KO codes or `mapXXXXX` images in a paid deliverable (KEGG IP).
+Results are reported in **gene symbol, EC, Pfam/NCBIfam and Rhea** identifiers. KEGG KO
+codes and map images are not emitted, since they are KEGG content.
 
 ---
 
@@ -241,7 +242,11 @@ Detection policy lives in the panel's `scoring` column, not in module names hard
 
 **A module that cannot be scored reports `NA`, never `0.0`.** Emitting `0.0` made "no marker is defined for this module" indistinguishable from "this pathway is absent from the genome" — on a digester health report that reads as a failing plant. `panel_scored.py` prints the unscored modules and their reason under the branch gates so they cannot be missed.
 
-Current non-default modules: `ACID-GLYC` = `assumed` (Embden-Meyerhof-Parnas is in essentially every organism), `HYDROL-CARB` = `dbcan`, `HYDROL-PROT` + `HYDROL-LIP` = `pending` (peptidases/lipases would need MEROPS, whose commercial terms are unverified).
+Only one panel row is currently non-default: `ACID-GLYC` is `assumed`, because
+Embden-Meyerhof-Parnas is present in essentially every organism and so is not
+diagnostic. The `dbcan` mode remains available for users who have run `run_dbcan`
+themselves, but no panel row uses it: all three hydrolysis modules are detected with
+Pfam catalytic families instead.
 
 A module whose rows are **all accessory-tier** (`ACID-ETOH`, `ACID-LACT`, `DIET`, `ENERGY`) also reports `NA`, status `no-core-tier`: scoring reads only the core tier today. Do not "fix" this by falling back to the accessory tier until `ahaA` is curated — it currently matches ~120 ATP-synthase models and would push `ENERGY` to a false ~100% in any genome.
 
@@ -300,14 +305,21 @@ Every row here is **pinned**, and that is a requirement rather than a preference
 # 3. EC/gene -> Pfam validation via InterPro API, e.g.:
 curl -s 'https://www.ebi.ac.uk/interpro/api/entry/pfam/?search=methyl-coenzyme%20M%20reductase' | jq '.results[].metadata | {accession,name}'
 
-# 4. CAZymes: run_dbcan (dbCAN) on predicted proteins for HYDROL-CARB rows.
+# 4. Hydrolysis: curated Pfam catalytic families, pinned per marker. dbCAN/CAZy is
+#    deliberately not used; its public terms are non-commercial.
 ```
 
-## How this plugs into the pipeline
-1. `aftekas` -> MAGs + GTDB-Tk taxonomy (who's there).
-2. Prodigal proteins -> `hmmsearch` vs the panel + run_dbcan (what they can do).
-3. `panel_scored.py` per MAG -> module completeness + gates.
-4. `aggregate_community.py` -> per-sample digester profile.
-5. Report: methanogen composition, branch balance, VFA/syntrophy markers, hydrolysis capacity -> digester health narrative.
+## Where this sits in an analysis
 
-The curated panel is **your IP** — it is the defensible, license-clean core of the biogas offering.
+digestome consumes predicted proteins from metagenome-assembled genomes, together
+with taxonomic assignments. It does not perform assembly, binning or gene calling;
+any workflow that produces MAGs and proteins can feed it.
+
+1. Assembly and binning produce MAGs.
+2. Taxonomic classification (GTDB-Tk) produces lineages. These are not optional in
+   practice: the acetoclastic call is confirmed against lineage, and without it that
+   call falls back to gene evidence and over-calls.
+3. Gene calling (for example Prodigal) produces one protein FASTA per MAG.
+4. `hmmsearch` against the panel, then `panel_scored.py` per MAG: module
+   completeness, branch gates, and secretion evidence for hydrolysis.
+5. `aggregate_community.py` combines the scored genomes into one community profile.
