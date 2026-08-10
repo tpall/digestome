@@ -5,8 +5,8 @@ Copyright (c) 2026 Magrittr OÜ
 The curated data files in this repository are licensed CC BY 4.0, separately
 from the software:
 
-  AD_methanogenesis_panel.tsv    the marker panel
-  secretion_modules.tsv          extracellular-targeting modules
+  assets/AD_methanogenesis_panel.tsv    the marker panel
+  assets/secretion_modules.tsv          extracellular-targeting modules
   tests/genomes.tsv              reference genomes and accessions
   tests/expectations.tsv         asserted biology
   tests/gtdbtk_fixture.tsv       lineages for the reference set

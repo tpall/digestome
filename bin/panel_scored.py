@@ -6,7 +6,7 @@ Inputs:
   --tblout   hmmsearch --tblout produced with db/ad_panel.hmm (run hmmsearch with
              --cut_nc for NCBIfam trusted cutoffs, or pass --evalue here).
   --map      db/ad_panel_map.tsv from build_ad_hmm_db.sh (model -> gene/module).
-  --panel    AD_methanogenesis_panel.tsv (module / branch / tier definitions).
+  --panel    assets/AD_methanogenesis_panel.tsv (module / branch / tier definitions).
   --name     genome / MAG identifier for the output.
 Outputs:
   --out      per-module completeness TSV.

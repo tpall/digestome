@@ -13,7 +13,7 @@ analysis: which genes mark each step, how to detect them with freely usable HMMs
 and how to score pathway completeness for a digester health-check report. No KEGG,
 no MetaCyc, no CAZy/dbCAN.
 
-Companion data file: **`AD_methanogenesis_panel.tsv`**.
+Companion data file: **`assets/AD_methanogenesis_panel.tsv`**.
 
 ## Licence
 
@@ -34,11 +34,9 @@ scripts/     one-time setup: database staging, panel construction, curation
              audits, and sbatch wrappers. None requires a scheduler.
 manuscript/  MANUSCRIPT.qmd and its bibliography.
 tests/       expectations and fixtures.
+assets/      the curated panel and the secretion modules — the data this
+             project exists to provide. Both are CC BY 4.0; see LICENSE-DATA.
 ```
-
-The panel itself (`AD_methanogenesis_panel.tsv`) and the secretion modules stay
-at the top level: they are the curated data this project exists to provide, not
-implementation detail.
 
 ## Quick start
 
@@ -102,8 +100,8 @@ hmmsearch --cut_nc --tblout MAG001.tblout $DB/ad_panel/ad_panel.hmm proteins.faa
 python3 bin/panel_scored.py \
     --tblout    MAG001.tblout \
     --map       $DB/ad_panel/ad_panel_map.tsv \
-    --panel     AD_methanogenesis_panel.tsv \
-    --secretion secretion_modules.tsv \
+    --panel     assets/AD_methanogenesis_panel.tsv \
+    --secretion assets/secretion_modules.tsv \
     --gtdbtk    gtdbtk.bac120.summary.tsv \
     --name      MAG001 \
     --out       MAG001.modules.tsv          # summary goes to stdout
@@ -151,7 +149,7 @@ hydrogenotrophs carrying ACDS are called acetoclastic. See the
 |---|---|
 | `--tblout` | **required.** `hmmsearch --tblout` output. |
 | `--map` | **required.** `ad_panel_map.tsv` from the build. |
-| `--panel` | **required.** `AD_methanogenesis_panel.tsv`. |
+| `--panel` | **required.** `assets/AD_methanogenesis_panel.tsv`. |
 | `--out` | **required.** Per-module completeness TSV. |
 | `--name` | Genome label for the report. Default `genome`. |
 | `--gtdbtk` | GTDB-Tk `*.summary.tsv`. Repeatable (bac120 + ar53). Confirms the acetoclastic call and enables the genus hint. |

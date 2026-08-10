@@ -23,7 +23,7 @@ set -euo pipefail
 
 : "${DB:?set DB to a database root, e.g. export DB=/path/to/databases}"
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-PANEL="${PANEL:-$HERE/AD_methanogenesis_panel.tsv}"
+PANEL="${PANEL:-$HERE/assets/AD_methanogenesis_panel.tsv}"
 OUT="${PFAMDIR:-$DB/pfam}"
 API="${INTERPRO_API:-https://www.ebi.ac.uk/interpro/api}"
 
@@ -47,7 +47,7 @@ PYX
 # Extracellular-targeting modules are fetched alongside the panel pins. They are
 # not markers and get no map rows; panel_scored.py uses them to qualify a marker
 # hit as secretion-competent. Same file, same cutoff normalisation.
-SECFILE="${SECRETION:-$HERE/secretion_modules.tsv}"
+SECFILE="${SECRETION:-$HERE/assets/secretion_modules.tsv}"
 if [ -s "$SECFILE" ]; then
   sec=$(awk -F'\t' '!/^#/ && NF>1 {print $1}' "$SECFILE" | grep -o 'PF[0-9]\{5\}' | sort -u)
   [ -n "$sec" ] && accs="$accs $sec"

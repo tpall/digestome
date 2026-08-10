@@ -13,7 +13,7 @@ Zero overlap means "look at this", not "this is wrong" -- synonyms and
 abbreviations that escape the alias table will land here too.
 
 Usage:
-  audit_symbol_matches.py --panel AD_methanogenesis_panel.tsv \
+  audit_symbol_matches.py --panel assets/AD_methanogenesis_panel.tsv \
       --map db/ad_panel_map.tsv --ncbifam _work/hmm_PGAP.tsv [--basis gene_symbol]
 
 Stdlib only.

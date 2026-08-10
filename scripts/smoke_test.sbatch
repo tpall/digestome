@@ -46,7 +46,7 @@ fi
   exit 1; }
 
 : "${DB:?set DB to a database root with room for the panel, e.g. export DB=/path/to/databases}"
-PANEL="$ROOT/AD_methanogenesis_panel.tsv"
+PANEL="$ROOT/assets/AD_methanogenesis_panel.tsv"
 HMM="$DB/ad_panel/ad_panel.hmm"
 MAP="$DB/ad_panel/ad_panel_map.tsv"
 PROT="${PROTEOMES:-$DB/ad_panel_test/proteomes}"
@@ -80,7 +80,7 @@ while IFS=$'\t' read -r label acc organism role; do
       --tblout "$WORK/${label}.tblout" --map "$MAP" --panel "$PANEL" \
       --name "$label" --out "$WORK/${label}.modules.tsv" \
       --gtdbtk "$ROOT/tests/gtdbtk_fixture.tsv" \
-      --secretion "$ROOT/secretion_modules.tsv" \
+      --secretion "$ROOT/assets/secretion_modules.tsv" \
       | tee "$WORK/${label}.summary.txt"
 
   echo "  --- assertions ---"

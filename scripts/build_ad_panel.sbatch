@@ -49,7 +49,7 @@ fi
   exit 1
 }
 : "${DB:?set DB to a database root with room for the panel, e.g. export DB=/path/to/databases}"
-export PANEL="$ROOT/AD_methanogenesis_panel.tsv"
+export PANEL="$ROOT/assets/AD_methanogenesis_panel.tsv"
 export WORK="${WORK:-$DB/ncbifam/_work}"
 export OUT="${OUT:-$DB/ad_panel}"
 

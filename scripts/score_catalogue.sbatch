@@ -29,7 +29,7 @@ CAT="${CATALOGUE:-$DB/ad_panel_test/biogas_catalogue}"
 PROT="$CAT/proteomes"
 TAX="$CAT/catalogue_taxonomy.tsv"
 OUTD="${CATOUT:-$CAT/scored}"
-PANEL="$ROOT/AD_methanogenesis_panel.tsv"
+PANEL="$ROOT/assets/AD_methanogenesis_panel.tsv"
 HMM="$DB/ad_panel/ad_panel.hmm"
 MAP="$DB/ad_panel/ad_panel_map.tsv"
 
@@ -54,7 +54,7 @@ score_one() {
   python3 "$ROOT/bin/panel_scored.py" \
       --tblout "$OUTD/${label}.tblout" --map "$MAP" --panel "$PANEL" \
       --name "$label" --gtdbtk "$TAX" \
-      --secretion "$ROOT/secretion_modules.tsv" \
+      --secretion "$ROOT/assets/secretion_modules.tsv" \
       --out "$OUTD/${label}.modules.tsv" > "$OUTD/${label}.summary.txt" 2>/dev/null || true
   rm -f "$OUTD/${label}.tblout"     # ~1400 tblouts is a lot of small files
 }

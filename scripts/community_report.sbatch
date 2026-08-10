@@ -40,7 +40,7 @@ fi
   echo "!! run from the worktree root" >&2; exit 1; }
 
 : "${DB:?set DB to a database root with room for the panel, e.g. export DB=/path/to/databases}"
-PANEL="$ROOT/AD_methanogenesis_panel.tsv"
+PANEL="$ROOT/assets/AD_methanogenesis_panel.tsv"
 HMM="$DB/ad_panel/ad_panel.hmm"
 MAP="$DB/ad_panel/ad_panel_map.tsv"
 THREADS="${SLURM_CPUS_PER_TASK:-4}"
@@ -58,7 +58,7 @@ score_set() {                       # $1=proteome dir  $2=sample name  $3=out di
     python3 "$ROOT/bin/panel_scored.py" \
         --tblout "$out/${label}.tblout" --map "$MAP" --panel "$PANEL" \
         --name "$label" --out "$out/${label}.modules.tsv" "${gt[@]}" \
-        --secretion "$ROOT/secretion_modules.tsv" \
+        --secretion "$ROOT/assets/secretion_modules.tsv" \
         > "$out/${label}.summary.txt"
     n=$((n+1))
   done

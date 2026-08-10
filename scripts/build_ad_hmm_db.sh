@@ -13,8 +13,8 @@
 # SCAFFOLD: verify NCBIfam URLs/column names and review EC-based matches.
 set -euo pipefail
 
-HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PANEL="${PANEL:-$HERE/AD_methanogenesis_panel.tsv}"
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PANEL="${PANEL:-$HERE/assets/AD_methanogenesis_panel.tsv}"
 OUT="${OUT:-$HERE/db}"
 WORK="${WORK:-$OUT/_work}"
 NCBIFAM_BASE="${NCBIFAM_BASE:-https://ftp.ncbi.nlm.nih.gov/hmm/current}"
