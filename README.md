@@ -11,6 +11,13 @@ A **license-clean** functional scaffold for biogas/AD microbiome analysis: which
 
 Companion data file: **`AD_methanogenesis_panel.tsv`**.
 
+## Licence
+
+Code is MIT (`LICENSE`). The curated data files, including the panel itself, are
+CC BY 4.0 (`LICENSE-DATA`): the panel is a dataset rather than software, and
+attribution is a licence term rather than a hope. No upstream database is
+redistributed here; the build scripts fetch NCBIfam, Pfam and Rhea from source.
+
 ---
 
 ## Quick start

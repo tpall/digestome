@@ -1,0 +1,30 @@
+Creative Commons Attribution 4.0 International (CC BY 4.0)
+
+Copyright (c) 2026 Magrittr OÜ
+
+The curated data files in this repository are licensed CC BY 4.0, separately
+from the software:
+
+  AD_methanogenesis_panel.tsv    the marker panel
+  secretion_modules.tsv          extracellular-targeting modules
+  tests/genomes.tsv              reference genomes and accessions
+  tests/expectations.tsv         asserted biology
+  tests/gtdbtk_fixture.tsv       lineages for the reference set
+  tests/digester_mags.tsv        digester MAG accessions
+  MANUSCRIPT.qmd, references.bib
+
+You are free to share and adapt these for any purpose, including commercially,
+provided you give appropriate credit and indicate if changes were made.
+
+Full text: https://creativecommons.org/licenses/by/4.0/legalcode
+Summary:   https://creativecommons.org/licenses/by/4.0/
+
+WHY THE SPLIT. The panel is a curated dataset rather than software, and MIT fits
+data awkwardly. CC BY also makes attribution a licence term rather than a hope,
+which is the point: the panel's value is the curation, and citation is how that
+is repaid.
+
+UPSTREAM SOURCES are not redistributed here. The build scripts download NCBIfam
+(public domain), Pfam (CC0) and Rhea (CC BY 4.0) directly from their providers,
+so no upstream licence propagates into this repository. Accessions listed in the
+panel are facts about those databases, not copies of them.
