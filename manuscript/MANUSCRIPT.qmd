@@ -74,13 +74,15 @@ carbohydrate and peptidase function are dbCAN and MEROPS, which carry their own 
 so a KEGG-free configuration is not yet a commercially clean one. The requirement is therefore
 not *KEGG-free* but *free of every licence-encumbered dependency in the stack*.
 
-| | module-level from MAGs | independent of KEGG | no restricted dependency anywhere | AD pathway model | workflow-managed |
-|---|---|---|---|---|---|
-| DRAM [@shaffer2020dram] | ✓ | optional | ✗ (dbCAN, MEROPS) | ✗ | ✗ |
-| METABOLIC [@zhou2022metabolic] | ✓ | ✗ (KOfam) | ✗ | ✗ | ✗ |
-| KEMET [@palu2022kemet] | ✓ | ✗ (KEGG Modules) | ✗ | ✗ | ✗ |
-| MetaPathPredict [@metapathpredict2024] | ✓ | ✗ (KEGG Modules) | ✗ | ✗ | ✗ |
-| this work | ✓ | ✓ | ✓ | ✓ | ✓ |
+| | module-level from MAGs | independent of KEGG | no restricted dependency anywhere | AD pathway model |
+|---|---|---|---|---|
+| DRAM [@shaffer2020dram] | ✓ | optional | ✗ (dbCAN, MEROPS) | ✗ |
+| METABOLIC [@zhou2022metabolic] | ✓ | ✗ (KOfam) | ✗ | ✗ |
+| KEMET [@palu2022kemet] | ✓ | ✗ (KEGG Modules) | ✗ | ✗ |
+| MetaPathPredict [@metapathpredict2024] | ✓ | ✗ (KEGG Modules) | ✗ | ✗ |
+| this work | ✓ | ✓ | ✓ | ✓ |
+
+: Module-level metabolic reconstruction tools and their reference dependencies. {#tbl-tools}
 
 Every tool that reconstructs metabolism at module level from MAGs resolves it through KEGG,
 and this reflects the maturity of KEGG Modules as a pathway model rather than any shortcoming
@@ -263,7 +265,7 @@ negative assertion on *E. coli*.
 
 ## No methanogenesis route is assigned to any non-methanogen
 
-The panel was applied to the 1,401 digester MAGs, scored in under eight minutes.
+The panel was applied to the 1,401 digester MAGs, scored in under eight minutes (@tbl-specificity).
 
 | | |
 |---|---|
@@ -272,6 +274,8 @@ The panel was applied to the 1,401 digester MAGs, scored in under eight minutes.
 | Acetoclastic calls outside those genera | **0** |
 | Non-methanogens assigned any methanogenesis route | **0 of 1,361** |
 | Methanogens with no route assigned | 0 of 40 |
+
+: Methanogenesis route assignment across 1,401 digester MAGs. {#tbl-specificity}
 
 The absence of route assignments among 1,361 bacterial genomes is the principal specificity
 result. An earlier build of the panel, before gene-symbol collisions were audited, would not have
@@ -287,7 +291,7 @@ because the gate independently requires `mcrA`, and it discriminated perfectly a
 
 ## The export test reduces attributed hydrolytic capacity
 
-Applying the per-protein export test across the same 1,401 genomes:
+Applying the per-protein export test across the same 1,401 genomes (@tbl-secretion):
 
 | module | carry the family | export it | |
 |---|---|---|---|
@@ -295,6 +299,8 @@ Applying the per-protein export test across the same 1,401 genomes:
 | Carbohydrate hydrolysis | 597 | 50 | 8.4% |
 | Lipid hydrolysis | 129 | 7 | 5.4% |
 | All intracellular modules | up to 1,337 | **0** | 0.0% |
+
+: Genomes carrying a hydrolase family versus those encoding it on the same polypeptide as an export module. {#tbl-secretion}
 
 The zero across every intracellular module is the control: the test fires only on hydrolysis, the
 sole exported step.
@@ -340,14 +346,28 @@ report expression, rate or flux; those require transcriptomics, proteomics or pr
 Secretion evidence extends the claim from *encoded* to *encoded and built for export*, which is
 still not *active*.
 
-**Markers with no licence-clean detector.** Ten of 86 markers remain unresolved. Two cases are
-instructive. `bcd` and `crt` have no model in either source, so syntrophic butyrate oxidation is
-reported as unassessable rather than absent. `mtmB` cannot be detected at all from standard
-annotations: a correct, narrow Pfam family exists, but MtmB is a pyrrolysine protein whose in-frame
-amber codon standard annotation pipelines do not translate through. Across the 1,401 genomes,
-"monomethylamine methyltransferase" is annotated in none and no proteome contains a single
-pyrrolysine residue. No model can recover a protein the annotator never emitted; the fix would be
-amber read-through at gene calling.
+**Markers with no licence-clean detector.** Ten of 86 markers remain unresolved. `bcd` and `crt`
+have no model in either source, so syntrophic butyrate oxidation is reported as unassessable
+rather than absent.
+
+`mtmB` is a different and more tractable case, and it shows that detectability can depend on the
+gene caller rather than on the model. MtmB is a pyrrolysine protein carrying an in-frame amber
+codon. In *Methanosarcina barkeri*, the reference NCBI annotation contains no monomethylamine
+methyltransferase at all and the Pfam family PF05369 therefore returns nothing, which is what
+led us initially to treat the marker as undetectable. Calling genes with Prodigal instead
+recovers it: the standard bacterial table truncates each of the two gene copies at the amber
+codon, but both resulting fragments (238 and 202 residues, against a 450-residue model) clear
+the Pfam gathering threshold independently. Calling with a translation table that reads TAG
+through reconstructs each copy as a single full-length protein of 556 and 535 residues, at
+roughly twice the bit score, with the read-through residue at the expected pyrrolysine position.
+Across seven reference genomes the family gave no hit outside the methylotroph, including in
+three non-methylotrophic methanogens.
+
+The marker is nevertheless left out of the panel here, because specificity has so far been
+established only against that small negative set, and because a detector whose behaviour depends
+on the upstream gene caller needs its dependence documented before it is relied upon. The general
+point stands beyond this marker: for any protein with in-frame amber codons, the limiting step is
+gene calling rather than profile availability.
 
 **Family-level resolution in hydrolysis.** Pfam families do not distinguish secreted from
 cytoplasmic enzymes on their own (hence the export test), nor do they resolve substrate
