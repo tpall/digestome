@@ -31,7 +31,7 @@ ROOT="${SLURM_SUBMIT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 
 : "${DB:?set DB to a database root}"
 WORK="${WORK:-$DB/ad_panel_test/gtdb}"
-PROT="$WORK/proteomes"
+PROT="${PROTEOMES:-$WORK/proteomes_prodigal}"
 OUT="$WORK/scored"
 CPUS="${SLURM_CPUS_PER_TASK:-4}"
 HMM="$DB/ad_panel/ad_panel.hmm"
