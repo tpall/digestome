@@ -233,6 +233,16 @@ workflow engine, and a user with fourteen hundred does not hand-roll parallelism
 staging and panel construction remain scripts, being one-time operations that need outbound
 network access and gain nothing from a task graph.
 
+## Compute environment
+
+All runs used HMMER 3 on 16 cores of an AMD EPYC 7742. Scoring the 1,401-genome
+catalogue took 7 min 57 s of wall-clock time and 1.6 CPU-hours in four repeat runs
+(range 7 min 37 s to 8 min 5 s), or approximately 4 CPU-seconds per genome, of which
+`hmmsearch` against the 143-model database is nearly all. Peak memory stayed within
+16 GB for the job as a whole. The cost scales linearly with genome count and the work
+is embarrassingly parallel, so a single core processes a genome in a few seconds and
+a laptop handles a few hundred genomes in minutes; nothing here requires a cluster.
+
 ## Validation datasets
 
 Two datasets were used. The first is a set of seven reference genomes of known metabolism,
@@ -265,7 +275,7 @@ negative assertion on *E. coli*.
 
 ## No methanogenesis route is assigned to any non-methanogen
 
-The panel was applied to the 1,401 digester MAGs, scored in under eight minutes (@tbl-specificity).
+The panel was applied to the 1,401 digester MAGs (@tbl-specificity).
 
 | | |
 |---|---|
