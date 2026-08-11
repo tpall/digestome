@@ -38,6 +38,10 @@ METHANOGEN_ORDERS = {
     'o__Methanosarcinales', 'o__Methanotrichales', 'o__Methanocellales',
     'o__Methanopyrales', 'o__Methanomassiliicoccales', 'o__Methanofastidiosales',
     'o__Methanomethylicales',
+    # Methyl-reducing haloalkaliphilic methanogens. Omitted from the first draw,
+    # which then counted a correct call on GCF_029854155.1 as a false positive.
+    # The panel found it via mcrA before the label list did.
+    'o__Methanonatronarchaeales',
 }
 
 
