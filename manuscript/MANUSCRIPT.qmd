@@ -215,6 +215,12 @@ per-protein; the same two domains in one genome but on different proteins carry 
 implication. All five export modules are Pfam families. Signal-peptide prediction was deliberately
 not used, the standard tool being fee-licensed for commercial work.
 
+The three methylamine methyltransferases (mono-, di- and trimethylamine) are pinned to
+pyrrolysine-specific models: PF05369 for the first and the NCBIfam models `dimeth_PyL` and
+`trimeth_pyl` for the other two. The corresponding Pfam superfamily spans bacterial homologues
+that are not methylamine methyltransferases and is not used for detection. All three enzymes carry
+in-frame amber codons, so all three depend on gene calling that reads through them.
+
 ## Reporting non-measurement
 
 A module with nothing measurable reports `NA` and a status, never `0.0`. Statuses distinguish a
@@ -350,10 +356,10 @@ genome that does not contain the defining marker should not be given a route.
 The eight that carry `mcrA` without an assignable route are the informative residue. Three are
 *Methanomassiliicoccales*, obligate hydrogen-dependent methylotrophs whose proteome sizes are
 normal for the clade and which lack the Mtr/H4MPT set as a matter of biology rather than assembly
-quality. They use methylamine methyltransferases, and pinning the monomethylamine family resolved
-only those genomes that carry that specific enzyme: the dimethylamine and trimethylamine
-methyltransferases are separate pyrrolysine proteins with separate families, and remain
-undetected. One is *Methanoperedens*, an anaerobic methane oxidiser that runs the pathway in
+quality. They carry none of the three methylamine methyltransferases, nor the methanol enzyme,
+and the panel therefore declines to name a route. Whether this reflects a substrate
+methyltransferase outside the panel or an incomplete assembly is not resolvable from gene content,
+which is the honest position for a capability method to take. One is *Methanoperedens*, an anaerobic methane oxidiser that runs the pathway in
 reverse and should not receive a methanogenesis route, although the panel declines to assign one
 because the gate conditions are unmet rather than because it recognises reverse operation. The
 remaining four are contig-level assemblies missing scattered carriers with no shared pattern.
