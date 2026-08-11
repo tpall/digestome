@@ -23,9 +23,17 @@ def helpMessage() {
     Usage:
       nextflow run . --proteomes 'path/to/*.faa' --db /path/to/databases [options]
 
-    Required:
+    Required (one of):
+      --genomes       Glob of genome FASTA files, one per genome/MAG. Quote it.
+                      Genes are called with Prodigal. PREFERRED: see the note below.
       --proteomes     Glob of protein FASTA files, one per genome/MAG. Quote it.
-                      Alternatively --input a CSV with columns: sample,faa
+      --input         CSV with columns: sample,faa (proteomes)
+
+    On --genomes versus --proteomes: some annotation pipelines do not translate
+    through in-frame amber codons, and silently emit no protein for pyrrolysine
+    genes. Several methylamine methyltransferases in this panel are pyrrolysine
+    proteins, so supplying such proteomes under-reports methylotrophy with no
+    warning. Calling genes here removes that dependency.
       --db            Database root containing ad_panel/ (from scripts/build_ad_panel.sbatch)
 
     Optional:
@@ -39,6 +47,31 @@ def helpMessage() {
     Profiles:
       -profile slurm | conda | singularity | docker | test
     """.stripIndent()
+}
+
+process PRODIGAL {
+    tag   "$sample"
+    label 'process_single'
+
+    input:
+    tuple val(sample), path(fna)
+
+    output:
+    tuple val(sample), path("${sample}.faa")
+
+    script:
+    // -p meta for short or fragmented assemblies; single-genome mode models poorly
+    // below roughly 100 kb. Table 11 is standard: it truncates pyrrolysine proteins
+    // at the amber codon, but both resulting fragments still clear the curated
+    // cutoffs for the affected markers, which is what detection requires.
+    """
+    size=\$(grep -v '^>' ${fna} | tr -d '\\n' | wc -c)
+    mode=single; [ "\$size" -lt 200000 ] && mode=meta
+    prodigal -i ${fna} -a ${sample}.faa -p \$mode -g ${params.translation_table} -q
+    """
+
+    stub:
+    "touch ${sample}.faa"
 }
 
 process HMMSEARCH {
@@ -132,19 +165,29 @@ workflow {
     }
 
     // ---- inputs -------------------------------------------------------------
-    if (!params.proteomes && !params.input) {
-        error "Provide --proteomes '<glob>' or --input <samplesheet.csv>. See --help."
+    if (!params.proteomes && !params.input && !params.genomes) {
+        error "Provide --genomes '<glob>', --proteomes '<glob>' or --input <samplesheet.csv>. See --help."
+    }
+    if (params.genomes && (params.proteomes || params.input)) {
+        error "Provide either --genomes or --proteomes/--input, not both."
     }
 
-    ch_faa = params.input
-        ? Channel.fromPath(params.input, checkIfExists: true)
+    // Built below: from genomes via Prodigal, or from supplied proteomes. The
+    // proteome branches must not be evaluated when --genomes is in use, since
+    // Channel.fromPath(null) fails before the genome branch is ever reached.
+    def ch_faa = null
+    if (params.input) {
+        ch_faa = Channel.fromPath(params.input, checkIfExists: true)
               .splitCsv(header: true)
               .map { row ->
                   if (!row.sample || !row.faa) error "Samplesheet needs columns: sample,faa"
                   tuple(row.sample, file(row.faa, checkIfExists: true))
               }
-        : Channel.fromPath(params.proteomes, checkIfExists: true)
+    }
+    else if (params.proteomes) {
+        ch_faa = Channel.fromPath(params.proteomes, checkIfExists: true)
               .map { f -> tuple(f.simpleName, f) }
+    }
 
     // Fail early and clearly rather than deep inside hmmsearch.
     def dbdir = params.db ? file("${params.db}/ad_panel") : null
@@ -169,6 +212,18 @@ workflow {
     }
 
     // ---- analysis -----------------------------------------------------------
+    if (params.genomes) {
+        ch_fna = Channel.fromPath(params.genomes, checkIfExists: true)
+                        .map { f -> tuple(f.simpleName, f) }
+        ch_faa = PRODIGAL(ch_fna)
+    }
+    else {
+        log.warn "Scoring supplied proteomes. If they came from an annotation " +
+                 "pipeline that does not read through in-frame amber codons, " +
+                 "pyrrolysine markers (several methylamine methyltransferases here) " +
+                 "will be absent with no indication. Prefer --genomes where possible."
+    }
+
     HMMSEARCH(ch_faa, ch_hmm)
     SCORE(HMMSEARCH.out, ch_map, ch_panel, ch_sec, ch_tax)
 
