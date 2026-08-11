@@ -50,10 +50,18 @@ These markers are scored per genome, so prevalence measured over MAGs understate
 markers carried by taxa that do not bin. A parallel analysis of bile-acid
 7alpha-dehydroxylation found prevalence rising from 2.1% to 17.9% of samples when
 whole-assembly proteomes were searched instead of binned ones, with 31% of carrying
-contigs never binned. The trade-off is real in both directions: whole-assembly
-proteomes give better prevalence, but cannot support the gates or the
-taxonomy-confirmed acetoclastic call, since neither is meaningful for a mixed
-community. Use binned input for capability and pathway completeness; use assembly
+contigs never binned. Do not respond by running the gates over assembly proteomes. A single-gene call
+survives that move; a multi-gene gate does not, because its members can be satisfied
+by different organisms and the false-positive rate scales with how common the
+individual markers are. The hydrogenotrophic gate is this panel's worst case: four
+present among eight carriers admits many ways to assemble a call from unrelated
+genomes. In the same bile-acid analysis, a same-sample corroboration rule rather than
+a same-contig one produced 29% spurious operon calls, driven by two markers present in
+39% and 48% of samples in organisms that do not perform the pathway.
+
+Contig-level co-occurrence is the intermediate: it keeps single-organism evidence
+without requiring a bin, and loses only operons split across contigs. Not implemented
+here. The gates are defined for binned genomes and should be run on them. Use binned input for capability and pathway completeness; use assembly
 proteomes if the question is whether a marker is present in the sample at all.
 
 ## Pyrrolysine dependence

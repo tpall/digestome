@@ -466,13 +466,26 @@ taxonomy it degrades to gene evidence, which over-calls.
 
 **Prevalence is measured over binned genomes.** Scoring is per genome, so a marker carried by
 taxa that do not bin is not counted. In a parallel analysis of bile-acid 7alpha-dehydroxylation in
-human gut metagenomes, searching whole-assembly proteomes instead of binned ones raised prevalence
-from 2.1% to 17.9% of samples, with 31% of carrying contigs never binned. The direction of the
-error is predictable, always downward, and it falls hardest on rare or taxonomically restricted
-functions. The alternative is not free: a whole-assembly proteome supports neither the branch gates
-nor the lineage-confirmed acetoclastic call, since neither is meaningful for a mixed community.
-Binned input answers what a genome can do; assembly-level search answers whether a capability is
-present in the sample at all, and the two questions should not be conflated.
+human gut metagenomes, searching whole-assembly proteomes instead of binned ones raised the
+prevalence of a single diagnostic gene from 2.1% to 17.9% of samples, with 31% of carrying contigs
+never binned. The error is always downward and falls hardest on rare or taxonomically restricted
+functions.
+
+Recovering that fraction by scoring assembly proteomes directly is not a safe substitute here, and
+the reason is quantitative rather than conceptual. A single-gene call survives the move, because
+presence in a sample does imply that some organism carries the gene. A multi-gene gate does not:
+its members can be satisfied by different organisms, and the resulting false-positive rate scales
+with how common the individual markers are. The hydrogenotrophic gate is the worst case in this
+panel, since a threshold of four present among eight carriers admits many ways to assemble a call
+from unrelated genomes. In the same bile-acid analysis, requiring corroborating genes in the same
+sample rather than on the same contig produced 29% spurious operon calls, driven by two markers
+present in 39% and 48% of samples and carried by organisms that do not perform the pathway.
+
+Contig-level co-occurrence is the intermediate that preserves single-organism evidence without
+requiring a bin, at the cost of missing operons split across contigs. The panel does not currently
+implement it; the gates are defined for, and should be run on, binned genomes. Binned input answers
+what an organism can do, and assembly-level search answers whether a capability is present in a
+sample. The two questions have different error models and should not be conflated.
 
 **Taxonomic ground truth.** Both the specificity and the sensitivity figures are measured
 against order-level labels, and those labels were wrong in both directions here.
