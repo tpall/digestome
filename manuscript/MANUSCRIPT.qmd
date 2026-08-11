@@ -343,16 +343,26 @@ in the sample received a route. On the reading that these three are methanogens,
 false assignment in 1,899 background genomes; on the conservative reading they represent a false
 positive rate below 0.2%.
 
-Of the 1,144 methanogens, 895 were assigned at least one route. Of the 249 that were not, 240
+Of the 1,144 methanogens, 896 were assigned at least one route. Of the 248 that were not, 240
 carry no detectable `mcrA` at all. GTDB representatives include many incomplete genomes, and a
-genome that does not contain the defining marker should not be given a route; the remaining nine
-carry `mcrA` without an assignable route.
+genome that does not contain the defining marker should not be given a route.
+
+The eight that carry `mcrA` without an assignable route are the informative residue. Three are
+*Methanomassiliicoccales*, obligate hydrogen-dependent methylotrophs whose proteome sizes are
+normal for the clade and which lack the Mtr/H4MPT set as a matter of biology rather than assembly
+quality. They use methylamine methyltransferases, and pinning the monomethylamine family resolved
+only those genomes that carry that specific enzyme: the dimethylamine and trimethylamine
+methyltransferases are separate pyrrolysine proteins with separate families, and remain
+undetected. One is *Methanoperedens*, an anaerobic methane oxidiser that runs the pathway in
+reverse and should not receive a methanogenesis route, although the panel declines to assign one
+because the gate conditions are unmet rather than because it recognises reverse operation. The
+remaining four are contig-level assemblies missing scattered carriers with no shared pattern.
 
 | | background | methanogen |
 |---|---|---|
 | genomes | 1,899 | 1,144 |
-| route assigned | 3, all `mcrA`-positive archaea | 895 |
-| no route | 1,896 | 249, of which 240 lack `mcrA` |
+| route assigned | 3, all `mcrA`-positive archaea | 896 |
+| no route | 1,896 | 248, of which 240 lack `mcrA` |
 
 : Methanogenesis route assignment across 3,043 GTDB species representatives. {#tbl-gtdb}
 
@@ -445,6 +455,14 @@ routes; a plain Sec-secreted enzyme carrying no binding module would be missed.
 
 **Taxonomy dependence.** The acetoclastic call is only as good as the supplied lineage. Without
 taxonomy it degrades to gene evidence, which over-calls.
+
+**Taxonomic ground truth.** Both the specificity and the sensitivity figures are measured
+against order-level labels, and those labels were wrong in both directions here.
+*Methanonatronarchaeales* are methanogens that our order list did not include, so a correct call
+counted as a false positive; *Methanoperedens* is an anaerobic methane oxidiser sitting inside a
+methanogen order, so a correct refusal counted as a missed call. Neither error is large enough to
+change the conclusions, but both indicate that a benchmark of this kind measures the reference
+labels as much as the tool.
 
 **Benchmark scope.** Specificity now rests on two collections that differ in construction, one
 binned from digester metagenomes by a single group and one drawn from GTDB representatives, which
