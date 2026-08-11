@@ -464,6 +464,16 @@ routes; a plain Sec-secreted enzyme carrying no binding module would be missed.
 **Taxonomy dependence.** The acetoclastic call is only as good as the supplied lineage. Without
 taxonomy it degrades to gene evidence, which over-calls.
 
+**Prevalence is measured over binned genomes.** Scoring is per genome, so a marker carried by
+taxa that do not bin is not counted. In a parallel analysis of bile-acid 7alpha-dehydroxylation in
+human gut metagenomes, searching whole-assembly proteomes instead of binned ones raised prevalence
+from 2.1% to 17.9% of samples, with 31% of carrying contigs never binned. The direction of the
+error is predictable, always downward, and it falls hardest on rare or taxonomically restricted
+functions. The alternative is not free: a whole-assembly proteome supports neither the branch gates
+nor the lineage-confirmed acetoclastic call, since neither is meaningful for a mixed community.
+Binned input answers what a genome can do; assembly-level search answers whether a capability is
+present in the sample at all, and the two questions should not be conflated.
+
 **Taxonomic ground truth.** Both the specificity and the sensitivity figures are measured
 against order-level labels, and those labels were wrong in both directions here.
 *Methanonatronarchaeales* are methanogens that our order list did not include, so a correct call

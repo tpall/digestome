@@ -142,6 +142,7 @@ The detail lives in `docs/`, so this page stays the getting-started page:
 | [docs/cli.md](docs/cli.md) | Every flag of both tools, and what each script in `scripts/` is for. |
 | [docs/scoring.md](docs/scoring.md) | How module completeness is computed, what `NA` means, and the condition behind each branch gate. |
 | [docs/panel.md](docs/panel.md) | Which database detects which row, the single-marker fingerprint, and how to resolve a new accession. |
+| [docs/methanogenesis-markers.md](docs/methanogenesis-markers.md) | Branch gate definitions and methanogenesis marker accessions, for reuse or comparison against another marker set. |
 
 ---
 
