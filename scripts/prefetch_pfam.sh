@@ -85,7 +85,7 @@ for acc in $accs; do
 done
 
 # Concatenate ONLY what is currently pinned, not everything ever cached. A family
-# that gets unpinned (mtmB/PF05369 was, once pyrrolysine made it undetectable)
+# that gets unpinned (mtmB/PF05369 was for a while, when it looked undetectable)
 # must leave the panel DB, otherwise stale models linger in the pressed file with
 # no map rows behind them. The cache itself is kept, so re-pinning costs nothing.
 : > "$OUT/panel_pfam.hmm"

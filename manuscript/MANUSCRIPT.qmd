@@ -17,8 +17,11 @@ abstract: |
   is built for export. Benchmarked against 1,401 metagenome-assembled genomes from 134
   anaerobic digesters, the panel assigned no methanogenesis route to any of 1,361
   non-methanogens, and every acetoclastic call fell within *Methanosarcina* or
-  *Methanothrix*. Testing whether a catalytic domain shares a polypeptide with an export
-  module reduced the genomes credited with cellulolytic capacity from 597 to 50.
+  *Methanothrix*. The result held on 3,043 GTDB species representatives spanning 203 phyla,
+  which are built differently from binned metagenomes: the only background genomes given a
+  route were three archaea carrying `mcrA`. Testing whether a catalytic domain shares a
+  polypeptide with an export module reduced the genomes credited with cellulolytic capacity
+  from 597 to 50.
 keywords: [anaerobic digestion, biogas, metagenomics, functional annotation, methanogenesis, open data]
 bibliography: references.bib
 format:
@@ -165,7 +168,7 @@ symbol for formamidase, an unrelated and common enzyme.
 excluded entirely; they name an enzyme class rather than a gene, and matching them imported 58
 unrelated peptidases, lipases and glycosidases.
 
-Of 152 model-to-marker assignments in the current build, 51 are curated, 57 by gene symbol and 44
+Of 150 model-to-marker assignments in the current build, 52 are curated, 57 by gene symbol and 41
 by EC. Every non-curated route is auditable: `audit_symbol_matches.py` compares the enzyme the
 panel requests against the product name of each matched model.
 
@@ -174,7 +177,7 @@ panel requests against the product name of each matched model.
 Each model is applied at its own curated cutoff (`hmmsearch` from HMMER 3 [@eddy2011hmmer]
 with `--cut_nc`) rather than a global
 threshold, an approach shown to materially affect functional and metabolic inference
-[@hmmthresholds2025]. Across the 143 models these span 20.8 to 1,400 bits (median 405), so no single
+[@hmmthresholds2025]. Across the 144 models these span 20.8 to 1,400 bits (median 380), so no single
 threshold is defensible; a hardcoded cutoff of 450 bits, for instance, would silently discard
 more than half the panel. Pfam and NCBIfam use different conventions. Pfam curates a gathering
 threshold (GA) that sits above its noise cutoff (NC), while NCBIfam curates NC, so on import each Pfam
@@ -261,7 +264,22 @@ in *S. wolfei*, an organism that performs the pathway, because two of its four r
 have no licence-clean model. Asserting the honest blank prevents it silently degrading into a
 false negative.
 
-The second dataset is 1,401 metagenome-assembled genomes recovered from 134 anaerobic digesters
+The second dataset tests whether specificity depends on how genomes were constructed. It is
+3,043 GTDB r226 species representatives, which are isolate-derived or independently assembled
+rather than binned from digester metagenomes: every representative of eleven methanogen orders
+(1,144 genomes, taken whole because they measure sensitivity) together with 1,899 background
+genomes allocated across 203 phyla in proportion to the square root of phylum size. Proportional
+allocation would spend the budget on the largest phyla and equal allocation would weight a
+singleton phylum like a 36,000-genome one; selection within a phylum is by even stride over
+sorted accessions, so the sample is reproducible without a seed.
+
+Genes were called with Prodigal for every genome in this set rather than taking NCBI protein
+sets. A third of GTDB representatives are assemblies with no NCBI annotation, and the gap falls
+on uncultured lineages, so downloading proteomes lost 28 phyla outright. Calling genes also keeps
+this benchmark comparable with the digester catalogue, which was itself Prodigal-called, and it is
+required for the pyrrolysine marker described below.
+
+The third dataset is 1,401 metagenome-assembled genomes recovered from 134 anaerobic digesters
 spanning multiple plants, feedstocks and operating temperatures [@campanaro2020; NCBI
 BioProject PRJNA602310]. Taxonomic assignments accompanying the catalogue were used for the
 lineage-confirmed gates.
@@ -314,6 +332,47 @@ Applying the per-protein export test across the same 1,401 genomes (@tbl-secreti
 The zero across every intracellular module is the control: the test fires only on hydrolysis, the
 sole exported step.
 
+## Specificity holds on genomes built a different way
+
+Applying the panel to the 3,043 GTDB representatives tests whether the digester result depends on
+one binning pipeline (@tbl-gtdb). Three background genomes were assigned a methanogenesis route.
+All three carry `mcrA`, and all three are archaea in lineages where that is expected or plausible:
+*Methanonatronarchaeales*, which are methyl-reducing methanogens and which our order list had not
+counted as such, *Hadarchaeales*, and an unnamed order within Halobacteriota. No bacterial genome
+in the sample received a route. On the reading that these three are methanogens, the panel made no
+false assignment in 1,899 background genomes; on the conservative reading they represent a false
+positive rate below 0.2%.
+
+Of the 1,144 methanogens, 895 were assigned at least one route. Of the 249 that were not, 240
+carry no detectable `mcrA` at all. GTDB representatives include many incomplete genomes, and a
+genome that does not contain the defining marker should not be given a route; the remaining nine
+carry `mcrA` without an assignable route.
+
+| | background | methanogen |
+|---|---|---|
+| genomes | 1,899 | 1,144 |
+| route assigned | 3, all `mcrA`-positive archaea | 895 |
+| no route | 1,896 | 249, of which 240 lack `mcrA` |
+
+: Methanogenesis route assignment across 3,043 GTDB species representatives. {#tbl-gtdb}
+
+## Detecting a pyrrolysine marker depends on the gene caller
+
+Monomethylamine methyltransferase illustrates a failure mode that is upstream of the panel
+entirely. In *Methanosarcina barkeri*, the NCBI reference annotation contains no monomethylamine
+methyltransferase, so the Pfam family PF05369 returns nothing however the search is run. Calling
+genes with Prodigal recovers it. Under the standard translation table each of the two gene copies
+is truncated at the in-frame amber codon into fragments of 238 and 202 residues, against a
+450-residue model, and both clear the gathering threshold independently. Under a table that reads
+TAG through, each copy is reconstructed as a single protein of 556 and 535 residues at roughly
+twice the bit score, with the substituted residue at the expected pyrrolysine position.
+
+Across the GTDB sample the family was found in 278 of 1,144 methanogens, concentrated in
+*Methanomassiliicoccales* (137), *Methanosarcinales* (119) and *Methanomethylicales* (22), against
+18 of 1,899 background genomes. Those background hits cannot by themselves place a genome on a
+methylotrophic route, because that gate independently requires `mcrA`. The marker is included in
+the panel on that basis.
+
 # Discussion
 
 The specificity result is the load-bearing one, and it is worth being precise about what
@@ -325,7 +384,13 @@ gate requires the one marker that is hardest to match by accident. This is a des
 than a fortunate outcome, and it is the reason the two audits described in the methods, of curated
 accessions and of symbol matches, are aimed at completeness figures rather than at the gates.
 
-Scoring 1,361 bacterial genomes and assigning none of them a route tests that design directly.
+Scoring 1,361 bacterial genomes and assigning none of them a route tests that design directly,
+and the GTDB representatives extend it: those genomes were not binned at all, so agreement across
+the two collections cannot be explained by a shared assembly pipeline. The three background
+genomes that did receive a route are the informative cases rather than the failures. Each carries
+`mcrA`, and one belongs to an order of methyl-reducing methanogens that our own list of methanogen
+orders had omitted, so the panel identified a methanogen before the reference labels did. A
+specificity benchmark measures the labels as much as the tool.
 What the test cannot do is establish the same for module percentages, which have no equivalent
 gatekeeper and are correspondingly more exposed to the collisions the audits are there to catch.
 
@@ -362,28 +427,16 @@ report expression, rate or flux; those require transcriptomics, proteomics or pr
 Secretion evidence extends the claim from *encoded* to *encoded and built for export*, which is
 still not *active*.
 
-**Markers with no licence-clean detector.** Ten of 86 markers remain unresolved. `bcd` and `crt`
-have no model in either source, so syntrophic butyrate oxidation is reported as unassessable
-rather than absent.
+**Markers with no licence-clean detector.** Nine of 86 markers remain unresolved. `bcd` and
+`crt` have no model in either source, so syntrophic butyrate oxidation is reported as unassessable
+rather than absent, including in an organism that performs it.
 
-`mtmB` is a different and more tractable case, and it shows that detectability can depend on the
-gene caller rather than on the model. MtmB is a pyrrolysine protein carrying an in-frame amber
-codon. In *Methanosarcina barkeri*, the reference NCBI annotation contains no monomethylamine
-methyltransferase at all and the Pfam family PF05369 therefore returns nothing, which is what
-led us initially to treat the marker as undetectable. Calling genes with Prodigal instead
-recovers it: the standard bacterial table truncates each of the two gene copies at the amber
-codon, but both resulting fragments (238 and 202 residues, against a 450-residue model) clear
-the Pfam gathering threshold independently. Calling with a translation table that reads TAG
-through reconstructs each copy as a single full-length protein of 556 and 535 residues, at
-roughly twice the bit score, with the read-through residue at the expected pyrrolysine position.
-Across seven reference genomes the family gave no hit outside the methylotroph, including in
-three non-methylotrophic methanogens.
-
-The marker is nevertheless left out of the panel here, because specificity has so far been
-established only against that small negative set, and because a detector whose behaviour depends
-on the upstream gene caller needs its dependence documented before it is relied upon. The general
-point stands beyond this marker: for any protein with in-frame amber codons, the limiting step is
-gene calling rather than profile availability.
+**Dependence on upstream gene calling.** The pyrrolysine result above is a property of the
+annotation, not of the panel, and it cuts both ways: `mtmB` is detectable from Prodigal calls and
+invisible in NCBI reference proteomes. Any input built by an annotation pipeline that does not
+translate through in-frame amber codons will under-report methylamine methyltransferases, and the
+panel cannot detect that this has happened. The same caution applies to any marker whose gene
+carries a recoded codon.
 
 **Family-level resolution in hydrolysis.** Pfam families do not distinguish secreted from
 cytoplasmic enzymes on their own (hence the export test), nor do they resolve substrate
@@ -393,17 +446,22 @@ routes; a plain Sec-secreted enzyme carrying no binding module would be missed.
 **Taxonomy dependence.** The acetoclastic call is only as good as the supplied lineage. Without
 taxonomy it degrades to gene evidence, which over-calls.
 
-**A single benchmark catalogue.** Specificity was assessed against one MAG collection, and
-although it spans 134 digesters, plants, feedstocks and temperatures, it was assembled and
-binned by a single group with one set of methods. Generalisation to catalogues built by other
-pipelines has not been tested.
+**Benchmark scope.** Specificity now rests on two collections that differ in construction, one
+binned from digester metagenomes by a single group and one drawn from GTDB representatives, which
+removes the possibility that the result is an artefact of one binning pipeline. Both remain
+snapshots of public sequence databases, and neither tests genomes from a digester the panel has
+not seen; a prospective test on new plant samples has not been done. Sensitivity is measured only
+against taxonomic assignment, which is itself an inference: a genome placed in a methanogen order
+that carries no `mcrA` is counted here as a genome with a missing marker, not as a misplaced
+lineage, and the two are not distinguishable from gene content alone.
 
 ## Outlook
 
 The markers that remain unresolved are not evenly distributed: they concentrate in syntrophic
 fatty-acid oxidation and in substrate-specific methylotrophy, both of which matter for
-interpreting a stressed reactor. Closing them requires either new licence-clean models or, for
-the pyrrolysine case, a change upstream at gene calling rather than any change to the panel. The
+interpreting a stressed reactor. Closing them requires new licence-clean models. The pyrrolysine case is
+now closed and suggests where else to look: the obstacle was never the model but the annotation
+feeding it, and any marker whose gene carries a recoded codon will behave the same way. The
 approach itself is not specific to anaerobic digestion; the same construction, a curated
 domain-scoped pathway model over public-domain and CC0 profile HMMs, applies to any setting
 where licensing rather than biology is the obstacle.
