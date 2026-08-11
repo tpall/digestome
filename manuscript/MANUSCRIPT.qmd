@@ -168,8 +168,10 @@ symbol for formamidase, an unrelated and common enzyme.
 excluded entirely; they name an enzyme class rather than a gene, and matching them imported 58
 unrelated peptidases, lipases and glycosidases.
 
-Of 150 model-to-marker assignments in the current build, 52 are curated, 57 by gene symbol and 41
-by EC. Every non-curated route is auditable: `audit_symbol_matches.py` compares the enzyme the
+Of 150 model-to-marker assignments in the current build, 54 are curated, 55 by gene symbol and 41
+by EC. Pinning a row that a gene symbol already resolved correctly changes no result, as the three
+methylamine methyltransferases show, but it fixes the assignment so that a later symbol collision
+cannot silently redirect it. Every non-curated route is auditable: `audit_symbol_matches.py` compares the enzyme the
 panel requests against the product name of each matched model.
 
 ## Score thresholds
