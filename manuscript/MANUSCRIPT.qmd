@@ -481,9 +481,16 @@ from unrelated genomes. In the same bile-acid analysis, requiring corroborating 
 sample rather than on the same contig produced 29% spurious operon calls, driven by two markers
 present in 39% and 48% of samples and carried by organisms that do not perform the pathway.
 
-Contig-level co-occurrence is the intermediate that preserves single-organism evidence without
-requiring a bin, at the cost of missing operons split across contigs. The panel does not currently
-implement it; the gates are defined for, and should be run on, binned genomes. Binned input answers
+Contig-level co-occurrence preserves single-organism evidence without requiring a bin, and the
+scorer implements it, but measuring its cost on the GTDB set shows it does not transfer to these
+gates. Requiring every term on one contig discards 64% of methanogenesis route calls, and the loss
+tracks assembly contiguity exactly: nothing for single-contig genomes, 9% at two to ten contigs,
+82% at fifty to two hundred, and 94% beyond that. The reason is gene arrangement rather than
+assembly quality. The rule is cheap for an operon-encoded pathway, where the members sit side by
+side, and prohibitive for a distributed one: the `mcr`, `fwd` and `mtr` loci lie apart on the
+chromosome, so demanding `mcrA` and four C1 carriers on one contig amounts to demanding a contig
+that spans most of a replicon. The option exists for pathways it suits; these gates are defined
+for, and should be run on, binned genomes. Binned input answers
 what an organism can do, and assembly-level search answers whether a capability is present in a
 sample. The two questions have different error models and should not be conflated.
 

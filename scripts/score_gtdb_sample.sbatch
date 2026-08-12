@@ -32,7 +32,7 @@ ROOT="${SLURM_SUBMIT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 : "${DB:?set DB to a database root}"
 WORK="${WORK:-$DB/ad_panel_test/gtdb}"
 PROT="${PROTEOMES:-$WORK/proteomes_prodigal}"
-OUT="$WORK/scored"
+OUT="${OUT:-$WORK/scored}"          # override to score the same input two ways
 CPUS="${SLURM_CPUS_PER_TASK:-4}"
 HMM="$DB/ad_panel/ad_panel.hmm"
 MAP="$DB/ad_panel/ad_panel_map.tsv"
@@ -50,6 +50,10 @@ mkdir -p "$OUT"
 echo "==> $n proteomes, $CPUS cpus, started $(date)"
 
 # ---- score each genome -----------------------------------------------------
+# CONTIG_LEVEL=1 requires every term of a gate on one contig. Meant for
+# whole-assembly input; on binned genomes it only costs recall.
+export CONTIG_FLAG="${CONTIG_LEVEL:+--contig-level}"
+
 score_one() {
   local faa="$1" out="$2" hmm="$3" map="$4" panel="$5" tax="$6" sec="$7"
   local acc; acc=$(basename "$faa" .faa)
@@ -57,7 +61,7 @@ score_one() {
   local tbl="$out/$acc.tblout"
   hmmsearch --cpu 1 --cut_nc --tblout "$tbl" "$hmm" "$faa" > /dev/null 2>&1 || return 0
   python3 "$out/../panel_scored.py" --tblout "$tbl" --map "$map" --panel "$panel" \
-      --secretion "$sec" --gtdbtk "$tax" --name "$acc" \
+      --secretion "$sec" --gtdbtk "$tax" --name "$acc" ${CONTIG_FLAG:-} \
       --out "$out/$acc.modules.tsv" > "$out/$acc.summary.txt" 2>/dev/null
   rm -f "$tbl"
 }

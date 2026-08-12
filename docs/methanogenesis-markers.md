@@ -59,9 +59,33 @@ genomes. In the same bile-acid analysis, a same-sample corroboration rule rather
 a same-contig one produced 29% spurious operon calls, driven by two markers present in
 39% and 48% of samples in organisms that do not perform the pathway.
 
-Contig-level co-occurrence is the intermediate: it keeps single-organism evidence
-without requiring a bin, and loses only operons split across contigs. Not implemented
-here. The gates are defined for binned genomes and should be run on them. Use binned input for capability and pathway completeness; use assembly
+Contig-level co-occurrence is the intermediate, and `panel_scored.py --contig-level`
+implements it: every term of a gate must sit on one contig. Measured across 3,043 GTDB
+representatives, the cost is a pure function of assembly contiguity:
+
+| contigs in assembly | genomes | routed, genome mode | routed, contig mode | lost |
+|---|---|---|---|---|
+| 1 | 183 | 109 | 109 | 0% |
+| 2-10 | 178 | 67 | 61 | 9% |
+| 11-50 | 527 | 188 | 77 | 59% |
+| 51-200 | 1,225 | 353 | 63 | 82% |
+| 201+ | 930 | 182 | 11 | 94% |
+
+Nothing is ever gained, so the rule is strictly conservative. Overall it discards 64%
+of methanogenesis route calls on this set.
+
+**The rule suits operon-encoded pathways, and these gates are not one.** A bile-acid
+`bai` operon puts its genes side by side, so requiring them on one contig costs almost
+nothing and removes cross-organism false positives. Methanogenesis is distributed: the
+`mcr`, `fwd` and `mtr` loci sit apart on the chromosome, so requiring `mcrA` plus four
+C1 carriers on one contig is effectively requiring one contig to span most of a
+replicon. That is why single-contig genomes lose nothing and 200-contig drafts lose
+almost everything, and it is a property of gene arrangement rather than of assembly
+quality alone.
+
+Use `--contig-level` only where contigs approach replicon length, or for a gate whose
+members are genuinely co-located. For binned genomes leave it off: a bin is already one
+organism, so the rule is pure loss. Use binned input for capability and pathway completeness; use assembly
 proteomes if the question is whether a marker is present in the sample at all.
 
 ## Pyrrolysine dependence

@@ -193,6 +193,12 @@ def main():
     ap.add_argument('--dbcan', help='optional run_dbcan overview.txt for HYDROL-CARB')
     ap.add_argument('--evalue', type=float, default=None,
                     help='E-value cutoff; omit if hmmsearch used --cut_nc')
+    ap.add_argument('--contig-level', action='store_true',
+                    help='require every term of a gate on ONE contig. For whole-assembly '
+                         'input, where markers may come from different organisms.')
+    ap.add_argument('--contig-regex', default=r'^(.*)_\d+$',
+                    help='capture the contig from a protein ID (default: Prodigal style '
+                         r'<contig>_<n>); group 1 is the contig.')
     ap.add_argument('--secretion', metavar='SECRETION_MODULES.TSV',
                     help='Pfam modules that mark a protein as extracellular '
                          '(dockerin, cohesin, CBM, SLH). Enables the '
@@ -248,6 +254,25 @@ def main():
                 continue
             cazyme_families.update(re.findall(r'\b(?:GH|CE|PL|GT|CBM)\d+\b', line))
 
+    # Protein -> contig. Prodigal names proteins <contig>_<n>, so the contig is
+    # recoverable with no extra file. A protein ID that does not match is treated as
+    # its own contig: that can only make a gate harder to satisfy, never easier.
+    contig_re = re.compile(a.contig_regex)
+    by_contig = {}
+    if a.contig_level:
+        for prot, models in by_protein.items():
+            m = contig_re.match(prot)
+            ctg = m.group(1) if m else prot
+            mids = set()
+            for acc, name in models:
+                mids |= acc2mid.get(acc, set()) | name2mid.get(name, set())
+            if mids:
+                by_contig.setdefault(ctg, set()).update(mids)
+
+    # Gates are re-evaluated once per contig in --contig-level mode, so the set
+    # `has` reads from must be swappable rather than closed over.
+    _scope = [found]
+
     def has(*names):
         """True if any named marker was found.
 
@@ -256,8 +281,9 @@ def main():
         the underlying join is still on marker_id -- and a token shared by two
         modules is satisfied by either.
         """
+        scope = _scope[0]
         for n in names:
-            if n in found or any(m in found for m in by_gene.get(n.lower(), ())):
+            if n in scope or any(m in scope for m in by_gene.get(n.lower(), ())):
                 return True
         return False
 
@@ -321,38 +347,70 @@ def main():
                 if not any(_markers(n) & detectable for n in g)]
 
     C1 = ('fwdB','fmdB','ftr','mch','mtd','hmd','mer','mtrA')
-    c1 = [g for g in C1 if has(g)]
-    gate_defs = [
-        ('methanogenesis: hydrogenotrophic',
-         has('mcrA') and len(c1) >= 4, [('mcrA',), C1]),
-        ('methanogenesis: acetoclastic',
-         has('mcrA') and has('cdhA') and (has('acs') or (has('ackA') and has('pta'))),
-         [('mcrA',), ('cdhA',), ('acs','ackA'), ('acs','pta')]),
-        # MEG-METHYL:comMT is the terminal MT2 step, shared by every methylotrophic
-        # route, and catches obligate methylotrophs whose substrate-specific
-        # methyltransferase has no licence-clean model. Its model is subfamily-level
-        # and hits ~30 bacteria on its own, so it is ONLY sound behind the mandatory
-        # mcrA term here. Do not lift it out of this gate, and do not drop mcrA.
-        ('methanogenesis: methylotrophic',
-         has('mcrA') and has('mtaB','mttB','mtbB','mtmB','mtsA','MEG-METHYL:comMT'),
-         [('mcrA',), ('mtaB','mttB','mtbB','mtmB','mtsA','MEG-METHYL:comMT')]),
-        ('acetogenesis: Wood-Ljungdahl',
-         has('fhs') and (has('acsB') or has('cdhC')) and has('cooS','acsA'),
-         [('fhs',), ('acsB','cdhC'), ('cooS','acsA')]),
-        ('syntrophy: butyrate oxidation',
-         has('bcd') and has('crt') and has('hbd') and has('thlA','atoB'),
-         [('bcd',), ('crt',), ('hbd',), ('thlA','atoB')]),
-        # Substrate capability, not a methanogenesis branch. Both ammonia-lyase
-        # subunits required: EutB alone is not a functional enzyme, and the
-        # downstream eut genes (eutD/eutE) only differ from housekeeping
-        # acetate metabolism by operon context.
-        ('substrate: ethanolamine (NH3 source)',
-         has('eutB') and has('eutC'), [('eutB',), ('eutC',)]),
-    ]
+
+    def build_gate_defs():
+        """Evaluate every gate against whatever set `has` currently reads.
+
+        A function rather than a literal so --contig-level can re-run it once per
+        contig. Requirement groups do not depend on scope; only the booleans do.
+        """
+        c1 = [g for g in C1 if has(g)]
+        return [
+            ('methanogenesis: hydrogenotrophic',
+             has('mcrA') and len(c1) >= 4, [('mcrA',), C1]),
+            ('methanogenesis: acetoclastic',
+             has('mcrA') and has('cdhA') and (has('acs') or (has('ackA') and has('pta'))),
+             [('mcrA',), ('cdhA',), ('acs','ackA'), ('acs','pta')]),
+            # MEG-METHYL:comMT is the terminal MT2 step, shared by every methylotrophic
+            # route, and catches obligate methylotrophs whose substrate-specific
+            # methyltransferase has no licence-clean model. Its model is subfamily-level
+            # and hits ~30 bacteria on its own, so it is ONLY sound behind the mandatory
+            # mcrA term here. Do not lift it out of this gate, and do not drop mcrA.
+            ('methanogenesis: methylotrophic',
+             has('mcrA') and has('mtaB','mttB','mtbB','mtmB','mtsA','MEG-METHYL:comMT'),
+             [('mcrA',), ('mtaB','mttB','mtbB','mtmB','mtsA','MEG-METHYL:comMT')]),
+            ('acetogenesis: Wood-Ljungdahl',
+             has('fhs') and (has('acsB') or has('cdhC')) and has('cooS','acsA'),
+             [('fhs',), ('acsB','cdhC'), ('cooS','acsA')]),
+            ('syntrophy: butyrate oxidation',
+             has('bcd') and has('crt') and has('hbd') and has('thlA','atoB'),
+             [('bcd',), ('crt',), ('hbd',), ('thlA','atoB')]),
+            # Substrate capability, not a methanogenesis branch. Both ammonia-lyase
+            # subunits required: EutB alone is not a functional enzyme, and the
+            # downstream eut genes (eutD/eutE) only differ from housekeeping
+            # acetate metabolism by operon context.
+            ('substrate: ethanolamine (NH3 source)',
+             has('eutB') and has('eutC'), [('eutB',), ('eutC',)]),
+        ]
+    # In --contig-level mode a gate holds only if ONE contig satisfies every term.
+    # Sample-level co-occurrence is not single-organism evidence: gate members can be
+    # supplied by different organisms, and the false-positive rate rises with how
+    # common the individual markers are. The hydrogenotrophic gate is the worst case
+    # here, since 4 present among 8 carriers admits many ways to assemble a call from
+    # unrelated genomes. The cost is operons split across contigs, which are lost.
+    contig_support = {}
+    if a.contig_level:
+        satisfied = {}
+        for ctg, mids in by_contig.items():
+            _scope[0] = mids
+            for label, value, _reqs in build_gate_defs():
+                if value and label not in contig_support:
+                    contig_support[label] = ctg
+                satisfied[label] = satisfied.get(label, False) or bool(value)
+        _scope[0] = found
+        gate_defs = [(label, satisfied.get(label, False), reqs)
+                     for label, _v, reqs in build_gate_defs()]
+    else:
+        gate_defs = build_gate_defs()
+
     # (label, True/False/None-if-unmeasurable, tokens with no detector, note)
     gates = [[label, None if blind else value, sorted({n for g in blind for n in g}), '']
              for label, value, reqs in gate_defs
              for blind in (unmeasurable(reqs),)]
+    if a.contig_level:
+        for g in gates:
+            if g[1] and g[0] in contig_support:
+                g[3] = f"on contig {contig_support[g[0]]}"
 
     # ---- taxonomy check on the acetoclastic call ----
     # ACDS/CODH is reversible: autotrophic hydrogenotrophs carry it to FIX carbon,
@@ -402,6 +460,11 @@ def main():
     print(f"mcrA (master methanogen marker): {'PRESENT' if has('mcrA') else 'absent'}")
     print(f"taxonomy: {lineage or '(none supplied — pass --gtdbtk)'}")
     print(f"acetoclastic genus hint: {genus_hint}")
+    if a.contig_level:
+        print(f"scoring mode: contig-level ({len(by_contig)} contigs carry a marker); "
+              "every term of a gate must sit on one contig")
+        print("  module percentages below stay genome-wide and pool across organisms: "
+              "for assembly input read the gates, not the percentages")
     print("branch gates:")
     for label, v, blind, gnote in gates:
         mark = '?' if v is None else ('x' if v else ' ')
