@@ -8,6 +8,13 @@
 # Score the whole biogas MAG catalogue and aggregate it into one community
 # profile. Pass -p/-A at submit time; nothing site-specific is hardcoded.
 #
+# Also scores a single-plant subset written by scripts/subset_catalogue_plant.py,
+# which mirrors the catalogue layout:
+#   CATALOGUE=$DB/.../plants/BP-Gimenells SAMPLE="BP-Gimenells" sbatch scripts/score_catalogue.sbatch
+# If the directory holds a manifest.tsv its abundances are passed to the
+# aggregator, so routes are reported as a share of the community as well as a
+# count of MAGs.
+#
 # ~1400 MAGs x (126 HMMs vs ~2500 proteins) is small per genome but adds up, so
 # genomes are scored in parallel with xargs rather than serially.
 set -euo pipefail
@@ -29,6 +36,9 @@ CAT="${CATALOGUE:-$DB/ad_panel_test/biogas_catalogue}"
 PROT="$CAT/proteomes"
 TAX="$CAT/catalogue_taxonomy.tsv"
 OUTD="${CATOUT:-$CAT/scored}"
+SAMPLE="${SAMPLE:-Biogas microbiome catalogue (PRJNA602310)}"
+DESC="${DESC:-Campanaro/Treu MAG catalogue: MHQ+HQ bins from 134 anaerobic digester metagenomes across multiple plants, feedstocks and temperatures. Taxonomy derived from NCBI organism names, not GTDB-Tk.}"
+MANIFEST="$CAT/manifest.tsv"
 PANEL="$ROOT/assets/AD_methanogenesis_panel.tsv"
 HMM="$DB/ad_panel/ad_panel.hmm"
 MAP="$DB/ad_panel/ad_panel_map.tsv"
@@ -64,10 +74,17 @@ ls "$PROT"/*.faa | xargs -P "$PAR" -I{} bash -c 'score_one "$@"' _ {}
 
 echo "==> scored $(ls "$OUTD"/*.summary.txt 2>/dev/null | wc -l) genomes"
 echo
+AB=()
+if [ -s "$MANIFEST" ]; then
+  AB=(--abundance "$MANIFEST")
+  case "$DESC" in
+    "Campanaro/Treu MAG catalogue"*) DESC="Single plant ($SAMPLE) reconstructed from the Campanaro/Treu catalogue: MAGs above the abundance cutoff in this reactor, see manifest.tsv. Taxonomy derived from NCBI organism names, not GTDB-Tk.";;
+  esac
+fi
 python3 "$ROOT/bin/aggregate_community.py" \
     --dir "$OUTD" \
-    --sample "Biogas microbiome catalogue (PRJNA602310)" \
-    --description "Campanaro/Treu MAG catalogue: MHQ+HQ bins from 134 anaerobic digester metagenomes across multiple plants, feedstocks and temperatures. Taxonomy derived from NCBI organism names, not GTDB-Tk." \
+    --sample "$SAMPLE" \
+    --description "$DESC" "${AB[@]}" \
     --out-json "$CAT/profile.json" --out-txt "$CAT/profile.txt"
 
 echo

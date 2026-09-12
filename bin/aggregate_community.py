@@ -13,6 +13,14 @@ Inputs are the artifacts panel_scored.py already writes, one set per MAG:
 
 Emits a JSON profile (for rendering) and a human-readable text summary.
 
+With --abundance (a manifest from scripts/subset_catalogue_plant.py, or any TSV
+with an accession/name column and rel_abundance_pct) each route and capability
+is also reported as the share of mapped reads carried by the MAGs that have it.
+Counts say how many organisms can do something; abundance says how much of the
+community they are. A single abundant acetoclast and five rare ones are
+different reactors. Abundance is reported alongside counts, never instead of
+them, and the share of the community that was never scored is stated.
+
 Design rule inherited from the rest of this branch: never let "not measured"
 render as "absent". Every count here carries its denominator, and markers with
 no detector are reported separately rather than folded into a zero.
@@ -66,6 +74,38 @@ def parse_modules(path):
         rows.append(dict(zip(hdr, f)))
     return rows
 
+def load_abundance(path):
+    """-> ({name: pct}, {header key: value}) from a manifest / TSV.
+
+    Header comments of the form '# key: value' are kept (subset_catalogue_plant.py
+    writes the community totals there). The name column is 'accession' or
+    'name'; the value column is 'rel_abundance_pct'."""
+    ab, meta, hdr = {}, {}, None
+    for line in open(path):
+        s = line.rstrip('\n')
+        if s.startswith('#'):
+            m = re.match(r'#\s*([\w_]+):\s*(.*)$', s)
+            if m:
+                meta[m.group(1)] = m.group(2).strip()
+            continue
+        f = s.split('\t')
+        if hdr is None:
+            hdr = f
+            try:
+                ki = hdr.index('accession') if 'accession' in hdr else hdr.index('name')
+                vi = hdr.index('rel_abundance_pct')
+            except ValueError:
+                sys.exit(f"!! {path}: need an 'accession' (or 'name') and a "
+                         f"'rel_abundance_pct' column, got {hdr}")
+            continue
+        if len(f) <= max(ki, vi) or not f[ki]:
+            continue
+        try:
+            ab[f[ki]] = float(f[vi])
+        except ValueError:
+            pass
+    return ab, meta
+
 def taxon(lineage, rank='g__'):
     for part in (lineage or '').split(';'):
         part = part.strip()
@@ -78,9 +118,15 @@ def main():
     ap.add_argument('--dir', required=True, help='directory of *.summary.txt / *.modules.tsv')
     ap.add_argument('--sample', default='sample', help='sample / digester name')
     ap.add_argument('--description', default='', help='what this sample actually is')
+    ap.add_argument('--abundance', metavar='MANIFEST.TSV',
+                    help='per-MAG relative abundance (%%); adds abundance-weighted shares')
     ap.add_argument('--out-json', required=True)
     ap.add_argument('--out-txt')
     a = ap.parse_args()
+
+    abundance, ab_meta = ({}, {})
+    if a.abundance:
+        abundance, ab_meta = load_abundance(a.abundance)
 
     names = sorted(f[:-len('.summary.txt')] for f in os.listdir(a.dir)
                    if f.endswith('.summary.txt'))
@@ -100,10 +146,22 @@ def main():
             'is_methanogen': bool(markers.get('mcrA')),
             'gates': gates, 'markers': markers, 'genus_hint': hint,
             'modules': modules,
+            'abundance_pct': abundance.get(n),
         })
 
     n_tot = len(mags)
     methanogens = [m for m in mags if m['is_methanogen']]
+
+    # ---- abundance bookkeeping ----
+    # Shares are of reads mapped to the whole catalogue, as the manifest says, so
+    # the scored MAGs never sum to 100. State what fraction they do cover.
+    def share(names):
+        return round(sum(abundance.get(n, 0.0) for n in names), 3) if abundance else None
+    scored_share = share([m['name'] for m in mags])
+    n_with_ab = sum(1 for m in mags if m['abundance_pct'] is not None)
+    if abundance and n_with_ab < n_tot:
+        print(f"!! {n_tot - n_with_ab} scored MAG(s) have no abundance in {a.abundance}; "
+              f"they count as 0 in shares", file=sys.stderr)
 
     # ---- route inventory ----
     routes = {}
@@ -121,7 +179,8 @@ def main():
                                 'note': g['note']})
         routes[key] = {'present_in': present,
                        'n_present': len(present),
-                       'unassessable_in': unassessable}
+                       'unassessable_in': unassessable,
+                       'abundance_pct': share([p['mag'] for p in present])}
 
     # ---- other capabilities ----
     def gate_carriers(label):
@@ -137,7 +196,8 @@ def main():
                        ('ethanolamine', 'substrate: ethanolamine (NH3 source)')]:
         capabilities[key] = {'label': label,
                              'carriers': gate_carriers(label),
-                             'unassessable_in': gate_blind(label)}
+                             'unassessable_in': gate_blind(label),
+                             'abundance_pct': share(gate_carriers(label))}
 
     # ---- module completeness across the community ----
     # Reported as "best MAG" and "how many MAGs carry it", never as a mean --
@@ -208,6 +268,10 @@ def main():
         'description': a.description,
         'n_mags': n_tot,
         'n_methanogens': len(methanogens),
+        'abundance': ({'source': a.abundance,
+                       'scored_mags_share_pct': scored_share,
+                       'methanogens_share_pct': share([m['name'] for m in methanogens]),
+                       'manifest': ab_meta} if abundance else None),
         'mags': mags,
         'routes': routes,
         'capabilities': capabilities,
@@ -223,13 +287,21 @@ def main():
     if a.description:
         w(f"  {a.description}")
     w(f"  {n_tot} MAG(s); {len(methanogens)} carrying mcrA")
+    if abundance:
+        w(f"  scored MAGs cover {scored_share:.1f} % of mapped reads; methanogens "
+          f"{share([m['name'] for m in methanogens]):.1f} %"
+          + (f"; {ab_meta['mags_not_deposited']} MAG(s) above the cutoff "
+             f"({ab_meta.get('mags_not_deposited_pct', '?')} %) have no genome and were never scored"
+             if 'mags_not_deposited' in ab_meta else ''))
     w("")
     w("methanogenesis routes:")
+    def pct(v):
+        return f"  {v:5.1f} % of reads" if v is not None else ''
     for key in ROUTE_GATES:
         r = routes[key]
         who = ', '.join(f"{p['mag']}" + (f" ({p['genus']})" if p['genus'] else '')
                         for p in r['present_in']) or '—'
-        w(f"  {key:<18} {r['n_present']}/{n_tot}  {who}")
+        w(f"  {key:<18} {r['n_present']}/{n_tot}{pct(r['abundance_pct'])}  {who}")
         if r['unassessable_in']:
             w(f"  {'':<18} not assessable in {len(r['unassessable_in'])} MAG(s)")
     w("")
@@ -237,7 +309,7 @@ def main():
     for key, c in capabilities.items():
         extra = (f"  (not assessable in {len(c['unassessable_in'])})"
                  if c['unassessable_in'] else '')
-        w(f"  {key:<20} {len(c['carriers'])}/{n_tot}{extra}")
+        w(f"  {key:<20} {len(c['carriers'])}/{n_tot}{pct(c['abundance_pct'])}{extra}")
     w("")
     w("risk reading:")
     for r in risks:

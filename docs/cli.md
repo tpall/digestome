@@ -63,3 +63,4 @@ with `sbatch`. They are site-neutral:
 | `scripts/prefetch_pfam.sh` | login | pinned Pfam families, incl. the secretion modules |
 | `scripts/fetch_biogas_catalogue.sh` | login | the Campanaro biogas MAG catalogue, for benchmarking |
 | `scripts/score_catalogue.sbatch` | batch | score a whole catalogue; the specificity benchmark |
+| `scripts/subset_catalogue_plant.py` | login (first run) | cut one plant's community out of the catalogue by per-sample abundance (Additional file 8); output scores with `score_catalogue.sbatch` |
