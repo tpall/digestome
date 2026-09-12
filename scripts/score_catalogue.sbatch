@@ -54,7 +54,8 @@ echo "==> host=$(hostname) job=${SLURM_JOB_ID:-none} $(date)"
 echo "==> $(ls "$PROT"/*.faa 2>/dev/null | wc -l) proteomes; $PAR concurrent, 2 threads each"
 echo "==> panel: $(grep -c '^NAME ' "$HMM") models"
 
-export KEGGLESS PANEL HMM MAP TAX OUTD
+# Everything score_one reads must be exported: xargs runs it in fresh shells.
+export ROOT PANEL HMM MAP TAX OUTD
 score_one() {
   faa="$1"
   label=$(basename "$faa" .faa)
@@ -65,7 +66,7 @@ score_one() {
       --tblout "$OUTD/${label}.tblout" --map "$MAP" --panel "$PANEL" \
       --name "$label" --gtdbtk "$TAX" \
       --secretion "$ROOT/assets/secretion_modules.tsv" \
-      --out "$OUTD/${label}.modules.tsv" > "$OUTD/${label}.summary.txt" 2>/dev/null || true
+      --out "$OUTD/${label}.modules.tsv" > "$OUTD/${label}.summary.txt" 2>> "$OUTD/scoring.err" || true
   rm -f "$OUTD/${label}.tblout"     # ~1400 tblouts is a lot of small files
 }
 export -f score_one
@@ -73,6 +74,14 @@ export -f score_one
 ls "$PROT"/*.faa | xargs -P "$PAR" -I{} bash -c 'score_one "$@"' _ {}
 
 echo "==> scored $(ls "$OUTD"/*.summary.txt 2>/dev/null | wc -l) genomes"
+# A scorer that dies leaves an empty summary, which the aggregator would read as
+# a genome with nothing in it. Fail here instead, with the scorer's stderr.
+n_empty=$(find "$OUTD" -name '*.summary.txt' -empty | wc -l)
+if [ "$n_empty" -gt 0 ]; then
+  echo "!! $n_empty empty summaries; panel_scored.py failed. Last stderr:" >&2
+  tail -20 "$OUTD/scoring.err" >&2 2>/dev/null
+  exit 1
+fi
 echo
 AB=()
 if [ -s "$MANIFEST" ]; then
