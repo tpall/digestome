@@ -36,8 +36,21 @@ Flags and scripts. For what the numbers mean, see [scoring.md](scoring.md); for 
 | `--description` | What the sample actually is; carried into the report. |
 | `--out-json` | **required.** Machine-readable profile. |
 | `--out-txt` | Human-readable summary. |
+| `--out-tables DIR` | Result tables, one row per genome / module / route / risk (below). |
+| `--table-format` | `tsv` (default) or `csv` (RFC 4180, quoted). TSV is the repository convention and survives the commas and semicolons in lineages and notes; use `csv` when a client's tooling insists. |
 
 Stdlib only, so it runs anywhere Python 3 does.
+
+#### Result tables (`--out-tables`)
+
+Flat files derived from the same profile as the JSON, so a report built on them cannot disagree with it. Every table starts with a `sample` column so files from repeated sampling of one reactor concatenate. Unmeasured is written as `NA`, never `0`.
+
+| file | one row per | columns |
+|---|---|---|
+| `genomes` | MAG, sorted by abundance | `abundance_pct`, lineage/phylum/genus, `mcrA`, one yes/no/NA column per gated route and capability, `gate_notes` (why a call went the way it did, as `gate:code` — `taxonomy-confirmed`, `absent-on-taxonomy` for a genome that carries the markers but is not a known acetoclastic lineage, `markers-only` when no taxonomy was supplied; the full sentence stays in `profile.json`), `<MODULE>_pct_complete` for every panel module, `HYDROL-*_families_found` / `_families_exported` (the secretion test), `marker_<gene>` for the diagnostic markers |
+| `modules` | panel module | genomes scored vs unscoreable and the `status` that explains the NA, carriers at any / ≥ 50 % / 100 % completeness, share of reads carried by the ≥ 50 % carriers, best genome and its completeness, and for hydrolysis modules the number and share of genomes that **export** the enzyme |
+| `routes` | methanogenesis route or capability | present / total / not assessable, share of reads, the genomes with genus |
+| `risks` | risk statement | level (`ok` / `note` / `attention`), title, detail |
 
 ---
 

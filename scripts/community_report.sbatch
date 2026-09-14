@@ -65,7 +65,8 @@ score_set() {                       # $1=proteome dir  $2=sample name  $3=out di
   echo "  scored $n MAG(s) from $prot"
   python3 "$ROOT/bin/aggregate_community.py" \
       --dir "$out" --sample "$sample" --description "$desc" \
-      --out-json "$out/profile.json" --out-txt "$out/profile.txt"
+      --out-json "$out/profile.json" --out-txt "$out/profile.txt" \
+      --out-tables "$out/tables"
 }
 
 echo "==> host=$(hostname) job=${SLURM_JOB_ID:-none} $(date)"

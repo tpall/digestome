@@ -73,7 +73,8 @@ nextflow run . \
     -profile    slurm            # or: standard | conda | singularity | docker
 ```
 
-Writes `results/profile.txt` and `results/profile.json`, plus a Nextflow trace,
+Writes `results/profile.txt`, `results/profile.json` and the result tables in
+`results/tables/` (genomes, modules, routes, risks; see `docs/cli.md`), plus a Nextflow trace,
 timeline and report under `results/pipeline_info/`.
 
 A samplesheet works instead of a glob when names matter:
@@ -110,7 +111,7 @@ python3 bin/panel_scored.py \
 # 3. aggregate a directory of scored genomes into one community profile
 python3 bin/aggregate_community.py \
     --dir scored/ --sample 'digester A' \
-    --out-json profile.json --out-txt profile.txt
+    --out-json profile.json --out-txt profile.txt --out-tables tables/
 ```
 
 ### Which to use

@@ -11,7 +11,11 @@ Inputs are the artifacts panel_scored.py already writes, one set per MAG:
   <name>.modules.tsv   per-module completeness
   <name>.summary.txt   gates, diagnostic markers, taxonomy
 
-Emits a JSON profile (for rendering) and a human-readable text summary.
+Emits a JSON profile (for rendering), a human-readable text summary and,
+with --out-tables, four flat tables that are the client-facing "result tables":
+genomes (one row per MAG), modules (one row per panel module), routes (one row
+per route or capability) and risks. They are derived from the same in-memory
+profile as the JSON, so a report built on them cannot drift from it.
 
 With --abundance (a manifest from scripts/subset_catalogue_plant.py, or any TSV
 with an accession/name column and rel_abundance_pct) each route and capability
@@ -27,7 +31,7 @@ no detector are reported separately rather than folded into a zero.
 
 Stdlib only.
 """
-import argparse, json, os, re, sys
+import argparse, csv, json, os, re, sys
 
 # Operational reading of route balance in an anaerobic digester. Acetate is the
 # precursor of ~70% of methane in a healthy reactor, so losing its consumer is
@@ -113,6 +117,126 @@ def taxon(lineage, rank='g__'):
             return part[len(rank):]
     return ''
 
+# Modules whose secretion evidence is reported per genome. Hydrolysis is the
+# one stage where "carries the family" and "exports the enzyme" differ in what
+# they mean for the reactor; the same test runs on other modules but has no
+# operational reading there.
+EXPORT_MODULES_PREFIX = 'HYDROL-'
+
+# panel_scored.py explains a gate call in a sentence; the genomes table needs
+# a code, the same sentence 130 times over is noise in a spreadsheet. Matched
+# on the sentence's opening words; an unrecognised note is passed through.
+GATE_NOTE_CODES = [
+    ('taxonomy-confirmed', 'taxonomy-confirmed'),
+    ('markers present but', 'absent-on-taxonomy'),
+    ('gene markers only',   'markers-only'),
+    ('NOT ASSESSABLE',      'not-assessable'),
+]
+
+def gate_note_code(note):
+    for prefix, code in GATE_NOTE_CODES:
+        if note.startswith(prefix):
+            return code
+    return note
+
+def write_tables(outdir, fmt, profile):
+    """Four flat tables from the profile. One row per genome / module / route /
+    risk, a 'sample' column first so files from repeated sampling concatenate.
+    Unmeasured is written as NA, never 0, in every column."""
+    os.makedirs(outdir, exist_ok=True)
+    delim = '\t' if fmt == 'tsv' else ','
+    def table(name, header, rows):
+        path = os.path.join(outdir, f'{name}.{fmt}')
+        with open(path, 'w', newline='') as fh:
+            w = csv.writer(fh, delimiter=delim, lineterminator='\n',
+                           quoting=csv.QUOTE_MINIMAL)
+            w.writerow(header)
+            w.writerows(rows)
+        return path
+    def na(v):
+        return 'NA' if v is None else v
+    def yn(v):
+        return 'NA' if v is None else ('yes' if v else 'no')
+
+    sample = profile['sample']
+    mags = profile['mags']
+    n_tot = profile['n_mags']
+    gate_cols = [('acetoclastic', ROUTE_GATES['acetoclastic']),
+                 ('hydrogenotrophic', ROUTE_GATES['hydrogenotrophic']),
+                 ('methylotrophic', ROUTE_GATES['methylotrophic'])] + \
+                [(k, c['label']) for k, c in profile['capabilities'].items()]
+    # panel order, taken from the first genome that has a module table
+    mod_order = next(([r['module'] for r in m['modules']] for m in mags if m['modules']), [])
+    export_mods = [x for x in mod_order if x.startswith(EXPORT_MODULES_PREFIX)]
+    marker_order = next(([k for k in m['markers']] for m in mags if m['markers']), [])
+
+    # ---- genomes ----
+    hdr = (['sample', 'genome', 'abundance_pct', 'lineage', 'phylum', 'genus', 'mcrA']
+           + [k for k, _ in gate_cols] + ['gate_notes']
+           + [f'{x}_pct_complete' for x in mod_order]
+           + [c for x in export_mods for c in (f'{x}_families_found', f'{x}_families_exported')]
+           + [f'marker_{k}' for k in marker_order])
+    rows = []
+    order = sorted(mags, key=lambda m: (-(m['abundance_pct'] if m['abundance_pct'] is not None else -1), m['name']))
+    for m in order:
+        mods = {r['module']: r for r in m['modules']}
+        notes = '; '.join(f"{lab.split(': ', 1)[-1]}:{gate_note_code(g['note'])}"
+                          for lab, g in m['gates'].items()
+                          if g.get('note') and g.get('value') is not None)
+        row = [sample, m['name'], na(m['abundance_pct']), m['lineage'], m['phylum'], m['genus'],
+               yn(m['is_methanogen'])]
+        row += [yn((m['gates'].get(lab) or {}).get('value')) for _, lab in gate_cols]
+        row.append(notes)
+        row += [mods.get(x, {}).get('pct_complete', 'NA') or 'NA' for x in mod_order]
+        for x in export_mods:
+            r = mods.get(x, {})
+            row += [r.get('core_found', 'NA') or 'NA', r.get('core_secreted', 'NA') or 'NA']
+        row += [yn(m['markers'].get(k)) for k in marker_order]
+        rows.append(row)
+    table('genomes', hdr, rows)
+
+    # ---- modules ----
+    hdr = ['sample', 'module', 'branch', 'n_genomes', 'n_scored', 'n_unscoreable', 'status',
+           'n_carriers_any', 'n_carriers_half', 'n_complete', 'carriers_half_abundance_pct',
+           'best_pct_complete', 'best_genome', 'best_genome_genus',
+           'n_exporters', 'exporters_abundance_pct']
+    genus = {m['name']: m['genus'] for m in mags}
+    rows = []
+    for x in mod_order or sorted(profile['modules']):
+        st = profile['modules'].get(x)
+        if not st:
+            continue
+        scored = st['n_scored'] > 0
+        exp = x.startswith(EXPORT_MODULES_PREFIX) and scored
+        rows.append([sample, x, st['branch'], n_tot, st['n_scored'], st['n_unscoreable'],
+                     '|'.join(st['statuses']),
+                     na(st['n_any'] if scored else None),
+                     na(st['n_half'] if scored else None),
+                     na(st['n_full'] if scored else None),
+                     na(st['abundance_half_pct'] if scored else None),
+                     na(st['best_pct']), st['best_mag'], genus.get(st['best_mag'], ''),
+                     na(st['n_exporters'] if exp else None),
+                     na(st['exporters_abundance_pct'] if exp else None)])
+    table('modules', hdr, rows)
+
+    # ---- routes and capabilities ----
+    hdr = ['sample', 'kind', 'key', 'label', 'n_present', 'n_genomes', 'n_unassessable',
+           'abundance_pct', 'genomes']
+    rows = []
+    for k, r in profile['routes'].items():
+        who = '; '.join(p['mag'] + (f" ({p['genus']})" if p['genus'] else '') for p in r['present_in'])
+        rows.append([sample, 'methanogenesis route', k, ROUTE_GATES[k], r['n_present'], n_tot,
+                     len(r['unassessable_in']), na(r['abundance_pct']), who])
+    for k, c in profile['capabilities'].items():
+        who = '; '.join(n + (f" ({genus[n]})" if genus.get(n) else '') for n in c['carriers'])
+        rows.append([sample, 'capability', k, c['label'], len(c['carriers']), n_tot,
+                     len(c['unassessable_in']), na(c['abundance_pct']), who])
+    table('routes', hdr, rows)
+
+    # ---- risks ----
+    table('risks', ['sample', 'level', 'title', 'detail'],
+          [[sample, r['level'], r['title'], r['detail']] for r in profile['risks']])
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--dir', required=True, help='directory of *.summary.txt / *.modules.tsv')
@@ -122,6 +246,11 @@ def main():
                     help='per-MAG relative abundance (%%); adds abundance-weighted shares')
     ap.add_argument('--out-json', required=True)
     ap.add_argument('--out-txt')
+    ap.add_argument('--out-tables', metavar='DIR',
+                    help='write genomes/modules/routes/risks tables into DIR')
+    ap.add_argument('--table-format', choices=('tsv', 'csv'), default='tsv',
+                    help='delimiter for --out-tables (default tsv; csv is RFC-4180 '
+                         'comma-separated with quoting)')
     a = ap.parse_args()
 
     abundance, ab_meta = ({}, {})
@@ -211,8 +340,22 @@ def main():
             st = mod_stats.setdefault(mod, {
                 'branch': r.get('branch', ''), 'best_pct': None,
                 'best_mag': '', 'n_scored': 0, 'n_unscoreable': 0,
-                'statuses': set()})
+                'statuses': set(),
+                # carriers at three completeness levels; a community function
+                # needs one organism, so these are counts and shares, not means
+                'carriers_any': [], 'carriers_half': [], 'carriers_full': [],
+                # genomes whose found core markers include an exported protein
+                # (panel_scored.py --secretion); None until any genome was tested
+                'exporters': [], 'n_secretion_tested': 0})
             st['statuses'].add(r.get('status', ''))
+            sec = r.get('core_secreted', 'NA')
+            if sec not in ('NA', ''):
+                st['n_secretion_tested'] += 1
+                try:
+                    if float(sec) > 0:
+                        st['exporters'].append(m['name'])
+                except ValueError:
+                    pass
             pct = r.get('pct_complete', 'NA')
             if pct == 'NA' or pct == '':
                 st['n_unscoreable'] += 1
@@ -220,10 +363,20 @@ def main():
             st['n_scored'] += 1
             try: v = float(pct)
             except ValueError: continue
+            if v > 0:    st['carriers_any'].append(m['name'])
+            if v >= 50:  st['carriers_half'].append(m['name'])
+            if v >= 100: st['carriers_full'].append(m['name'])
             if st['best_pct'] is None or v > st['best_pct']:
                 st['best_pct'] = v; st['best_mag'] = m['name']
     for st in mod_stats.values():
         st['statuses'] = sorted(x for x in st['statuses'] if x)
+        st['n_any'] = len(st['carriers_any'])
+        st['n_half'] = len(st['carriers_half'])
+        st['n_full'] = len(st['carriers_full'])
+        st['abundance_half_pct'] = share(st['carriers_half'])
+        tested = st.pop('n_secretion_tested') > 0
+        st['n_exporters'] = len(st['exporters']) if tested else None
+        st['exporters_abundance_pct'] = share(st['exporters']) if tested else None
 
     # ---- risk reading ----
     # Deliberately conservative: these are capability statements about DNA, not
@@ -280,6 +433,8 @@ def main():
     }
     with open(a.out_json, 'w') as fh:
         json.dump(profile, fh, indent=2, default=list)
+    if a.out_tables:
+        write_tables(a.out_tables, a.table_format, profile)
 
     lines = []
     w = lines.append

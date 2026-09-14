@@ -94,7 +94,8 @@ python3 "$ROOT/bin/aggregate_community.py" \
     --dir "$OUTD" \
     --sample "$SAMPLE" \
     --description "$DESC" "${AB[@]}" \
-    --out-json "$CAT/profile.json" --out-txt "$CAT/profile.txt"
+    --out-json "$CAT/profile.json" --out-txt "$CAT/profile.txt" \
+    --out-tables "$CAT/tables"
 
 echo
 echo "==> done $(date)"

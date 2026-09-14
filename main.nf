@@ -138,6 +138,7 @@ process AGGREGATE {
     output:
     path 'profile.json'
     path 'profile.txt'
+    path 'tables'
 
     script:
     """
@@ -145,13 +146,14 @@ process AGGREGATE {
         --dir scored \\
         --sample '${params.sample_name}' \\
         --description '${params.description}' \\
-        --out-json profile.json --out-txt profile.txt
+        --out-json profile.json --out-txt profile.txt --out-tables tables
     """
 
     stub:
     """
     echo '{}' > profile.json
     touch profile.txt
+    mkdir -p tables
     """
 }
 
