@@ -10,6 +10,7 @@ Flags and scripts. For what the numbers mean, see [scoring.md](scoring.md); for 
 | `scripts/build_ad_hmm_db.sh` | Matches the panel against NCBIfam, emits `ad_panel.hmm` (pressed), `ad_panel_map.tsv` (model → gene/module) and `rhea2ec.tsv`. Audits curated accessions and asserts every pressed model has an NC cutoff. |
 | `bin/panel_scored.py` | Per genome: `hmmsearch --tblout` (+ optional dbCAN, GTDB-Tk) → per-module completeness table on `--out`, gates + diagnostic markers on stdout. |
 | `bin/aggregate_community.py` | Many scored genomes → one community profile. Route balance, acetate-consumer presence, syntrophic capacity. JSON + text. |
+| `bin/compare_profiles.py` | Two or more profiles of the same reactor in time order → what moved: routes, modules and genomes over time with a coarse change call (≥ 1 pp and ≥ 1.5-fold by default). TSV + JSON + text. |
 | `main.nf`, `nextflow.config` | Nextflow workflow over the analysis path: HMMSEARCH, SCORE, AGGREGATE. Calls the same command-line tools rather than reimplementing them. |
 | `scripts/audit_symbol_matches.py` | Build-time audit: flags panel rows whose gene symbol collides with an unrelated enzyme. Run when editing the panel. |
 
@@ -40,6 +41,23 @@ Flags and scripts. For what the numbers mean, see [scoring.md](scoring.md); for 
 | `--table-format` | `tsv` (default) or `csv` (RFC 4180, quoted). TSV is the repository convention and survives the commas and semicolons in lineages and notes; use `csv` when a client's tooling insists. |
 
 Stdlib only, so it runs anywhere Python 3 does.
+
+### `compare_profiles.py`
+
+    python3 bin/compare_profiles.py t1/profile.json t2/profile.json t3/profile.json \
+        --labels 2026-03 2026-06 2026-09 --reactor "Reactor 1" --out monitoring/
+
+| flag | |
+|---|---|
+| profiles | **required.** `profile.json` files in sampling order, oldest first. |
+| `--labels` | Column labels in the same order, e.g. dates. Default: the sample names. |
+| `--reactor` | Name used in the summary. |
+| `--out DIR` | **required.** Writes `routes_over_time.tsv`, `modules_over_time.tsv`, `genomes_over_time.tsv`, `changes.json`, `summary.txt`. |
+| `--min-delta` | Percentage points a share must move to count as a change (default 1.0). |
+| `--min-fold` | Fold change it must also show (default 1.5). |
+| `--floor` | Genomes below this share in every sample are left out of the genome table (default 0.5 %). |
+
+With two or three samples there is no trend to test, only a difference. The change call is deliberately coarse so that 0.3 % → 0.4 % is never reported as movement and 0.1 % → 3 % always is; modules with no scored genome stay `not assessable`. Directions are `new`, `lost`, `up`, `down`, `stable`, `absent`.
 
 #### Result tables (`--out-tables`)
 
