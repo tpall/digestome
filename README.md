@@ -15,6 +15,8 @@ no MetaCyc, no CAZy/dbCAN.
 
 Companion data file: **`assets/AD_methanogenesis_panel.tsv`**.
 
+> `digestome` is the engine behind the digester microbiome health check offered by [Magrittr OÜ](https://magrittr.ee) (example reports: [two plants compared](https://magrittr.ee/example-report.html), [one reactor over time](https://magrittr.ee/example-monitoring.html)). The code is MIT, the panel CC BY 4.0; use them freely, cite the manuscript when it is out.
+
 ## Licence
 
 Code is MIT (`LICENSE`). The curated data files, including the panel itself, are
