@@ -96,6 +96,26 @@ def _rank(lineage, rank):
             return re.sub(r'_[A-Z]+$', '', part[len(rank) + 2:])
     return ''
 
+def load_genus_orders(path):
+    """name -> 'o__X;f__Y' from a table built from the GTDB taxonomy; unambiguous names only."""
+    out = {}
+    with open(path) as fh:
+        for r in csv.DictReader((l for l in fh if not l.startswith('#')), delimiter='\t'):
+            out[r['name']] = ';'.join(x for x in (f"o__{r['order']}" if r['order'] else '',
+                                                   f"f__{r['family']}" if r['family'] else '') if x)
+    return out
+
+def enrich_lineage(lineage, genus_orders):
+    """Add order/family to a lineage that has neither, when its genus-level name is in the table.
+
+    NCBI-derived catalogue names often put an order or family name in the genus slot
+    (g__Thermoplasmatales); the table covers genera, families and orders alike."""
+    if not lineage or not genus_orders or _rank(lineage, 'o'):
+        return lineage
+    g = _rank(lineage, 'g')
+    extra = genus_orders.get(g)
+    return f"{lineage};{extra}" if extra else lineage
+
 def acetoclastic_lineage(lineage, roles=None):
     """True when the lineage is listed as acetoclastic in the lineage policy table."""
     roles = roles or load_acetate_lineages()
@@ -236,6 +256,9 @@ def main():
                     help='GTDB-Tk summary.tsv (repeatable for ar53 + bac120). '
                          'Used to confirm the acetoclastic call, which gene '
                          'content alone cannot resolve.')
+    ap.add_argument('--genus-orders', metavar='TSV',
+                    help='name -> order/family table (scripts/build_genus_orders.py) to place coarse '
+                         'lineages (NCBI genus-only names) at order level for the lineage policy')
     ap.add_argument('--acetate-lineages', default=ACETATE_LINEAGES, metavar='TSV',
                     help='lineage policy for the acetate and H2/CO2 gates '
                          '(default: assets/acetate_lineages.tsv next to this script)')
@@ -244,8 +267,9 @@ def main():
         sys.exit(f"!! lineage policy not found: {a.acetate_lineages} -- pass --acetate-lineages "
                  f"(a copied panel_scored.py does not find the repo's assets/)")
     policy = load_acetate_lineages(a.acetate_lineages)
+    genus_orders = load_genus_orders(a.genus_orders) if a.genus_orders else {}
 
-    lineage = load_lineage(a.gtdbtk, a.name)
+    lineage = enrich_lineage(load_lineage(a.gtdbtk, a.name), genus_orders)
     modules, by_gene = load_panel(a.panel)
     acc2mid, name2mid = load_map(a.map)
     hits, by_protein = parse_tblout(a.tblout, a.evalue)
@@ -405,8 +429,11 @@ def main():
             # methyltransferase has no licence-clean model. Its model is subfamily-level
             # and hits ~30 bacteria on its own, so it is ONLY sound behind the mandatory
             # mcrA term here. Do not lift it out of this gate, and do not drop mcrA.
+            # mtaB counts only with its corrinoid partner (mtaC or the MtaC2 family, both marker
+            # mtaC): methanol:CoM methyl transfer is an operon, a lone MtaB-like hit a paralog.
             ('methanogenesis: methylotrophic',
-             has('mcrA') and has('mtaB','mttB','mtbB','mtmB','mtsA','MEG-METHYL:comMT'),
+             has('mcrA') and (has('mttB','mtbB','mtmB','mtsA','MEG-METHYL:comMT')
+                              or (has('mtaB') and has('mtaC'))),
              [('mcrA',), ('mtaB','mttB','mtbB','mtmB','mtsA','MEG-METHYL:comMT')]),
             ('acetogenesis: Wood-Ljungdahl',
              has('fhs') and (has('acsB') or has('cdhC')) and has('cooS','acsA'),
@@ -479,7 +506,7 @@ def main():
     # hits non-methylotrophic methanogens. A call resting on comMT only, with no substrate-specific
     # methyltransferase, stands only in lineages listed as methyl_via_comMT; without a lineage it
     # stands with a markers-only note.
-    substrate_mt = has('mtaB', 'mttB', 'mtbB', 'mtmB')
+    substrate_mt = has('mttB', 'mtbB', 'mtmB') or (has('mtaB') and has('mtaC'))
     for g in gates:
         if g[0] != 'methanogenesis: methylotrophic' or not g[1] or substrate_mt:
             continue
@@ -490,6 +517,12 @@ def main():
             g[3] = (f"markers present but {_clade(lineage)} is not a known methylotroph without a "
                     f"substrate-specific marker (comMT alone) — scored as absent on taxonomy")
             g[1] = False
+    # ---- say why a methanogen has no H2/CO2 route: how many of the six steps were found ----
+    if has('mcrA'):
+        n_steps = sum(1 for st in C1_STEPS if has(*st))
+        for g in gates:
+            if g[0] == 'methanogenesis: hydrogenotrophic' and g[1] is False and not g[3]:
+                g[3] = f"{n_steps} of 6 C1 steps detected"
     # ---- taxonomy check on the hydrogenotrophic call ----
     # The C1 (H4MPT) pathway is reversible too: Methanothrix runs it for the
     # methyl branch of acetate, methylotrophs to oxidise methyl groups, and
@@ -508,7 +541,7 @@ def main():
     # Clostridium ljungdahlii and Syntrophomonas wolfei "Methanosarcina".
     aceto = dict((g[0], g[1]) for g in gates).get('methanogenesis: acetoclastic')
     genus_hint = '-'
-    if aceto:
+    if aceto and not lineage:          # with a lineage the hint could only contradict it
         genus_hint = ('Methanothrix/Methanosaeta (acs)' if has('acs')
                       else 'Methanosarcina (ackA+pta)' if (has('ackA') and has('pta'))
                       else '-')

@@ -55,7 +55,8 @@ echo "==> $(ls "$PROT"/*.faa 2>/dev/null | wc -l) proteomes; $PAR concurrent, 2 
 echo "==> panel: $(grep -c '^NAME ' "$HMM") models"
 
 # Everything score_one reads must be exported: xargs runs it in fresh shells.
-export ROOT PANEL HMM MAP TAX OUTD
+GENUS_ORDERS="${GENUS_ORDERS:-}"   # optional: scripts/build_genus_orders.py output, for NCBI genus-only names
+export ROOT PANEL HMM MAP TAX OUTD GENUS_ORDERS
 score_one() {
   faa="$1"
   label=$(basename "$faa" .faa)
@@ -64,7 +65,7 @@ score_one() {
   hmmsearch --cpu 2 --cut_nc --tblout "$OUTD/${label}.tblout" "$HMM" "$faa" > /dev/null 2>&1 || return 0
   python3 "$ROOT/bin/panel_scored.py" \
       --tblout "$OUTD/${label}.tblout" --map "$MAP" --panel "$PANEL" \
-      --name "$label" --gtdbtk "$TAX" \
+      --name "$label" --gtdbtk "$TAX" ${GENUS_ORDERS:+--genus-orders "$GENUS_ORDERS"} \
       --secretion "$ROOT/assets/secretion_modules.tsv" \
       --out "$OUTD/${label}.modules.tsv" > "$OUTD/${label}.summary.txt" 2>> "$OUTD/scoring.err" || true
   rm -f "$OUTD/${label}.tblout"     # ~1400 tblouts is a lot of small files

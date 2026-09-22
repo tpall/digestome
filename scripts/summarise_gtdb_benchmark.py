@@ -14,9 +14,18 @@ the check that a methanogen got the right route, not only that a non-methanogen 
 import argparse
 import collections
 import csv
+import os
 import pathlib
 import re
 import sys
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'bin'))
+from panel_scored import load_acetate_lineages, lineage_in_role
+
+# Ground-truth corrections to the sampling strata (sample_gtdb_reps.py order list), each sourced.
+# Methanonatronarchaeales are methyl-reducing methanogens (Sorokin et al. 2017 Nat Microbiol
+# 2:17081) that the sampling list counted as background.
+RELABEL_AS_METHANOGEN = {'Methanonatronarchaeales'}
 
 GATE = re.compile(r'\[([x ?])\]\s+(methanogenesis:\s*\S+)')
 
@@ -47,33 +56,6 @@ def main():
     if not scored:
         sys.exit(f'no scored output under {SC}')
 
-    tally = collections.Counter()
-    for a in scored:
-        tally[(meta.get(a, {}).get('stratum', '?'), bool(routes.get(a)))] += 1
-
-    print('============ GTDB representative benchmark ============')
-    print(f'genomes scored: {len(scored)}')
-    for st in ('background', 'methanogen'):
-        print(f'  {st:11s} route assigned: {tally[(st, True)]:5d}   no route: {tally[(st, False)]:5d}')
-
-    fp = sorted(a for a in scored if meta.get(a, {}).get('stratum') == 'background' and routes.get(a))
-    print(f'\nFALSE POSITIVES (background genomes given a route): {len(fp)}')
-    for a in fp[:25]:
-        m = meta[a]
-        print(f'  {a}  {m["phylum"]} / {m["order"]} -> {sorted(routes[a])}')
-
-    fn = sorted(a for a in scored if meta.get(a, {}).get('stratum') == 'methanogen' and not routes.get(a))
-    print(f'\nMETHANOGENS WITH NO ROUTE: {len(fn)}')
-    for o, c in collections.Counter(meta[a]['order'] for a in fn).most_common(12):
-        print(f'  {o}: {c}')
-
-    print('\nroute assignments among methanogens:')
-    mix = collections.Counter(r for a in scored
-                              if meta.get(a, {}).get('stratum') == 'methanogen'
-                              for r in routes.get(a, ()))
-    for r, c in mix.most_common():
-        print(f'  {r}: {c}')
-
     lineage = {}
     tax = W / 'gtdbtk_sample.tsv'
     if tax.exists():
@@ -81,6 +63,49 @@ def main():
             f = line.split('\t')
             if len(f) > 1 and f[0].startswith('GC'):
                 lineage[f[0]] = f[1]
+    policy = load_acetate_lineages()
+    def order(a):
+        m = re.search(r'o__([^;]*)', lineage.get(a, ''))
+        return m.group(1) if m else ''
+    def klass(a):
+        # three classes: an anaerobic methane / alkane oxidiser carries mcr but is not a methanogen
+        if lineage.get(a) and lineage_in_role(lineage[a], 'methane_oxidiser', policy):
+            return 'methane_oxidiser'
+        st = meta.get(a, {}).get('stratum', '?')
+        if st == 'background' and order(a) in RELABEL_AS_METHANOGEN:
+            return 'methanogen'
+        return st
+    cls = {a: klass(a) for a in scored}
+    relabelled = sorted(a for a in scored if cls[a] != meta.get(a, {}).get('stratum'))
+
+    tally = collections.Counter()
+    for a in scored:
+        tally[(cls[a], bool(routes.get(a)))] += 1
+
+    print('============ GTDB representative benchmark ============')
+    print(f'genomes scored: {len(scored)}   (classes from the sampling strata, corrected: '
+          f'{len(relabelled)} genomes relabelled, see RELABEL_AS_METHANOGEN and the methane_oxidiser role)')
+    for st in ('background', 'methanogen', 'methane_oxidiser'):
+        print(f'  {st:16s} route assigned: {tally[(st, True)]:5d}   no route: {tally[(st, False)]:5d}')
+
+    fp = sorted(a for a in scored if cls[a] == 'background' and routes.get(a))
+    print(f'\nFALSE POSITIVES (background genomes given a route): {len(fp)}')
+    for a in fp[:25]:
+        m = meta[a]
+        print(f'  {a}  {m["phylum"]} / {m["order"]} -> {sorted(routes[a])}')
+
+    fn = sorted(a for a in scored if cls[a] == 'methanogen' and not routes.get(a))
+    print(f'\nMETHANOGENS WITH NO ROUTE: {len(fn)}')
+    for o, c in collections.Counter(meta[a]['order'] for a in fn).most_common(12):
+        print(f'  {o}: {c}')
+
+    print('\nroute assignments among methanogens:')
+    mix = collections.Counter(r for a in scored
+                              if cls[a] == 'methanogen'
+                              for r in routes.get(a, ()))
+    for r, c in mix.most_common():
+        print(f'  {r}: {c}')
+
     def rank(a, r):
         for tok in lineage.get(a, '').split(';'):
             if tok.startswith(r + '__'):
