@@ -29,6 +29,7 @@ A module whose rows are **all accessory-tier** (`ACID-ETOH`, `ACID-LACT`, `DIET`
 Core: `fwdB/fmdB, ftr, mch, mtd (or hmd), mer, mtrA, mcrA`  (+ `frhA`, `mvhA`, `hdrA/B` for electron supply)
 
 **Acetoclastic methanogenesis (acetate -> CH4)** — gate: `mcrA` AND `cdhA` AND acetate activation, **confirmed against GTDB-Tk lineage**.
+Lineage confirms when the genus is *Methanosarcina* or *Methanothrix* (*Methanosaeta*), or the family is Methanotrichaceae (every described member is an obligate acetoclast). Other Methanosarcinaceae genera are mostly methylotrophs that do not use acetate (*Methanolobus*, *Methanococcoides*, *Methanohalophilus*), so the family alone does not confirm; an unnamed Methanosarcinaceae genus is scored absent on taxonomy and left for review. Checked by `tests/test_acetoclastic_lineage.py`.
 Core: `(ackA + pta) OR acs`, `cdhA`, `cdhC`, `mtrA`, `mcrA`
 Genus hint (gated behind the confirmed call): `acs` (high-affinity) -> *Methanothrix/Methanosaeta*; `ackA+pta` (low-affinity) -> *Methanosarcina*.
 

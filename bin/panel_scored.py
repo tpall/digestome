@@ -74,13 +74,31 @@ def load_panel(path):
     return modules, by_gene
 
 # Acetoclastic methanogenesis is confined to these clades. Everything else that
-# carries ACDS/CODH runs it in the synthetic (carbon-fixing) direction. Family
-# and genus are both listed because GTDB has renamed these across releases
+# carries ACDS/CODH runs it in the synthetic (carbon-fixing) direction. Names are
+# listed under both spellings because GTDB has renamed them across releases
 # (Methanosaeta -> Methanothrix, Methanosaetaceae -> Methanotrichaceae).
-ACETOCLASTIC_CLADES = (
-    'f__Methanosarcinaceae', 'f__Methanotrichaceae', 'f__Methanosaetaceae',
-    'g__Methanosarcina', 'g__Methanothrix', 'g__Methanosaeta',
-)
+#
+# The two families are not alike. Every described Methanotrichaceae is an
+# obligate acetoclast, so the family confirms. Methanosarcinaceae is mostly
+# methylotrophs that do not use acetate (Methanolobus, Methanococcoides,
+# Methanohalophilus, ...); only Methanosarcina does, so there the genus must
+# confirm. A Methanosarcinaceae genome of another or an unnamed genus is scored
+# absent on taxonomy and left for review.
+ACETOCLASTIC_GENERA = ('Methanosarcina', 'Methanothrix', 'Methanosaeta')
+ACETOCLASTIC_FAMILIES = ('Methanotrichaceae', 'Methanosaetaceae')
+
+def _rank(lineage, rank):
+    """Name at `rank` ('g', 'f', ...) in a lineage, GTDB suffix dropped (Methanosarcina_A -> Methanosarcina)."""
+    for part in lineage.split(';'):
+        part = part.strip()
+        if part.startswith(rank + '__') and len(part) > len(rank) + 2:
+            return re.sub(r'_[A-Z]+$', '', part[len(rank) + 2:])
+    return ''
+
+def acetoclastic_lineage(lineage):
+    """True when the lineage is a clade in which acetoclastic methanogenesis is known."""
+    return (_rank(lineage, 'g') in ACETOCLASTIC_GENERA
+            or _rank(lineage, 'f') in ACETOCLASTIC_FAMILIES)
 
 def _clade(lineage):
     """Most specific informative rank in a GTDB lineage, for display."""
@@ -424,7 +442,7 @@ def main():
             if g[1]:
                 g[3] = ('gene markers only — ACDS is bidirectional, so pass --gtdbtk '
                         'to confirm the clade before reporting this')
-        elif any(c in lineage for c in ACETOCLASTIC_CLADES):
+        elif acetoclastic_lineage(lineage):
             if g[1]:
                 g[3] = f"taxonomy-confirmed ({_clade(lineage)})"
         else:
