@@ -19,7 +19,10 @@ abstract: |
   non-methanogens, and every acetoclastic call fell within *Methanosarcina* or
   *Methanothrix*. The result held on 3,043 GTDB species representatives spanning 203 phyla,
   which are built differently from binned metagenomes: the only background genomes given a
-  route were three archaea carrying `mcrA`. Testing whether a catalytic domain shares a
+  route were three archaea carrying `mcrA`. Specificity against non-methanogens does not show
+  that a methanogen gets the right route: with a family-level check, half of the acetoclastic
+  calls in that sample fell on methylotrophs, and a genus-level lineage policy removed them.
+  Testing whether a catalytic domain shares a
   polypeptide with an export module reduced the genomes credited with cellulolytic capacity
   from 597 to 50.
 keywords: [anaerobic digestion, biogas, metagenomics, functional annotation, methanogenesis, open data]
@@ -199,13 +202,35 @@ Branch capability is evaluated by explicit gates rather than completeness thresh
 declares its requirements as groups of alternatives, and gates evaluate to true, false, or
 **not assessable** when a required marker has no detector in the database at all.
 
-The acetoclastic gate additionally requires a confirming lineage, supplied as a GTDB-Tk
-classification [@chaumeil2022gtdbtk]. Gene content alone cannot resolve it: the ACDS/CODH complex is reversible, and autotrophic hydrogenotrophs carry it to *fix*
-carbon rather than to cleave acetyl-CoA. *Methanothermobacter thermautotrophicus*, an obligate
-hydrogenotroph, satisfies the gene test. Where taxonomy places a genome outside the clades known
-to perform acetoclastic methanogenesis, the gate is scored absent with the reason stated; where no
-taxonomy is supplied the gate falls back to gene evidence and says so. A genome missing from the
-taxonomy table is treated as unclassified, never as a negative.
+The hydrogenotrophic gate requires `mcrA` and at least four of six C1 pathway steps
+(`fwdB`|`fmdB`, `ftr`, `mch`, `mtd`|`hmd`, `mer`, `mtrA`); isoenzymes of one step count once. It
+also covers methanogens that reduce CO~2~ with formate. The acetoclastic gate requires `mcrA`,
+`cdhA` and acetate activation (`acs`, or `ackA` with `pta`); the methylotrophic gate requires
+`mcrA` and a substrate-specific methyltransferase or the shared MT2 step.
+
+Three of these gates need a confirming lineage, supplied as a GTDB-Tk classification
+[@chaumeil2022gtdbtk], because the pathways they read are reversible or shared, and gene content
+cannot tell the direction. The ACDS/CODH complex serves autotrophic hydrogenotrophs to *fix*
+carbon rather than to cleave acetyl-CoA, and *Methanothermobacter thermautotrophicus*, an obligate
+hydrogenotroph, satisfies the acetoclastic gene test. The C1 pathway runs oxidatively in
+acetoclasts and methylotrophs and in reverse in anaerobic methane oxidisers, all of which satisfy
+the hydrogenotrophic gene test. The lineage policy is a single table read by the scorer and by
+report renderers (`assets/acetate_lineages.tsv`), each row with its source. The acetoclastic call
+is an allow list at genus level: *Methanosarcina*, *Methanothrix* and *Methanocrinis*
+[@jetten1992; @smith2007methanosaeta; @khomyakova2023methanocrinis]. A family does not suffice,
+because *Methanosarcinaceae* is mostly methylotrophs that do not use acetate
+[@oren2014methanosarcinaceae]. The hydrogenotrophic call uses a deny list, because
+hydrogenotrophy is the default for methanogens: the obligately acetoclastic *Methanotrichaceae*,
+the methylotrophic *Methanosarcinaceae* genera, and the anaerobic methane and ethane oxidisers
+[@haroon2013methanoperedens; @knittel2009aom; @hahn2020ethanoperedens]. A methylotrophic call
+resting on the MT2 marker alone is accepted only in lineages known to be methylotrophic without a
+licence-clean substrate-specific marker: *Methanosphaera*, *Methanomassiliicoccales*,
+*Methanomethylicales*, *Methanofastidiosales* and *Methanonatronarchaeales*
+[@fricke2006methanosphaera; @vanwonterghem2016verstraete; @nobu2016methanofastidiosa;
+@sorokin2017methanonatronarchaeia]. Where taxonomy places a genome outside these rules the gate is
+scored absent with the reason stated; where no taxonomy is supplied, or it is too coarse to place
+the genome, the gate falls back to gene evidence and says so. A genome missing from the taxonomy
+table is treated as unclassified, never as a negative.
 
 ## Secretion evidence
 
@@ -309,12 +334,16 @@ The panel was applied to the 1,401 digester MAGs (@tbl-specificity).
 | Acetoclastic calls | 6, all *Methanosarcina* or *Methanothrix* |
 | Acetoclastic calls outside those genera | **0** |
 | Non-methanogens assigned any methanogenesis route | **0 of 1,361** |
-| Methanogens with no route assigned | 0 of 40 |
+| Methanogens with no route assigned | 3 of 40 |
 
 : Methanogenesis route assignment across 1,401 digester MAGs. {#tbl-specificity}
 
 The absence of route assignments among 1,361 bacterial genomes is the principal specificity
-result.
+result. The three methanogens without a route lost it to the lineage policy and the step-based
+hydrogenotrophic gate: two *Methanothrix* bins carry the C1 pathway but not the acetate markers,
+and a *Methanothermobacter* bin has three of the six C1 steps. Their earlier hydrogenotrophic
+calls were the error the policy removes, so they count against sensitivity rather than
+specificity. Catalogue taxonomy here is the authors' NCBI names, which give a genus only.
 
 The benchmark also identified a genuine gap. Seven `mcrA`-carrying genomes initially received no
 route; all carried none of the eight C1 carriers, which is correct biology for the obligate
@@ -322,7 +351,9 @@ methylotrophs among *Methanofastidiosia* and *Thermoplasmatales*, whose substrat
 methyltransferases have no licence-clean model. Adding the terminal methylcobalamin:CoM
 methyltransferase, which detects methylotrophy without naming the substrate, resolved all seven.
 That model is subfamily-level and matches 30 bacterial genomes on its own; it is sound only
-because the gate independently requires `mcrA`, and it discriminated perfectly among methanogens.
+because the gate independently requires `mcrA`. Among the digester methanogens it discriminated
+correctly, but the GTDB sample showed that it alone also matches non-methylotrophic methanogens,
+which is why a call resting on it now needs a confirming lineage (Methods).
 
 ## The export test reduces attributed hydrolytic capacity
 
@@ -351,28 +382,56 @@ in the sample received a route. On the reading that these three are methanogens,
 false assignment in 1,899 background genomes; on the conservative reading they represent a false
 positive rate below 0.2%.
 
-Of the 1,144 methanogens, 896 were assigned at least one route. Of the 248 that were not, 240
+The 1,144 genomes in methanogen orders include 89 anaerobic methane and alkane oxidisers
+(*Methanoperedenaceae*, *Methanocomedenaceae*, *Methanogasteraceae*, "*Ca.* Ethanoperedens"),
+which carry `mcr` and run the pathway in reverse. None of them receives a methanogenesis route.
+Of the 1,055 methanogens, 808 were assigned at least one route. Of the 247 that were not, 217
 carry no detectable `mcrA` at all. GTDB representatives include many incomplete genomes, and a
 genome that does not contain the defining marker should not be given a route.
 
-The eight that carry `mcrA` without an assignable route are the informative residue. Three are
-*Methanomassiliicoccales*, obligate hydrogen-dependent methylotrophs whose proteome sizes are
-normal for the clade and which lack the Mtr/H4MPT set as a matter of biology rather than assembly
-quality. They carry none of the three methylamine methyltransferases, nor the methanol enzyme,
-and the panel therefore declines to name a route. Whether this reflects a substrate
-methyltransferase outside the panel or an incomplete assembly is not resolvable from gene content,
-which is the honest position for a capability method to take. One is *Methanoperedens*, an anaerobic methane oxidiser that runs the pathway in
-reverse and should not receive a methanogenesis route, although the panel declines to assign one
-because the gate conditions are unmet rather than because it recognises reverse operation. The
-remaining four are contig-level assemblies missing scattered carriers with no shared pattern.
+The 30 that carry `mcrA` without an assignable route are the informative residue. They include
+*Methanomassiliicoccales*, obligate hydrogen-dependent methylotrophs that lack the Mtr/H4MPT set as
+a matter of biology and carry none of the substrate-specific methyltransferases in the panel;
+*Methanothrix* bins that carry the C1 pathway but not the acetate markers; and bins that reach
+three of the six C1 steps. Whether a missing marker reflects biology or an incomplete assembly is
+not resolvable from gene content, which is the honest position for a capability method to take.
 
-| | background | methanogen |
-|---|---|---|
-| genomes | 1,899 | 1,144 |
-| route assigned | 3, all `mcrA`-positive archaea | 896 |
-| no route | 1,896 | 248, of which 240 lack `mcrA` |
+| | background | methanogen | anaerobic methane / alkane oxidiser |
+|---|---|---|---|
+| genomes | 1,899 | 1,055 | 89 |
+| route assigned | 3, all `mcrA`-positive archaea | 808 | 0 |
+| no route | 1,896 | 247, of which 217 lack `mcrA` | 89 |
 
 : Methanogenesis route assignment across 3,043 GTDB species representatives. {#tbl-gtdb}
+
+## A methanogen gets the right route only with a confirming lineage
+
+Specificity against non-methanogens does not show that a methanogen was given the right route. We
+therefore tabulated every route call by GTDB lineage (`scripts/summarise_gtdb_benchmark.py`), first
+with a family-level acetoclastic check and gene-only hydrogenotrophic and methylotrophic gates,
+then with the lineage policy described in Methods (@tbl-routes).
+
+| route | calls, family-level check | calls, lineage policy | removed |
+|---|---|---|---|
+| acetoclastic | 156 | 73 | 83: methylotrophic *Methanosarcinaceae* (*Methanolobus* 27, *Methanococcoides* 11, *Methanohalophilus* 9, *Methanomethylovorans* 8, others 4) and 24 unnamed *Methanosarcinaceae* and *Methanotrichaceae* genera |
+| hydrogenotrophic | 677 | 487 | 190: anaerobic methane and ethane oxidisers 65, methylotrophic *Methanosarcinaceae* 61, *Methanotrichaceae* 56, isoenzymes counted twice 8 |
+| methylotrophic | 388 | 376 | 12: MT2 marker alone in *Methanococcus*, *Methanoculleus*, *Methanomicrobium*, *Methanothrix* and others |
+
+: Route calls in the GTDB sample before and after lineage confirmation. After it, every acetoclastic call is *Methanosarcina* (32), *Methanothrix* (29) or *Methanocrinis* (12). {#tbl-routes}
+
+Half of the acetoclastic calls under the family-level check were methylotrophs that do not use
+acetate, and more than a quarter of the hydrogenotrophic calls fell on organisms that run the C1
+pathway oxidatively or in reverse. Neither error is visible in a specificity test against
+non-methanogens, which is how the digester benchmark was framed. The catalogue result held
+because its acetoclastic calls happened to fall in *Methanosarcina* and *Methanothrix*: the
+earlier rule would have accepted *Methanolobus* as readily. The cost is sensitivity: 23 methanogen
+genomes that had a route now have none, 15 *Methanothrix* bins whose only call had been the
+hydrogenotrophic one, and 8 hydrogenotrophs that reach three of the six C1 steps once isoenzymes
+count once. One question remains open. Of 50 *Methanobacteriales* genomes with a methylotrophic call, 14 are
+*Methanosphaera*, confirmed by lineage, and 36 are in genera where methylotrophy is not
+established (*Methanobacterium* 21, *Methanocatella* 7, others 8); in the genomes we inspected the
+call rests on a hit to the methanol methyltransferase model itself. We report these as capacity
+and flag them.
 
 ## Detecting a pyrrolysine marker depends on the gene caller
 
@@ -461,8 +520,12 @@ cytoplasmic enzymes on their own (hence the export test), nor do they resolve su
 specificity within a family. The export layer detects the cellulosomal and cell-surface-anchored
 routes; a plain Sec-secreted enzyme carrying no binding module would be missed.
 
-**Taxonomy dependence.** The acetoclastic call is only as good as the supplied lineage. Without
-taxonomy it degrades to gene evidence, which over-calls.
+**Taxonomy dependence.** The acetoclastic, hydrogenotrophic and MT2-only methylotrophic calls are
+only as good as the supplied lineage and the policy that reads it. Without taxonomy they degrade
+to gene evidence, which over-calls, and the NCBI names that accompany many catalogues give a genus
+only, too coarse for the order-level rules. The policy is data, one table with a source per row,
+so a new lineage is a reviewed edit rather than a code change; a lineage it does not know is
+reported, not guessed.
 
 **Prevalence is measured over binned genomes.** Scoring is per genome, so a marker carried by
 taxa that do not bin is not counted. In a parallel analysis of bile-acid 7alpha-dehydroxylation in
@@ -488,7 +551,7 @@ tracks assembly contiguity exactly: nothing for single-contig genomes, 9% at two
 82% at fifty to two hundred, and 94% beyond that. The reason is gene arrangement rather than
 assembly quality. The rule is cheap for an operon-encoded pathway, where the members sit side by
 side, and prohibitive for a distributed one: the `mcr`, `fwd` and `mtr` loci lie apart on the
-chromosome, so demanding `mcrA` and four C1 carriers on one contig amounts to demanding a contig
+chromosome, so demanding `mcrA` and four C1 steps on one contig amounts to demanding a contig
 that spans most of a replicon. The option exists for pathways it suits; these gates are defined
 for, and should be run on, binned genomes. Binned input answers
 what an organism can do, and assembly-level search answers whether a capability is present in a
@@ -497,10 +560,11 @@ sample. The two questions have different error models and should not be conflate
 **Taxonomic ground truth.** Both the specificity and the sensitivity figures are measured
 against order-level labels, and those labels were wrong in both directions here.
 *Methanonatronarchaeales* are methanogens that our order list did not include, so a correct call
-counted as a false positive; *Methanoperedens* is an anaerobic methane oxidiser sitting inside a
-methanogen order, so a correct refusal counted as a missed call. Neither error is large enough to
-change the conclusions, but both indicate that a benchmark of this kind measures the reference
-labels as much as the tool.
+counted as a false positive. The anaerobic methane and alkane oxidisers sit inside methanogen
+orders; an order-level benchmark counts their routes as correct methanogen calls, and it did so
+for 65 of them before the lineage policy. Both indicate that a benchmark of this kind measures
+the reference labels as much as the tool, and that a specificity test against non-methanogens
+has to be paired with a check of which route each methanogen receives.
 
 **Benchmark scope.** Specificity now rests on two collections that differ in construction, one
 binned from digester metagenomes by a single group and one drawn from GTDB representatives, which
