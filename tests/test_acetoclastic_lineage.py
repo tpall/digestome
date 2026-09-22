@@ -41,6 +41,8 @@ H2_CASES = [
     (A + 'o__Methanotrichales;f__Methanotrichaceae;g__Methanocrinis;s__Methanocrinis harundinaceus', True),
     (A + 'o__Methanosarcinales;f__Methanosarcinaceae;g__Methanolobus;s__Methanolobus tindarius', True),
     ('d__Archaea;g__Methanosaeta;s__Methanosaeta concilii', True),
+    (A + 'o__Methanotrichales;f__Methanotrichaceae;g__UBA204;s__UBA204 sp1', True),
+    (A + 'o__Methanosarcinales;f__Methanoperedenaceae;g__Methanoperedens;s__Methanoperedens nitroreducens', True),
     (A + 'o__Methanosarcinales;f__Methanosarcinaceae;g__Methanosarcina;s__Methanosarcina barkeri', False),
     ('d__Archaea;p__Halobacteriota;c__Methanomicrobia;o__Methanomicrobiales;f__Methanoculleaceae;'
      'g__Methanoculleus;s__Methanoculleus bourgensis', False),

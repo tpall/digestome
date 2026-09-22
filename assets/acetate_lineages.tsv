@@ -10,12 +10,14 @@
 # role=anabolic_acetate_genes: methanogen orders whose members carry ACDS/CODH, acs,
 #   ackA/pta to build biomass from acetate or CO2, not to make methane from acetate.
 #   A genome in these orders with the genes is expected, not a candidate.
-# role=not_hydrogenotrophic: genera that carry the C1 (H4MPT) pathway but run it in the oxidative
+# role=not_hydrogenotrophic: genera (or families) that carry the C1 (H4MPT) pathway but run it in the oxidative
 #   direction (the methyl branch of acetoclasty, or oxidising methyl groups) and do not reduce CO2
 #   with H2. A hydrogenotrophic gate met by gene content in these genera is scored absent on
 #   taxonomy. Methanosarcina is not listed: species differ (M. barkeri uses H2/CO2, M. acetivorans
 #   does not), so it stays a capacity. Hydrogenotrophy is the default for methanogens, so this is a
-#   deny list, where acetoclasty (rare) is an allow list.
+#   deny list, where acetoclasty (rare) is an allow list. Families: Methanotrichaceae (acetate only),
+#   and the ANME / alkane-oxidiser families, which run the whole pathway in reverse and are not
+#   methanogens at all.
 # role=not_acetoclastic: lineages with a known position on acetate that is "no": they may carry
 #   the acetate-route genes but are not acetate users, so a report does not flag them for review.
 #   Methylotrophic Methanosarcinaceae genera, and the ANME families (anaerobic methane oxidisers,
@@ -64,3 +66,9 @@ o	Methanomassiliicoccales	methyl_via_comMT	Vanwonterghem et al. 2016 Nat Microbi
 o	Methanomethylicales	methyl_via_comMT	Vanwonterghem et al. 2016 Nat Microbiol 1:16170 (Verstraetearchaeota, methylotrophic)
 o	Methanofastidiosales	methyl_via_comMT	Nobu et al. 2016 ISME J 10:2478 (methylated-thiol reduction)
 o	Methanonatronarchaeales	methyl_via_comMT	Sorokin et al. 2017 Nat Microbiol 2:17081 (methyl-reducing)
+f	Methanotrichaceae	not_hydrogenotrophic	every described member uses acetate only (Methanothrix, Methanocrinis: Smith & Ingram-Smith 2007; Khomyakova et al. 2023); covers unnamed genera
+f	Methanoperedenaceae	not_hydrogenotrophic	ANME-2d, reverse methanogenesis (Haroon et al. 2013 Nature 500:567)
+f	Methanocomedenaceae	not_hydrogenotrophic	ANME-2a/b, anaerobic methane oxidiser (Knittel & Boetius 2009 Annu Rev Microbiol 63:311)
+f	Methanogasteraceae	not_hydrogenotrophic	ANME-2c, anaerobic methane oxidiser (Knittel & Boetius 2009)
+f	EX4572-44	not_hydrogenotrophic	Ca. Ethanoperedens, anaerobic ethane oxidiser (Hahn et al. 2020 mBio 11:e00600-20); GTDB placeholder family name
+f	EX4572-44	not_acetoclastic	Ca. Ethanoperedens, anaerobic ethane oxidiser (Hahn et al. 2020)
