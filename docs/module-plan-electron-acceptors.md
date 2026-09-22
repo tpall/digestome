@@ -4,17 +4,16 @@ _Status: planned, not implemented (2026-09-22). Owner: TP._
 
 ## Why
 
-The panel sees methanogens and the fermentation chain, but not the organisms that compete with
-methanogens for H₂ and acetate, or that serve as partners of anaerobic methane oxidisers. Three
-operator questions depend on them:
+The panel sees methanogens and the fermentation chain, but not the organisms that compete with them
+for the same substrates. For a digester operator the story, in order of how often it matters:
 
-1. **H₂S in the biogas.** Sulfate reducers make it; operators pay for desulfurisation.
-2. **Competition.** At high sulfate, sulfate reducers outcompete methanogens for H₂ and acetate and
-   lower the gas yield.
+1. **Competition.** At high sulfate (distillery and other industrial wastewaters, seaweed, some
+   co-substrates) sulfate reducers outcompete methanogens for H₂ and acetate and lower the gas yield.
+2. **H₂S in the biogas.** Sulfate reducers make it; operators pay for desulfurisation.
 3. **Methane loss.** Anaerobic methane oxidisers (now reported apart from methanogens, role
    `methane_oxidiser`) need an acceptor: sulfate via partner bacteria (ANME-1, ANME-2a/b/c), or
    nitrate, iron or manganese (ANME-2d, *Methanoperedens*). Without the acceptor side the report can
-   name them but not say whether they can be active.
+   name them but not say whether they can be active. Rare in digesters, but costly where present.
 
 ## Scope
 
