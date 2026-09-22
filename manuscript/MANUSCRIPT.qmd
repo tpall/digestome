@@ -227,7 +227,9 @@ resting on the MT2 marker alone is accepted only in lineages known to be methylo
 licence-clean substrate-specific marker: *Methanosphaera*, *Methanomassiliicoccales*,
 *Methanomethylicales*, *Methanofastidiosales* and *Methanonatronarchaeales*
 [@fricke2006methanosphaera; @vanwonterghem2016verstraete; @nobu2016methanofastidiosa;
-@sorokin2017methanonatronarchaeia]. Where taxonomy places a genome outside these rules the gate is
+@sorokin2017methanonatronarchaeia]. `mcr` carriers in anaerobic methane and alkane oxidiser lineages
+(ANME-1, ANME-2a/b/c/d, *Ethanoperedens*, *Syntrophoarchaeum*) are counted apart from methanogens.
+Where taxonomy places a genome outside these rules the gate is
 scored absent with the reason stated; where no taxonomy is supplied, or it is too coarse to place
 the genome, the gate falls back to gene evidence and says so. A genome missing from the taxonomy
 table is treated as unclassified, never as a negative.

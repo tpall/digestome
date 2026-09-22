@@ -32,6 +32,8 @@ no detector are reported separately rather than folded into a zero.
 Stdlib only.
 """
 import argparse, csv, json, os, re, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from panel_scored import ACETATE_LINEAGES, load_acetate_lineages, lineage_in_role
 
 # Operational reading of route balance in an anaerobic digester. Acetate is the
 # precursor of ~70% of methane in a healthy reactor, so losing its consumer is
@@ -164,14 +166,15 @@ def write_tables(outdir, fmt, profile):
     gate_cols = [('acetoclastic', ROUTE_GATES['acetoclastic']),
                  ('hydrogenotrophic', ROUTE_GATES['hydrogenotrophic']),
                  ('methylotrophic', ROUTE_GATES['methylotrophic'])] + \
-                [(k, c['label']) for k, c in profile['capabilities'].items()]
+                [(k, c['label']) for k, c in profile['capabilities'].items()
+                 if k != 'methane_oxidation']        # a lineage call, has its own column
     # panel order, taken from the first genome that has a module table
     mod_order = next(([r['module'] for r in m['modules']] for m in mags if m['modules']), [])
     export_mods = [x for x in mod_order if x.startswith(EXPORT_MODULES_PREFIX)]
     marker_order = next(([k for k in m['markers']] for m in mags if m['markers']), [])
 
     # ---- genomes ----
-    hdr = (['sample', 'genome', 'abundance_pct', 'lineage', 'phylum', 'genus', 'mcrA']
+    hdr = (['sample', 'genome', 'abundance_pct', 'lineage', 'phylum', 'genus', 'mcrA', 'methane_oxidiser']
            + [k for k, _ in gate_cols] + ['gate_notes']
            + [f'{x}_pct_complete' for x in mod_order]
            + [c for x in export_mods for c in (f'{x}_families_found', f'{x}_families_exported')]
@@ -184,7 +187,7 @@ def write_tables(outdir, fmt, profile):
                           for lab, g in m['gates'].items()
                           if g.get('note') and g.get('value') is not None)
         row = [sample, m['name'], na(m['abundance_pct']), m['lineage'], m['phylum'], m['genus'],
-               yn(m['is_methanogen'])]
+               yn(m['has_mcrA']), yn(m['is_methane_oxidiser'])]
         row += [yn((m['gates'].get(lab) or {}).get('value')) for _, lab in gate_cols]
         row.append(notes)
         row += [mods.get(x, {}).get('pct_complete', 'NA') or 'NA' for x in mod_order]
@@ -244,6 +247,8 @@ def main():
     ap.add_argument('--description', default='', help='what this sample actually is')
     ap.add_argument('--abundance', metavar='MANIFEST.TSV',
                     help='per-MAG relative abundance (%%); adds abundance-weighted shares')
+    ap.add_argument('--acetate-lineages', default=ACETATE_LINEAGES, metavar='TSV',
+                    help='lineage policy (default: assets/acetate_lineages.tsv next to bin/)')
     ap.add_argument('--out-json', required=True)
     ap.add_argument('--out-txt')
     ap.add_argument('--out-tables', metavar='DIR',
@@ -253,6 +258,9 @@ def main():
                          'comma-separated with quoting)')
     a = ap.parse_args()
 
+    if not os.path.isfile(a.acetate_lineages):
+        sys.exit(f'!! lineage policy not found: {a.acetate_lineages}')
+    policy = load_acetate_lineages(a.acetate_lineages)
     abundance, ab_meta = ({}, {})
     if a.abundance:
         abundance, ab_meta = load_abundance(a.abundance)
@@ -272,14 +280,21 @@ def main():
             'name': n, 'lineage': lineage,
             'genus': taxon(lineage, 'g__'), 'family': taxon(lineage, 'f__'),
             'phylum': taxon(lineage, 'p__'),
-            'is_methanogen': bool(markers.get('mcrA')),
+            'has_mcrA': bool(markers.get('mcrA')),
+            # mcr carriers that run the pathway in reverse (ANME, alkane oxidisers) are not
+            # methanogens; the lineage policy names them
+            'is_methane_oxidiser': bool(markers.get('mcrA')) and bool(lineage)
+                                   and lineage_in_role(lineage, 'methane_oxidiser', policy),
             'gates': gates, 'markers': markers, 'genus_hint': hint,
             'modules': modules,
             'abundance_pct': abundance.get(n),
         })
 
+    for m in mags:
+        m['is_methanogen'] = m['has_mcrA'] and not m['is_methane_oxidiser']
     n_tot = len(mags)
     methanogens = [m for m in mags if m['is_methanogen']]
+    methane_oxidisers = [m for m in mags if m['is_methane_oxidiser']]
 
     # ---- abundance bookkeeping ----
     # Shares are of reads mapped to the whole catalogue, as the manifest says, so
@@ -327,6 +342,12 @@ def main():
                              'carriers': gate_carriers(label),
                              'unassessable_in': gate_blind(label),
                              'abundance_pct': share(gate_carriers(label))}
+    # not a gate: a lineage call on mcr carriers (assets/acetate_lineages.tsv, role methane_oxidiser)
+    capabilities['methane_oxidation'] = {
+        'label': 'lineage: anaerobic methane / alkane oxidiser',
+        'carriers': [m['name'] for m in methane_oxidisers],
+        'unassessable_in': [],
+        'abundance_pct': share([m['name'] for m in methane_oxidisers])}
 
     # ---- module completeness across the community ----
     # Reported as "best MAG" and "how many MAGs carry it", never as a mean --
@@ -408,6 +429,14 @@ def main():
                        'ammonia inhibition risk in protein- and lipid-rich feedstocks. '
                        'This is genomic capacity, not a flux measurement — read alongside '
                        'measured NH4+.')})
+    if methane_oxidisers:
+        risks.append({
+            'level': 'note',
+            'title': 'Anaerobic methane oxidisers present',
+            'detail': (f'{len(methane_oxidisers)} MAG(s) carry mcr but belong to anaerobic methane or '
+                       'alkane oxidiser lineages, which run the pathway in reverse. They are not counted '
+                       'as methanogens. Their activity needs an electron acceptor: sulfate with partner '
+                       'bacteria, or nitrate, iron or manganese (Methanoperedens).')})
     if not methanogens:
         risks.append({
             'level': 'attention',
@@ -441,7 +470,9 @@ def main():
     w(f"# {a.sample} — anaerobic digestion community profile")
     if a.description:
         w(f"  {a.description}")
-    w(f"  {n_tot} MAG(s); {len(methanogens)} carrying mcrA")
+    w(f"  {n_tot} MAG(s); {len(methanogens)} methanogen(s) (mcrA)"
+      + (f"; {len(methane_oxidisers)} anaerobic methane/alkane oxidiser(s) (mcrA, reverse pathway)"
+         if methane_oxidisers else ""))
     if abundance:
         w(f"  scored MAGs cover {scored_share:.1f} % of mapped reads; methanogens "
           f"{share([m['name'] for m in methanogens]):.1f} %"

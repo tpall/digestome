@@ -27,6 +27,10 @@
 #   licence-clean model, so the shared MT2 marker (comMT) alone is accepted there. Anywhere else a
 #   comMT-only methyl call is scored absent on taxonomy: in the GTDB r226 sample comMT alone called
 #   the methyl route in Methanococcus, Methanoculleus, Methanomicrobium, Methanothrix, Methanocatella.
+# role=methane_oxidiser: anaerobic methane / alkane oxidisers. They carry mcr and run the pathway
+#   in reverse, so they are not methanogens: the aggregator counts them apart from methanogens and a
+#   report names them with the electron acceptor they need. Class Syntropharchaeia is NOT listed
+#   whole: it also holds unnamed orders of unknown metabolism.
 # GTDB suffixes (_A, _B) mark phylogenetically separate genera in GTDB; matching ignores them on
 #   purpose (Methanothrix_B = Methanothrix), a deliberate simplification.
 #   Names checked against GTDB r232 (gtdb_taxonomy.tsv) and the r226 sample: exact, no suffixes.
@@ -72,3 +76,13 @@ f	Methanocomedenaceae	not_hydrogenotrophic	ANME-2a/b, anaerobic methane oxidiser
 f	Methanogasteraceae	not_hydrogenotrophic	ANME-2c, anaerobic methane oxidiser (Knittel & Boetius 2009)
 f	EX4572-44	not_hydrogenotrophic	Ca. Ethanoperedens, anaerobic ethane oxidiser (Hahn et al. 2020 mBio 11:e00600-20); GTDB placeholder family name
 f	EX4572-44	not_acetoclastic	Ca. Ethanoperedens, anaerobic ethane oxidiser (Hahn et al. 2020)
+o	Alkanophagales	not_hydrogenotrophic	ANME-1 and Ca. Alkanophaga, methane/alkane oxidisers (Knittel & Boetius 2009; Zehnle et al. 2023 Nat Microbiol 8:1199)
+o	Syntropharchaeales	not_hydrogenotrophic	Ca. Syntrophoarchaeum, butane oxidiser (Laso-Pérez et al. 2016 Nature 539:396)
+o	Alkanophagales	not_acetoclastic	ANME-1, methane/alkane oxidisers
+o	Syntropharchaeales	not_acetoclastic	butane oxidiser
+f	Methanoperedenaceae	methane_oxidiser	ANME-2d; nitrate, iron or manganese as acceptor, no partner needed (Haroon et al. 2013)
+f	Methanocomedenaceae	methane_oxidiser	ANME-2a/b; sulfate via partner bacteria (Knittel & Boetius 2009)
+f	Methanogasteraceae	methane_oxidiser	ANME-2c; sulfate via partner bacteria (Knittel & Boetius 2009)
+o	Alkanophagales	methane_oxidiser	ANME-1; sulfate via partner bacteria (Knittel & Boetius 2009)
+f	EX4572-44	methane_oxidiser	Ca. Ethanoperedens, ethane oxidiser (Hahn et al. 2020)
+o	Syntropharchaeales	methane_oxidiser	Ca. Syntrophoarchaeum, butane oxidiser (Laso-Pérez et al. 2016)
