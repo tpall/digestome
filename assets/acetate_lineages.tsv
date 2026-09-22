@@ -1,0 +1,24 @@
+# Lineage policy for the acetate route. Read by bin/panel_scored.py (role=acetoclastic)
+# and by report renderers (both roles). Detection policy lives here, not in code.
+#
+# role=acetoclastic: a genome with the acetate-route genes is confirmed only when its
+#   genus is listed here. Genus level on purpose: Methanosarcinaceae is mostly
+#   methylotrophs that do not use acetate (Methanolobus, Methanococcoides,
+#   Methanohalophilus, Methanomethylovorans, Methanimicrococcus), and an unnamed genus
+#   (GTDB placeholder) is left for review, not confirmed. GTDB suffixes are ignored
+#   (Methanothrix_B = Methanothrix).
+# role=anabolic_acetate_genes: methanogen orders whose members carry ACDS/CODH, acs,
+#   ackA/pta to build biomass from acetate or CO2, not to make methane from acetate.
+#   A genome in these orders with the genes is expected, not a candidate.
+#   Names checked against GTDB r232 (gtdb_taxonomy.tsv) and the r226 sample: exact, no suffixes.
+rank	name	role	source
+g	Methanosarcina	acetoclastic	Jetten et al. 1992 FEMS Microbiol Rev 8:181
+g	Methanothrix	acetoclastic	Jetten et al. 1992 FEMS Microbiol Rev 8:181
+g	Methanosaeta	acetoclastic	former name of Methanothrix
+g	Methanocrinis	acetoclastic	former Methanothrix harundinacea; obligate acetoclast
+o	Methanomicrobiales	anabolic_acetate_genes	hydrogenotrophs
+o	Methanobacteriales	anabolic_acetate_genes	hydrogenotrophs (Methanothermobacter trips the gene test)
+o	Methanomassiliicoccales	anabolic_acetate_genes	H2-dependent methylotrophs
+o	Methanococcales	anabolic_acetate_genes	hydrogenotrophs
+o	Methanopyrales	anabolic_acetate_genes	hydrogenotrophs
+o	Methanocellales	anabolic_acetate_genes	hydrogenotrophs

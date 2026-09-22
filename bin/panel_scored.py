@@ -23,7 +23,7 @@ through the panel so gate expressions stay readable.
 Stdlib only. SCAFFOLD — review thresholds and gate logic before production.
 Run once per genome/MAG; loop externally for a community profile.
 """
-import argparse, csv, re, sys
+import argparse, csv, os, re, sys
 
 SKIP = {'multi','core','use','dbcan','see','pep','gh','lip','est'}
 def gene_tokens(field):
@@ -73,19 +73,20 @@ def load_panel(path):
         d['scoring'] = d['scoring'] or 'scored'   # panels without the column
     return modules, by_gene
 
-# Acetoclastic methanogenesis is confined to these clades. Everything else that
-# carries ACDS/CODH runs it in the synthetic (carbon-fixing) direction. Names are
-# listed under both spellings because GTDB has renamed them across releases
-# (Methanosaeta -> Methanothrix, Methanosaetaceae -> Methanotrichaceae).
-#
-# The two families are not alike. Every described Methanotrichaceae is an
-# obligate acetoclast, so the family confirms. Methanosarcinaceae is mostly
-# methylotrophs that do not use acetate (Methanolobus, Methanococcoides,
-# Methanohalophilus, ...); only Methanosarcina does, so there the genus must
-# confirm. A Methanosarcinaceae genome of another or an unnamed genus is scored
-# absent on taxonomy and left for review.
-ACETOCLASTIC_GENERA = ('Methanosarcina', 'Methanothrix', 'Methanosaeta')
-ACETOCLASTIC_FAMILIES = ('Methanotrichaceae', 'Methanosaetaceae')
+# Acetoclastic methanogenesis is confined to a few genera. Everything else that
+# carries ACDS/CODH runs it in the synthetic (carbon-fixing) direction. The list
+# is data, not code: assets/acetate_lineages.tsv, role=acetoclastic, read here
+# and by the report renderer, so the two cannot disagree.
+ACETATE_LINEAGES = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'assets',
+                                'acetate_lineages.tsv')
+
+def load_acetate_lineages(path=ACETATE_LINEAGES):
+    """{role: {(rank, name), ...}} from the lineage policy table."""
+    roles = {}
+    with open(path) as fh:
+        for r in csv.DictReader((l for l in fh if not l.startswith('#')), delimiter='\t'):
+            roles.setdefault(r['role'], set()).add((r['rank'], r['name']))
+    return roles
 
 def _rank(lineage, rank):
     """Name at `rank` ('g', 'f', ...) in a lineage, GTDB suffix dropped (Methanosarcina_A -> Methanosarcina)."""
@@ -95,10 +96,10 @@ def _rank(lineage, rank):
             return re.sub(r'_[A-Z]+$', '', part[len(rank) + 2:])
     return ''
 
-def acetoclastic_lineage(lineage):
-    """True when the lineage is a clade in which acetoclastic methanogenesis is known."""
-    return (_rank(lineage, 'g') in ACETOCLASTIC_GENERA
-            or _rank(lineage, 'f') in ACETOCLASTIC_FAMILIES)
+def acetoclastic_lineage(lineage, roles=None):
+    """True when the lineage is listed as acetoclastic in the lineage policy table."""
+    roles = roles or load_acetate_lineages()
+    return any(_rank(lineage, rank) == name for rank, name in roles.get('acetoclastic', ()))
 
 def _clade(lineage):
     """Most specific informative rank in a GTDB lineage, for display."""
