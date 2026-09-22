@@ -12,7 +12,9 @@ Mbarkeri	gate	methanogenesis: methylotrophic	yes
 
 Msoehngenii	marker	mcrA	yes
 Msoehngenii	gate	methanogenesis: acetoclastic	yes
-Msoehngenii	hint	Methanothrix	yes
+# The genus hint is suppressed when a lineage is supplied (it could only contradict it), and the
+# smoke test always supplies one: assert the confirmed gate instead (above).
+Msoehngenii	hint	Methanothrix	no
 # Methanothrix runs the C1 pathway oxidatively (methyl branch of acetate) and cannot use H2/CO2;
 # the gene test passes, the lineage policy (not_hydrogenotrophic) scores it absent.
 Msoehngenii	gate	methanogenesis: hydrogenotrophic	no
