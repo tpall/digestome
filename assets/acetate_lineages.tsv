@@ -86,3 +86,5 @@ f	Methanogasteraceae	methane_oxidiser	ANME-2c; sulfate via partner bacteria (Kni
 o	Alkanophagales	methane_oxidiser	ANME-1; sulfate via partner bacteria (Knittel & Boetius 2009)
 f	EX4572-44	methane_oxidiser	Ca. Ethanoperedens, ethane oxidiser (Hahn et al. 2020)
 o	Syntropharchaeales	methane_oxidiser	Ca. Syntrophoarchaeum, butane oxidiser (Laso-Pérez et al. 2016)
+o	Methanonatronarchaeales	not_hydrogenotrophic	methyl-reducing with H2 or formate as electron donor, no CO2 reduction (Sorokin et al. 2017 Nat Microbiol 2:17081)
+o	Methanonatronarchaeales	not_acetoclastic	methyl-reducing methanogens (Sorokin et al. 2017)
