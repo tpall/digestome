@@ -19,7 +19,8 @@ abstract: |
   non-methanogens, and every acetoclastic call fell within *Methanosarcina* or
   *Methanothrix*. The result held on 3,043 GTDB species representatives spanning 203 phyla,
   which are built differently from binned metagenomes: the only background genomes given a
-  route were three archaea carrying `mcrA`. Specificity against non-methanogens does not show
+  route were two archaea carrying `mcrA`, and none of 90 anaerobic methane and alkane oxidisers
+  was given one. Specificity against non-methanogens does not show
   that a methanogen gets the right route: with a family-level check, half of the acetoclastic
   calls in that sample fell on methylotrophs, and a genus-level lineage policy removed them.
   Testing whether a catalytic domain shares a
@@ -376,33 +377,35 @@ sole exported step.
 ## Specificity holds on genomes built a different way
 
 Applying the panel to the 3,043 GTDB representatives tests whether the digester result depends on
-one binning pipeline (@tbl-gtdb). Three background genomes were assigned a methanogenesis route.
-All three carry `mcrA`, and all three are archaea in lineages where that is expected or plausible:
-*Methanonatronarchaeales*, which are methyl-reducing methanogens and which our order list had not
-counted as such, *Hadarchaeales*, and an unnamed order within Halobacteriota. No bacterial genome
-in the sample received a route. On the reading that these three are methanogens, the panel made no
-false assignment in 1,899 background genomes; on the conservative reading they represent a false
-positive rate below 0.2%.
+one binning pipeline (@tbl-gtdb). Genomes are classed by the sampling strata with two sourced
+corrections: *Methanonatronarchaeales* are methyl-reducing methanogens
+[@sorokin2017methanonatronarchaeia] that the sampling list had counted as background, and genomes in
+anaerobic methane and alkane oxidiser lineages form a class of their own. Two background genomes
+were assigned a methanogenesis route, both `mcrA`-carrying archaea (*Hadarchaeales*, and an unnamed
+order within *Syntropharchaeia*); no bacterial genome received one. On the conservative reading
+they are false positives, a rate of 0.1% in 1,897 background genomes; if the metabolism of these
+two lineages is established, they belong in the lineage policy with a source, not in the benchmark.
 
-The 1,144 genomes in methanogen orders include 89 anaerobic methane and alkane oxidisers
-(*Methanoperedenaceae*, *Methanocomedenaceae*, *Methanogasteraceae*, "*Ca.* Ethanoperedens"),
-which carry `mcr` and run the pathway in reverse. None of them receives a methanogenesis route.
-Of the 1,055 methanogens, 808 were assigned at least one route. Of the 247 that were not, 217
-carry no detectable `mcrA` at all. GTDB representatives include many incomplete genomes, and a
-genome that does not contain the defining marker should not be given a route.
+The 90 anaerobic methane and alkane oxidisers (*Methanoperedenaceae*, *Methanocomedenaceae*,
+*Methanogasteraceae*, ANME-1, "*Ca.* Ethanoperedens") carry `mcr` and run the pathway in reverse.
+None of them receives a methanogenesis route. Of the 1,056 methanogens, 809 were assigned at least
+one route. Of the 247 that were not, 217 carry no detectable `mcrA` at all. GTDB representatives
+include many incomplete genomes, and a genome that does not contain the defining marker should not
+be given a route.
 
 The 30 that carry `mcrA` without an assignable route are the informative residue. They include
 *Methanomassiliicoccales*, obligate hydrogen-dependent methylotrophs that lack the Mtr/H4MPT set as
 a matter of biology and carry none of the substrate-specific methyltransferases in the panel;
 *Methanothrix* bins that carry the C1 pathway but not the acetate markers; and bins that reach
 three of the six C1 steps. Whether a missing marker reflects biology or an incomplete assembly is
-not resolvable from gene content, which is the honest position for a capability method to take.
+not resolvable from gene content, which is the honest position for a capability method to take; in
+a report, genome completeness (CheckM2) is shown beside every methanogen for that reason.
 
 | | background | methanogen | anaerobic methane / alkane oxidiser |
 |---|---|---|---|
-| genomes | 1,899 | 1,055 | 89 |
-| route assigned | 3, all `mcrA`-positive archaea | 808 | 0 |
-| no route | 1,896 | 247, of which 217 lack `mcrA` | 89 |
+| genomes | 1,897 | 1,056 | 90 |
+| route assigned | 2, both `mcrA`-positive archaea | 809 | 0 |
+| no route | 1,895 | 247, of which 217 lack `mcrA` | 90 |
 
 : Methanogenesis route assignment across 3,043 GTDB species representatives. {#tbl-gtdb}
 
@@ -426,14 +429,28 @@ acetate, and more than a quarter of the hydrogenotrophic calls fell on organisms
 pathway oxidatively or in reverse. Neither error is visible in a specificity test against
 non-methanogens, which is how the digester benchmark was framed. The catalogue result held
 because its acetoclastic calls happened to fall in *Methanosarcina* and *Methanothrix*: the
-earlier rule would have accepted *Methanolobus* as readily. The cost is sensitivity: 23 methanogen
-genomes that had a route now have none, 15 *Methanothrix* bins whose only call had been the
-hydrogenotrophic one, and 8 hydrogenotrophs that reach three of the six C1 steps once isoenzymes
-count once. One question remains open. Of 50 *Methanobacteriales* genomes with a methylotrophic call, 14 are
-*Methanosphaera*, confirmed by lineage, and 36 are in genera where methylotrophy is not
-established (*Methanobacterium* 21, *Methanocatella* 7, others 8); in the genomes we inspected the
-call rests on a hit to the methanol methyltransferase model itself. We report these as capacity
-and flag them.
+earlier rule would have accepted *Methanolobus* as readily. Most of the change in the number of
+genomes with a route is correctness, not lost sensitivity (@tbl-sens): only the eight
+hydrogenotrophs that reach three of the six C1 steps once isoenzymes count once are a cost.
+
+| genomes in methanogen orders with ≥ 1 route | genomes | kind |
+|---|---|---|
+| August benchmark, order labels | 896 | |
+| anaerobic methane / alkane oxidisers, route removed | −65 | correctness |
+| *Methanothrix* bins whose only call was a false hydrogenotrophic one | −15 | correctness |
+| hydrogenotrophs at three of six C1 steps | −8 | sensitivity |
+| *Methanonatronarchaeales* moved from background | +1 | label |
+| methanogens with ≥ 1 route now | 809 | |
+
+: Where the change in route assignments comes from. {#tbl-sens}
+
+One question remains open. Of 50 *Methanobacteriales* genomes with a methylotrophic call, 14 are
+*Methanosphaera*, confirmed by lineage, and 36 are in genera where methylotrophy is not established
+(*Methanobacterium* 21, *Methanocatella* 7, others 8). These calls do not rest on a lone
+methyltransferase-like hit: every inspected genome carries the methanol methyltransferase (MtaB)
+together with its methyltransferase partner (MtaA) and a corrinoid protein, which is of the MtaC2
+family rather than the MtaC of *Methanosarcina*. The gate now requires the corrinoid partner for the
+MtaB term, and the calls stand. We report them as capacity and flag them.
 
 ## Detecting a pyrrolysine marker depends on the gene caller
 
@@ -562,7 +579,7 @@ sample. The two questions have different error models and should not be conflate
 **Taxonomic ground truth.** Both the specificity and the sensitivity figures are measured
 against order-level labels, and those labels were wrong in both directions here.
 *Methanonatronarchaeales* are methanogens that our order list did not include, so a correct call
-counted as a false positive. The anaerobic methane and alkane oxidisers sit inside methanogen
+counted as a false positive until the benchmark classes were corrected. The anaerobic methane and alkane oxidisers sit inside methanogen
 orders; an order-level benchmark counts their routes as correct methanogen calls, and it did so
 for 65 of them before the lineage policy. Both indicate that a benchmark of this kind measures
 the reference labels as much as the tool, and that a specificity test against non-methanogens
