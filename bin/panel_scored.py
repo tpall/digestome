@@ -483,8 +483,9 @@ def main():
     for g in gates:
         if g[0] != 'methanogenesis: methylotrophic' or not g[1] or substrate_mt:
             continue
-        if not lineage:
-            g[3] = 'gene markers only (comMT alone) — pass --gtdbtk to confirm the lineage'
+        if not lineage or (not _rank(lineage, 'o') and not lineage_in_role(lineage, 'methyl_via_comMT', policy)):
+            # no lineage, or one too coarse to place (NCBI names give a genus only): cannot decide
+            g[3] = 'gene markers only (comMT alone; lineage has no order rank) — pass GTDB-Tk output to confirm'
         elif not lineage_in_role(lineage, 'methyl_via_comMT', policy):
             g[3] = (f"markers present but {_clade(lineage)} is not a known methylotroph without a "
                     f"substrate-specific marker (comMT alone) — scored as absent on taxonomy")
