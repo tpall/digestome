@@ -101,6 +101,11 @@ def acetoclastic_lineage(lineage, roles=None):
     roles = roles or load_acetate_lineages()
     return any(_rank(lineage, rank) == name for rank, name in roles.get('acetoclastic', ()))
 
+def not_hydrogenotrophic_lineage(lineage, roles=None):
+    """True when the lineage is listed as not hydrogenotrophic in the lineage policy table."""
+    roles = roles or load_acetate_lineages()
+    return any(_rank(lineage, rank) == name for rank, name in roles.get('not_hydrogenotrophic', ()))
+
 def _clade(lineage):
     """Most specific informative rank in a GTDB lineage, for display."""
     for rank in ('g__', 'f__', 'o__', 'c__', 'p__'):
@@ -446,11 +451,24 @@ def main():
         elif acetoclastic_lineage(lineage):
             if g[1]:
                 g[3] = f"taxonomy-confirmed ({_clade(lineage)})"
-        else:
+        elif g[1]:
             # Markers present, lineage says otherwise. Taxonomy wins: no
-            # acetoclastic methanogen is known outside these clades.
+            # acetoclastic methanogen is known outside these clades. (Only when
+            # the markers are there: without them the note would claim a gene
+            # hit that does not exist.)
             g[3] = (f"markers present but {_clade(lineage) or 'lineage'} is not an "
                     f"acetoclastic clade — scored as absent on taxonomy")
+            g[1] = False
+    # ---- taxonomy check on the hydrogenotrophic call ----
+    # The C1 (H4MPT) pathway is reversible too: Methanothrix runs it for the
+    # methyl branch of acetate, methylotrophs to oxidise methyl groups, and
+    # neither reduces CO2 with H2. A deny list here (hydrogenotrophy is the
+    # default for methanogens); without a lineage the call stands.
+    for g in gates:
+        if g[0] == 'methanogenesis: hydrogenotrophic' and g[1] and lineage \
+                and not_hydrogenotrophic_lineage(lineage):
+            g[3] = (f"markers present but {_clade(lineage)} is not a hydrogenotrophic genus "
+                    f"(it runs the C1 pathway oxidatively) — scored as absent on taxonomy")
             g[1] = False
     # Only offer a genus hint once the acetoclastic gate is actually met. acs,
     # ackA and pta are ubiquitous acetate-metabolism genes, so computing this

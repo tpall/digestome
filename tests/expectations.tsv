@@ -13,6 +13,9 @@ Mbarkeri	gate	methanogenesis: methylotrophic	yes
 Msoehngenii	marker	mcrA	yes
 Msoehngenii	gate	methanogenesis: acetoclastic	yes
 Msoehngenii	hint	Methanothrix	yes
+# Methanothrix runs the C1 pathway oxidatively (methyl branch of acetate) and cannot use H2/CO2;
+# the gene test passes, the lineage policy (not_hydrogenotrophic) scores it absent.
+Msoehngenii	gate	methanogenesis: hydrogenotrophic	no
 
 Mbourgensis	marker	mcrA	yes
 Mbourgensis	gate	methanogenesis: hydrogenotrophic	yes

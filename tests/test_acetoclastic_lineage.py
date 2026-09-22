@@ -5,7 +5,7 @@
 """
 import os, sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'bin'))
-from panel_scored import acetoclastic_lineage, load_acetate_lineages
+from panel_scored import acetoclastic_lineage, not_hydrogenotrophic_lineage, load_acetate_lineages
 
 A = 'd__Archaea;p__Halobacteriota;c__Methanosarcinia;'
 CASES = [
@@ -34,6 +34,23 @@ CASES = [
 ]
 
 fails = [(l, want) for l, want in CASES if acetoclastic_lineage(l) != want]
+
+# hydrogenotrophic deny list: oxidative C1 users are excluded, true hydrogenotrophs and Methanosarcina are not
+H2_CASES = [
+    (A + 'o__Methanotrichales;f__Methanotrichaceae;g__Methanothrix;s__Methanothrix soehngenii', True),
+    (A + 'o__Methanotrichales;f__Methanotrichaceae;g__Methanocrinis;s__Methanocrinis harundinaceus', True),
+    (A + 'o__Methanosarcinales;f__Methanosarcinaceae;g__Methanolobus;s__Methanolobus tindarius', True),
+    ('d__Archaea;g__Methanosaeta;s__Methanosaeta concilii', True),
+    (A + 'o__Methanosarcinales;f__Methanosarcinaceae;g__Methanosarcina;s__Methanosarcina barkeri', False),
+    ('d__Archaea;p__Halobacteriota;c__Methanomicrobia;o__Methanomicrobiales;f__Methanoculleaceae;'
+     'g__Methanoculleus;s__Methanoculleus bourgensis', False),
+    ('d__Archaea;p__Methanobacteriota;c__Methanobacteria;o__Methanobacteriales;f__Methanothermobacteraceae;'
+     'g__Methanothermobacter;s__Methanothermobacter thermautotrophicus', False),
+]
+h2_fails = [(l, want) for l, want in H2_CASES if not_hydrogenotrophic_lineage(l) != want]
+for l, want in h2_fails:
+    print(f'FAIL hydrogenotrophic deny list, expected {want}: {l}')
+fails += h2_fails
 for l, want in fails:
     print(f'FAIL expected {want}: {l}')
 
@@ -55,5 +72,5 @@ if tax:
                 fails.append((f'{rank}__{name}', f'in {os.path.basename(tax)}'))
                 print(f'FAIL {rank}__{name} ({role}) not found verbatim in {tax}')
     print(f'policy names checked against {tax}')
-print(f'{len(CASES) - len([f for f in fails if f[1] in (True, False)])}/{len(CASES)} lineage cases passed')
+print(f'{len(CASES) + len(H2_CASES) - len([f for f in fails if f[1] in (True, False)])}/{len(CASES) + len(H2_CASES)} lineage cases passed')
 sys.exit(1 if fails else 0)

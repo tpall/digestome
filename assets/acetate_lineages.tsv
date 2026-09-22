@@ -10,6 +10,12 @@
 # role=anabolic_acetate_genes: methanogen orders whose members carry ACDS/CODH, acs,
 #   ackA/pta to build biomass from acetate or CO2, not to make methane from acetate.
 #   A genome in these orders with the genes is expected, not a candidate.
+# role=not_hydrogenotrophic: genera that carry the C1 (H4MPT) pathway but run it in the oxidative
+#   direction (the methyl branch of acetoclasty, or oxidising methyl groups) and do not reduce CO2
+#   with H2. A hydrogenotrophic gate met by gene content in these genera is scored absent on
+#   taxonomy. Methanosarcina is not listed: species differ (M. barkeri uses H2/CO2, M. acetivorans
+#   does not), so it stays a capacity. Hydrogenotrophy is the default for methanogens, so this is a
+#   deny list, where acetoclasty (rare) is an allow list.
 #   Names checked against GTDB r232 (gtdb_taxonomy.tsv) and the r226 sample: exact, no suffixes.
 rank	name	role	source
 g	Methanosarcina	acetoclastic	Jetten et al. 1992 FEMS Microbiol Rev 8:181
@@ -22,3 +28,13 @@ o	Methanomassiliicoccales	anabolic_acetate_genes	H2-dependent methylotrophs
 o	Methanococcales	anabolic_acetate_genes	hydrogenotrophs
 o	Methanopyrales	anabolic_acetate_genes	hydrogenotrophs
 o	Methanocellales	anabolic_acetate_genes	hydrogenotrophs
+g	Methanothrix	not_hydrogenotrophic	Smith & Ingram-Smith 2007 Trends Microbiol 15:150 (acetate only)
+g	Methanosaeta	not_hydrogenotrophic	former name of Methanothrix
+g	Methanocrinis	not_hydrogenotrophic	Khomyakova et al. 2023 Front Microbiol 14:1233691 (H2, formate, CO, MeOH tested; acetate only)
+g	Methanolobus	not_hydrogenotrophic	Oren 2014 The Prokaryotes, Methanosarcinaceae (methylotroph)
+g	Methanococcoides	not_hydrogenotrophic	Oren 2014 (methylotroph)
+g	Methanohalophilus	not_hydrogenotrophic	Oren 2014 (methylotroph)
+g	Methanomethylovorans	not_hydrogenotrophic	Oren 2014 (methylotroph)
+g	Methanohalobium	not_hydrogenotrophic	Oren 2014 (methylotroph)
+g	Methanosalsum	not_hydrogenotrophic	Oren 2014 (methylotroph)
+g	Methanimicrococcus	not_hydrogenotrophic	Oren 2014 (H2-dependent methylotroph; does not reduce CO2)
