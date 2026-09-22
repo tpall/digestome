@@ -62,15 +62,23 @@ score_one() {
   hmmsearch --cpu 1 --cut_nc --tblout "$tbl" "$hmm" "$faa" > /dev/null 2>&1 || return 0
   python3 "$out/../panel_scored.py" --tblout "$tbl" --map "$map" --panel "$panel" \
       --secretion "$sec" --gtdbtk "$tax" --name "$acc" ${CONTIG_FLAG:-} \
-      --out "$out/$acc.modules.tsv" > "$out/$acc.summary.txt" 2>/dev/null
+      --acetate-lineages "$ROOT/assets/acetate_lineages.tsv" \
+      --out "$out/$acc.modules.tsv" > "$out/$acc.summary.txt" 2>> "$out/scoring.err"
   rm -f "$tbl"
 }
 export -f score_one
+export ROOT
 cp "$ROOT/bin/panel_scored.py" "$WORK/panel_scored.py"
 
 ls "$PROT"/*.faa | xargs -P "$CPUS" -I{} bash -c \
   'score_one "$@"' _ {} "$OUT" "$HMM" "$MAP" "$PANEL" "$TAX" "$ROOT/assets/secretion_modules.tsv"
 echo "==> scored $(ls "$OUT"/*.modules.tsv 2>/dev/null | wc -l) genomes"
+n_empty=$(find "$OUT" -name '*.summary.txt' -empty | wc -l)
+if [ "$n_empty" -gt 0 ]; then
+  echo "!! $n_empty empty summaries -- the scorer failed; last errors:" >&2
+  tail -20 "$OUT/scoring.err" >&2 2>/dev/null
+  exit 1
+fi
 
 # ---- the specificity question ----------------------------------------------
 python3 - "$WORK" <<'PY'

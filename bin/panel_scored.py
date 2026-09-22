@@ -231,7 +231,14 @@ def main():
                     help='GTDB-Tk summary.tsv (repeatable for ar53 + bac120). '
                          'Used to confirm the acetoclastic call, which gene '
                          'content alone cannot resolve.')
+    ap.add_argument('--acetate-lineages', default=ACETATE_LINEAGES, metavar='TSV',
+                    help='lineage policy for the acetate and H2/CO2 gates '
+                         '(default: assets/acetate_lineages.tsv next to this script)')
     a = ap.parse_args()
+    if not os.path.isfile(a.acetate_lineages):
+        sys.exit(f"!! lineage policy not found: {a.acetate_lineages} -- pass --acetate-lineages "
+                 f"(a copied panel_scored.py does not find the repo's assets/)")
+    policy = load_acetate_lineages(a.acetate_lineages)
 
     lineage = load_lineage(a.gtdbtk, a.name)
     modules, by_gene = load_panel(a.panel)
@@ -448,7 +455,7 @@ def main():
             if g[1]:
                 g[3] = ('gene markers only — ACDS is bidirectional, so pass --gtdbtk '
                         'to confirm the clade before reporting this')
-        elif acetoclastic_lineage(lineage):
+        elif acetoclastic_lineage(lineage, policy):
             if g[1]:
                 g[3] = f"taxonomy-confirmed ({_clade(lineage)})"
         elif g[1]:
@@ -466,7 +473,7 @@ def main():
     # default for methanogens); without a lineage the call stands.
     for g in gates:
         if g[0] == 'methanogenesis: hydrogenotrophic' and g[1] and lineage \
-                and not_hydrogenotrophic_lineage(lineage):
+                and not_hydrogenotrophic_lineage(lineage, policy):
             g[3] = (f"markers present but {_clade(lineage)} is not a hydrogenotrophic genus "
                     f"(it runs the C1 pathway oxidatively) — scored as absent on taxonomy")
             g[1] = False
