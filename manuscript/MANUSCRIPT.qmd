@@ -482,11 +482,12 @@ accessions and of symbol matches, are aimed at completeness figures rather than 
 
 Scoring 1,361 bacterial genomes and assigning none of them a route tests that design directly,
 and the GTDB representatives extend it: those genomes were not binned at all, so agreement across
-the two collections cannot be explained by a shared assembly pipeline. The three background
-genomes that did receive a route are the informative cases rather than the failures. Each carries
-`mcrA`, and one belongs to an order of methyl-reducing methanogens that our own list of methanogen
-orders had omitted, so the panel identified a methanogen before the reference labels did. A
-specificity benchmark measures the labels as much as the tool.
+the two collections cannot be explained by a shared assembly pipeline. The genomes outside the
+methanogen orders that did receive a route are the informative cases rather than the failures.
+Each carries `mcrA`, and one belongs to an order of methyl-reducing methanogens that our own list
+of methanogen orders had omitted, so the panel identified a methanogen before the reference labels
+did; the benchmark classes now count it as one. A specificity benchmark measures the labels as
+much as the tool.
 What the test cannot do is establish the same for module percentages, which have no equivalent
 gatekeeper and are correspondingly more exposed to the collisions the audits are there to catch.
 
