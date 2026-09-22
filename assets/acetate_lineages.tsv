@@ -1,4 +1,4 @@
-# Lineage policy for the acetate route. Read by bin/panel_scored.py (role=acetoclastic)
+# Lineage policy for the methanogenesis route gates (acetate, H2/CO2, methyl). Read by bin/panel_scored.py (role=acetoclastic)
 # and by report renderers (both roles). Detection policy lives here, not in code.
 #
 # role=acetoclastic: a genome with the acetate-route genes is confirmed only when its
@@ -21,6 +21,10 @@
 #   Methylotrophic Methanosarcinaceae genera, and the ANME families (anaerobic methane oxidisers,
 #   reverse methanogenesis). Read by report renderers only; the scorer's allow list already scores
 #   them absent.
+# role=methyl_via_comMT: methylotroph lineages whose substrate-specific methyltransferase has no
+#   licence-clean model, so the shared MT2 marker (comMT) alone is accepted there. Anywhere else a
+#   comMT-only methyl call is scored absent on taxonomy: in the GTDB r226 sample comMT alone called
+#   the methyl route in Methanococcus, Methanoculleus, Methanomicrobium, Methanothrix, Methanocatella.
 # GTDB suffixes (_A, _B) mark phylogenetically separate genera in GTDB; matching ignores them on
 #   purpose (Methanothrix_B = Methanothrix), a deliberate simplification.
 #   Names checked against GTDB r232 (gtdb_taxonomy.tsv) and the r226 sample: exact, no suffixes.
@@ -55,3 +59,8 @@ g	Methanimicrococcus	not_acetoclastic	Oren 2014 (H2-dependent methylotroph)
 f	Methanoperedenaceae	not_acetoclastic	ANME-2d, anaerobic methane oxidiser
 f	Methanocomedenaceae	not_acetoclastic	ANME-2a/b, anaerobic methane oxidiser
 f	Methanogasteraceae	not_acetoclastic	ANME-2c, anaerobic methane oxidiser
+g	Methanosphaera	methyl_via_comMT	Fricke et al. 2006 J Bacteriol 188:642 (methanol + H2 only)
+o	Methanomassiliicoccales	methyl_via_comMT	Vanwonterghem et al. 2016 Nat Microbiol 1:16170 (H2-dependent methylotrophs)
+o	Methanomethylicales	methyl_via_comMT	Vanwonterghem et al. 2016 Nat Microbiol 1:16170 (Verstraetearchaeota, methylotrophic)
+o	Methanofastidiosales	methyl_via_comMT	Nobu et al. 2016 ISME J 10:2478 (methylated-thiol reduction)
+o	Methanonatronarchaeales	methyl_via_comMT	Sorokin et al. 2017 Nat Microbiol 2:17081 (methyl-reducing)

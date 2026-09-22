@@ -5,7 +5,7 @@
 """
 import os, sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'bin'))
-from panel_scored import acetoclastic_lineage, not_hydrogenotrophic_lineage, load_acetate_lineages
+from panel_scored import acetoclastic_lineage, not_hydrogenotrophic_lineage, lineage_in_role, load_acetate_lineages
 
 A = 'd__Archaea;p__Halobacteriota;c__Methanosarcinia;'
 CASES = [
@@ -51,6 +51,26 @@ h2_fails = [(l, want) for l, want in H2_CASES if not_hydrogenotrophic_lineage(l)
 for l, want in h2_fails:
     print(f'FAIL hydrogenotrophic deny list, expected {want}: {l}')
 fails += h2_fails
+
+# comMT-only methyl calls: accepted only in listed methylotroph lineages
+M_CASES = [
+    ('d__Archaea;p__Methanobacteriota;c__Methanobacteria;o__Methanobacteriales;f__Methanobacteriaceae;'
+     'g__Methanosphaera;s__Methanosphaera stadtmanae', True),
+    ('d__Archaea;p__Thermoplasmatota;c__Thermoplasmata;o__Methanomassiliicoccales;f__Methanomethylophilaceae;'
+     'g__Methanoprimaticola;s__x', True),
+    ('d__Archaea;p__Methanobacteriota_A;c__Methanofastidiosia;o__Methanofastidiosales;f__Methanofastidiosaceae;'
+     'g__Methanofastidiosum;s__x', True),
+    ('d__Archaea;p__Methanobacteriota;c__Methanococci;o__Methanococcales;f__Methanococcaceae;'
+     'g__Methanococcus;s__Methanococcus maripaludis', False),
+    ('d__Archaea;p__Halobacteriota;c__Methanomicrobia;o__Methanomicrobiales;f__Methanoculleaceae;'
+     'g__Methanoculleus;s__Methanoculleus bourgensis', False),
+    ('d__Archaea;p__Methanobacteriota;c__Methanobacteria;o__Methanobacteriales;f__Methanobacteriaceae;'
+     'g__Methanobacterium;s__x', False),
+]
+m_fails = [(l, want) for l, want in M_CASES if lineage_in_role(l, 'methyl_via_comMT') != want]
+for l, want in m_fails:
+    print(f'FAIL methyl_via_comMT, expected {want}: {l}')
+fails += m_fails
 for l, want in fails:
     print(f'FAIL expected {want}: {l}')
 
@@ -72,5 +92,6 @@ if tax:
                 fails.append((f'{rank}__{name}', f'in {os.path.basename(tax)}'))
                 print(f'FAIL {rank}__{name} ({role}) not found verbatim in {tax}')
     print(f'policy names checked against {tax}')
-print(f'{len(CASES) + len(H2_CASES) - len([f for f in fails if f[1] in (True, False)])}/{len(CASES) + len(H2_CASES)} lineage cases passed')
+N = len(CASES) + len(H2_CASES) + len(M_CASES)
+print(f'{N - len([f for f in fails if f[1] in (True, False)])}/{N} lineage cases passed')
 sys.exit(1 if fails else 0)

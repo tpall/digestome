@@ -25,7 +25,7 @@ Pfam catalytic families instead.
 
 A module whose rows are **all accessory-tier** (`ACID-ETOH`, `ACID-LACT`, `DIET`, `ENERGY`) also reports `NA`, status `no-core-tier`: scoring reads only the core tier today. Do not "fix" this by falling back to the accessory tier until `ahaA` is curated — it currently matches ~120 ATP-synthase models and would push `ENERGY` to a false ~100% in any genome.
 
-**Hydrogenotrophic methanogenesis (CO2+H2 -> CH4)** — gate: `mcrA` present AND ≥4 of the C1 carriers.
+**Hydrogenotrophic methanogenesis (CO2+H2 -> CH4)** — gate: `mcrA` present AND ≥ 4 of 6 C1 steps: `fwdB|fmdB`, `ftr`, `mch`, `mtd|hmd`, `mer`, `mtrA` (isoenzymes and alternative enzymes of one step count once). The route also covers methanogens that reduce CO2 with formate.
 Core: `fwdB/fmdB, ftr, mch, mtd (or hmd), mer, mtrA, mcrA`  (+ `frhA`, `mvhA`, `hdrA/B` for electron supply)
 The C1 pathway is reversible, so the gene test also passes in methanogens that run it oxidatively and never reduce CO2 with H2: *Methanothrix*/*Methanocrinis* (methyl branch of acetate) and the methylotrophic Methanosarcinaceae genera. Those genera are listed in `assets/acetate_lineages.tsv` (role `not_hydrogenotrophic`, each with a source) and scored absent on taxonomy. A hydrogenase marker does not separate them: *Methanothrix* genomes carry `frhA`. It is a deny list, not an allow list, because hydrogenotrophy is the default for methanogens; *Methanosarcina* is not listed because its species differ.
 
@@ -35,6 +35,7 @@ Core: `(ackA + pta) OR acs`, `cdhA`, `cdhC`, `mtrA`, `mcrA`
 Genus hint (gated behind the confirmed call): `acs` (high-affinity) -> *Methanothrix/Methanosaeta*; `ackA+pta` (low-affinity) -> *Methanosarcina*.
 
 **Methylotrophic methanogenesis (methanol/methylamines/methylsulfides -> CH4)** — gate: `mcrA` AND ≥1 substrate methyltransferase.
+The shared MT2 marker `comMT` alone (no `mtaB`, `mttB`, `mtbB` or `mtmB`) is accepted only in lineages listed as `methyl_via_comMT` in `assets/acetate_lineages.tsv` (*Methanosphaera*, Methanomassiliicoccales, Methanomethylicales, Methanofastidiosales, Methanonatronarchaeales); elsewhere it is scored absent on taxonomy. Alone it called the methyl route in *Methanococcus*, *Methanoculleus*, *Methanomicrobium*, *Methanothrix* and *Methanocatella* in the GTDB r226 sample.
 Core: `mtaB (methanol) OR mttB/mtbB/mtmB (methylamines) OR mtsA (DMS)`, corrinoid partner, `mcrA`
 Note: H2-dependent methylotrophs (Methanomassiliicoccales) lack the Mtr/H4MPT C1 oxidation set — `mtrA` may be absent; don't penalise.
 

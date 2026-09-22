@@ -101,6 +101,11 @@ def acetoclastic_lineage(lineage, roles=None):
     roles = roles or load_acetate_lineages()
     return any(_rank(lineage, rank) == name for rank, name in roles.get('acetoclastic', ()))
 
+def lineage_in_role(lineage, role, roles=None):
+    """True when any rank of the lineage is listed under `role` in the lineage policy table."""
+    roles = roles or load_acetate_lineages()
+    return any(_rank(lineage, rank) == name for rank, name in roles.get(role, ()))
+
 def not_hydrogenotrophic_lineage(lineage, roles=None):
     """True when the lineage is listed as not hydrogenotrophic in the lineage policy table."""
     roles = roles or load_acetate_lineages()
@@ -378,6 +383,9 @@ def main():
                 if not any(_markers(n) & detectable for n in g)]
 
     C1 = ('fwdB','fmdB','ftr','mch','mtd','hmd','mer','mtrA')
+    # One condition per pathway step: fwdB/fmdB are the W/Mo isoenzymes of one step and mtd/hmd
+    # alternative enzymes for another, so a genome with both counts that step once.
+    C1_STEPS = (('fwdB', 'fmdB'), ('ftr',), ('mch',), ('mtd', 'hmd'), ('mer',), ('mtrA',))
 
     def build_gate_defs():
         """Evaluate every gate against whatever set `has` currently reads.
@@ -385,10 +393,10 @@ def main():
         A function rather than a literal so --contig-level can re-run it once per
         contig. Requirement groups do not depend on scope; only the booleans do.
         """
-        c1 = [g for g in C1 if has(g)]
+        c1_steps = [st for st in C1_STEPS if has(*st)]
         return [
             ('methanogenesis: hydrogenotrophic',
-             has('mcrA') and len(c1) >= 4, [('mcrA',), C1]),
+             has('mcrA') and len(c1_steps) >= 4, [('mcrA',), C1]),
             ('methanogenesis: acetoclastic',
              has('mcrA') and has('cdhA') and (has('acs') or (has('ackA') and has('pta'))),
              [('mcrA',), ('cdhA',), ('acs','ackA'), ('acs','pta')]),
@@ -465,6 +473,21 @@ def main():
             # hit that does not exist.)
             g[3] = (f"markers present but {_clade(lineage) or 'lineage'} is not an "
                     f"acetoclastic clade — scored as absent on taxonomy")
+            g[1] = False
+    # ---- taxonomy check on the methylotrophic call ----
+    # comMT (the MT2 step shared by all methyl routes) is a subfamily-level model; alone it also
+    # hits non-methylotrophic methanogens. A call resting on comMT only, with no substrate-specific
+    # methyltransferase, stands only in lineages listed as methyl_via_comMT; without a lineage it
+    # stands with a markers-only note.
+    substrate_mt = has('mtaB', 'mttB', 'mtbB', 'mtmB')
+    for g in gates:
+        if g[0] != 'methanogenesis: methylotrophic' or not g[1] or substrate_mt:
+            continue
+        if not lineage:
+            g[3] = 'gene markers only (comMT alone) — pass --gtdbtk to confirm the lineage'
+        elif not lineage_in_role(lineage, 'methyl_via_comMT', policy):
+            g[3] = (f"markers present but {_clade(lineage)} is not a known methylotroph without a "
+                    f"substrate-specific marker (comMT alone) — scored as absent on taxonomy")
             g[1] = False
     # ---- taxonomy check on the hydrogenotrophic call ----
     # The C1 (H4MPT) pathway is reversible too: Methanothrix runs it for the
