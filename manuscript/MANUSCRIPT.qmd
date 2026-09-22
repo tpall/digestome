@@ -388,7 +388,11 @@ two lineages is established, they belong in the lineage policy with a source, no
 
 The 90 anaerobic methane and alkane oxidisers (*Methanoperedenaceae*, *Methanocomedenaceae*,
 *Methanogasteraceae*, ANME-1, "*Ca.* Ethanoperedens") carry `mcr` and run the pathway in reverse.
-None of them receives a methanogenesis route. Of the 1,056 methanogens, 809 were assigned at least
+They are the clearest case for lineage confirmation: **65 of the 90 satisfy the hydrogenotrophic
+gene gate and 55 the acetoclastic one**, because reverse methanogenesis uses the same enzymes.
+Gene content cannot separate them from methanogens. That none of them receives a route is not an
+independent test: the class is defined by lineage and the same lineage policy removes the calls.
+The one outcome not fixed by construction is the methylotrophic gate, which no oxidiser triggered. Of the 1,056 methanogens, 809 were assigned at least
 one route. Of the 247 that were not, 217 carry no detectable `mcrA` at all. GTDB representatives
 include many incomplete genomes, and a genome that does not contain the defining marker should not
 be given a route.
@@ -419,14 +423,15 @@ then with the lineage policy described in Methods (@tbl-routes).
 | route | calls, family-level check | calls, lineage policy | removed |
 |---|---|---|---|
 | acetoclastic | 156 | 73 | 83: methylotrophic *Methanosarcinaceae* (*Methanolobus* 27, *Methanococcoides* 11, *Methanohalophilus* 9, *Methanomethylovorans* 8, others 4) and 24 unnamed *Methanosarcinaceae* and *Methanotrichaceae* genera |
-| hydrogenotrophic | 677 | 487 | 190: anaerobic methane and ethane oxidisers 65, methylotrophic *Methanosarcinaceae* 61, *Methanotrichaceae* 56, isoenzymes counted twice 8 |
+| hydrogenotrophic | 677 | 486 | 191: anaerobic methane and ethane oxidisers 65, methylotrophic *Methanosarcinaceae* 61, *Methanotrichaceae* 56, isoenzymes counted twice 8, *Methanonatronarchaeales* 1 |
 | methylotrophic | 388 | 376 | 12: MT2 marker alone in *Methanococcus*, *Methanoculleus*, *Methanomicrobium*, *Methanothrix* and others |
 
 : Route calls in the GTDB sample before and after lineage confirmation. After it, every acetoclastic call is *Methanosarcina* (32), *Methanothrix* (29) or *Methanocrinis* (12). {#tbl-routes}
 
 Half of the acetoclastic calls under the family-level check were methylotrophs that do not use
 acetate, and more than a quarter of the hydrogenotrophic calls fell on organisms that run the C1
-pathway oxidatively or in reverse. Neither error is visible in a specificity test against
+pathway oxidatively or in reverse, or reduce methyl groups rather than CO~2~
+[@sorokin2017methanonatronarchaeia]. Neither error is visible in a specificity test against
 non-methanogens, which is how the digester benchmark was framed. The catalogue result held
 because its acetoclastic calls happened to fall in *Methanosarcina* and *Methanothrix*: the
 earlier rule would have accepted *Methanolobus* as readily. Most of the change in the number of
@@ -446,10 +451,11 @@ hydrogenotrophs that reach three of the six C1 steps once isoenzymes count once 
 
 One question remains open. Of 50 *Methanobacteriales* genomes with a methylotrophic call, 14 are
 *Methanosphaera*, confirmed by lineage, and 36 are in genera where methylotrophy is not established
-(*Methanobacterium* 21, *Methanocatella* 7, others 8). These calls do not rest on a lone
-methyltransferase-like hit: every inspected genome carries the methanol methyltransferase (MtaB)
-together with its methyltransferase partner (MtaA) and a corrinoid protein, which is of the MtaC2
-family rather than the MtaC of *Methanosarcina*. The gate now requires the corrinoid partner for the
+(*Methanobacterium* 21, *Methanocatella* 7, *Methanobinarius* 4, *Methanovirga* 2, *Methanarmilla* 2).
+These calls do not rest on a lone methyltransferase-like hit: all 36 carry the methanol
+methyltransferase (MtaB) together with a corrinoid protein, 35 of them also the methyltransferase
+partner (MtaA). The corrinoid protein is of the MtaC2 family rather than the MtaC of
+*Methanosarcina*. The gate now requires the corrinoid partner for the
 MtaB term, and the calls stand. We report them as capacity and flag them.
 
 ## Detecting a pyrrolysine marker depends on the gene caller
