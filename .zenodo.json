@@ -1,0 +1,39 @@
+{
+  "title": "digestome: a licence-clean marker-gene panel for functional profiling of anaerobic digestion microbiomes",
+  "description": "<p>A curated marker-gene panel and scorer for anaerobic digestion (AD) microbiomes, built only on sources that are free for commercial use: NCBIfam (public domain), Pfam (CC0) and Rhea (CC BY). No KEGG or MetaCyc licence is needed at any stage, which is what makes fee-for-service analysis for biogas operators possible.</p><p>The scorer reports module completeness, branch capability and, for hydrolysis, whether an enzyme carries a domain that anchors it outside the cell, separating &quot;carries the enzyme family&quot; from &quot;exports it&quot;. Methanogenesis routes are called from gene gates together with a lineage policy in which every rule carries a literature source, so anaerobic methane and alkane oxidisers, and known methylotrophs, do not receive routes their lineage cannot support.</p><p>Validation: 1,401 metagenome-assembled genomes from 134 anaerobic digesters (no methanogenesis route in any of 1,361 non-methanogens), 3,043 GTDB species representatives across 203 phyla, and an assertion-based smoke test on seven reference proteomes.</p><p>Code MIT, curated panel CC BY 4.0.</p>",
+  "upload_type": "software",
+  "license": "MIT",
+  "access_right": "open",
+  "version": "0.1.0",
+  "language": "eng",
+  "creators": [
+    {
+      "name": "Päll, Taavi",
+      "affiliation": "Magrittr OÜ, Tartu, Estonia",
+      "orcid": "0000-0001-7606-675X"
+    }
+  ],
+  "keywords": [
+    "anaerobic digestion",
+    "biogas",
+    "metagenomics",
+    "marker genes",
+    "methanogenesis",
+    "metagenome-assembled genomes",
+    "HMMER",
+    "GTDB"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/tpall/digestome",
+      "relation": "isSupplementTo",
+      "scheme": "url"
+    },
+    {
+      "identifier": "10.1186/s13068-020-01679-y",
+      "relation": "references",
+      "scheme": "doi",
+      "resource_type": "publication-article"
+    }
+  ]
+}

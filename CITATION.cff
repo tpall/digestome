@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+message: "If you use digestome, please cite it as below."
+title: "digestome: a licence-clean marker-gene panel for functional profiling of anaerobic digestion microbiomes"
+abstract: >-
+  A curated marker-gene panel and scorer for anaerobic digestion microbiomes, built only on
+  sources that are free for commercial use (NCBIfam, public domain; Pfam, CC0; Rhea, CC BY).
+  The scorer reports pathway completeness, branch capability and, for hydrolysis, whether the
+  enzyme carries a domain that anchors it outside the cell. Methanogenesis routes are called
+  from gene gates plus a sourced lineage policy, so reverse-methanogenesis lineages and known
+  methylotrophs do not receive routes their lineage cannot support.
+type: software
+license: MIT
+repository-code: "https://github.com/tpall/digestome"
+keywords:
+  - anaerobic digestion
+  - biogas
+  - metagenomics
+  - marker genes
+  - methanogenesis
+  - HMMER
+  - metagenome-assembled genomes
+authors:
+  - family-names: "Päll"
+    given-names: "Taavi"
+    orcid: "https://orcid.org/0000-0001-7606-675X"
+    affiliation: "Magrittr OÜ, Tartu, Estonia"
+version: "0.1.0"
+date-released: "2026-09-23"

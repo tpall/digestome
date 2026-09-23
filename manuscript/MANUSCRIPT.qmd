@@ -2,9 +2,16 @@
 title: "digestome: a licence-clean marker-gene panel for functional profiling of anaerobic digestion microbiomes"
 author:
   - name: Taavi Päll
+    email: taavi@magrittr.ee
+    orcid: 0000-0001-7606-675X
+    corresponding: true
     affiliations:
-      - Magrittr OÜ
-      - University of Tartu
+      - name: Magrittr OÜ
+        city: Tartu
+        country: Estonia
+      - name: University of Tartu
+        city: Tartu
+        country: Estonia
 date: last-modified
 abstract: |
   Functional profiling of anaerobic digestion (AD) microbiomes is routinely performed
@@ -46,12 +53,10 @@ execute:
 ---
 
 ::: {.callout-important}
-## Draft
-Not submitted. Values are as measured on 2026-08-10 and are reproducible from the scripts in
-this repository. Outstanding before submission: corresponding-author address; funding and
-acknowledgements; several `references.bib` entries need author lists completed from the
-published record; the source repository must be made public, since the availability statement
-below promises a working URL.
+## Preprint draft
+Not yet posted. Values are as measured on 2026-09-22 with the final scorer, and are reproducible
+from the scripts in the public repository. Outstanding before posting: the Zenodo DOI of the
+software release, cited in Data and code availability below.
 :::
 
 # Introduction
@@ -195,7 +200,7 @@ asserts that every pressed model carries a curated cutoff.
 The distinction the gates draw is the one that carries operational meaning. Acetoclastic
 methanogens are more ammonia-sensitive than hydrogenotrophic ones, so a reactor under rising
 ammonia load shifts from acetate-consuming methanogens towards syntrophic acetate oxidation
-coupled to hydrogenotrophic methanogenesis [@westerholm2015ammonia]. Which route a community
+coupled to hydrogenotrophic methanogenesis [@wang2015ammonia]. Which route a community
 can run is therefore not a taxonomic curiosity but the axis along which digester stress
 expresses itself.
 
@@ -620,6 +625,29 @@ no dependency beyond HMMER and a Python interpreter. Reference data are download
 InterPro/Pfam and Rhea; no licensed database is required at any stage. The benchmark catalogue is
 available from NCBI BioProject PRJNA602310 [@campanaro2020]. Code is released under the MIT
 licence and the curated panel under CC BY 4.0.
+
+The version used for every number in this manuscript is archived at Zenodo
+(DOI: `<pending release>`) and developed at <https://github.com/tpall/digestome>. The report
+renderer that consumes the scorer's output is a separate, closed component and is not required to
+reproduce anything reported here.
+
+# Competing interests
+
+The author is the owner of Magrittr OÜ, which sells analyses of anaerobic digestion microbiomes to
+biogas plant operators using the panel described here. The panel, the scorer and the validation
+scripts are released openly so that the results can be reproduced and checked independently of that
+commercial interest.
+
+# Funding
+
+No external funding. The work was carried out by the author, and the compute for the benchmarks ran
+on the University of Tartu HPC centre, in part on a paid commercial allocation held by Magrittr OÜ.
+
+# Acknowledgements
+
+The author thanks the HPC centre of the University of Tartu for computing resources, and the
+authors of the biogas MAG catalogue [@campanaro2020] for making both the genomes and the per-sample
+abundances public: the specificity benchmark in this work is only possible because they did.
 
 # References {.unnumbered}
 
