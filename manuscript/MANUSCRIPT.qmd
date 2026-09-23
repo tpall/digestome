@@ -55,8 +55,7 @@ execute:
 ::: {.callout-important}
 ## Preprint draft
 Not yet posted. Values are as measured on 2026-09-22 with the final scorer, and are reproducible
-from the scripts in the public repository. Outstanding before posting: the Zenodo DOI of the
-software release, cited in Data and code availability below.
+from the archived release cited in Data and code availability below.
 :::
 
 # Introduction
@@ -627,7 +626,9 @@ available from NCBI BioProject PRJNA602310 [@campanaro2020]. Code is released un
 licence and the curated panel under CC BY 4.0.
 
 The version used for every number in this manuscript is archived at Zenodo
-(DOI: `<pending release>`) and developed at <https://github.com/tpall/digestome>. The report
+(v0.1.0, DOI [10.5281/zenodo.22913616](https://doi.org/10.5281/zenodo.22913616); the
+version-independent DOI [10.5281/zenodo.22913615](https://doi.org/10.5281/zenodo.22913615) always
+resolves to the latest release) and developed at <https://github.com/tpall/digestome>. The report
 renderer that consumes the scorer's output is a separate, closed component and is not required to
 reproduce anything reported here.
 

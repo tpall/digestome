@@ -11,6 +11,14 @@ abstract: >-
 type: software
 license: MIT
 repository-code: "https://github.com/tpall/digestome"
+doi: "10.5281/zenodo.22913615"
+identifiers:
+  - type: doi
+    value: "10.5281/zenodo.22913615"
+    description: "Version-independent DOI: always the latest release"
+  - type: doi
+    value: "10.5281/zenodo.22913616"
+    description: "Version 0.1.0, the release behind the manuscript"
 keywords:
   - anaerobic digestion
   - biogas
