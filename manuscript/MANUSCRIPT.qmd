@@ -158,20 +158,20 @@ rows can record only one of them, silently scoring the other as absent.
 
 Markers resolve to profile HMMs by three routes, in strict precedence.
 
-Models are drawn from NCBIfam and Pfam [@mistry2021pfam]. **Curated accessions** pin a row to
+Models are drawn from NCBIfam and Pfam [@mistry2021pfam]. Curated accessions pin a row to
 named models. A pinned row is exclusive: its gene symbol and
 EC are not indexed at all. Exclusivity is load-bearing rather than tidy: the archaeal A₁A₀ ATP
 synthase row matched 120 models through EC 7.1.2.2, an EC that spans every subunit of F-, V- and
 A-type synthases in both domains.
 
-**Gene symbol** matches are used where no accession is pinned. Marker choice here follows
+Gene symbol matches are used where no accession is pinned. Marker choice here follows
 the field where it has been tested directly: formyltetrahydrofolate synthetase outperforms 16S
 for tracking the acetogenic community in biogas reactors [@fthfs2021], and it is a pinned
 marker in this panel. This route is not automatically
 safe: `fmdA` is both the panel's formylmethanofuran dehydrogenase subunit A and a legitimate
 symbol for formamidase, an unrelated and common enzyme.
 
-**EC numbers** are the weakest route and are used last. Wildcard ECs (`2.1.1.-`, `3.4.-.-`) are
+EC numbers are the weakest route and are used last. Wildcard ECs (`2.1.1.-`, `3.4.-.-`) are
 excluded entirely; they name an enzyme class rather than a gene, and matching them imported 58
 unrelated peptidases, lipases and glycosidases.
 
@@ -204,7 +204,7 @@ expresses itself.
 
 Branch capability is evaluated by explicit gates rather than completeness thresholds. Each gate
 declares its requirements as groups of alternatives, and gates evaluate to true, false, or
-**not assessable** when a required marker has no detector in the database at all.
+not assessable when a required marker has no detector in the database at all.
 
 The hydrogenotrophic gate requires `mcrA` and at least four of six C1 pathway steps
 (`fwdB`|`fmdB`, `ftr`, `mch`, `mtd`|`hmd`, `mer`, `mtrA`); isoenzymes of one step count once. It
@@ -247,7 +247,7 @@ table is treated as unclassified, never as a negative.
 Hydrolysis is the only extracellular step of anaerobic digestion, so an encoded but unexported
 enzyme contributes nothing to feedstock breakdown. The scorer therefore tests whether a catalytic
 domain and an export module (dockerin, cohesin, carbohydrate-binding module or S-layer domain)
-occur **on the same polypeptide**, which is the architecture of a cellulosome. The test is
+occur on the same polypeptide, which is the architecture of a cellulosome. The test is
 per-protein; the same two domains in one genome but on different proteins carry no such
 implication. All five export modules are Pfam families. Signal-peptide prediction was deliberately
 not used, the standard tool being fee-licensed for commercial work.
@@ -345,8 +345,8 @@ The panel was applied to the 1,401 digester MAGs (@tbl-specificity).
 |:---|---:|
 | MAGs carrying `mcrA` | 40 of 1,401 |
 | Acetoclastic calls | 6, all *Methanosarcina* or *Methanothrix* |
-| Acetoclastic calls outside those genera | **0** |
-| Non-methanogens assigned any methanogenesis route | **0 of 1,361** |
+| Acetoclastic calls outside those genera | 0 |
+| Non-methanogens assigned any methanogenesis route | 0 of 1,361 |
 | Methanogens with no route assigned | 3 of 40 |
 
 : Methanogenesis route assignment across 1,401 digester MAGs. {#tbl-specificity}
@@ -377,7 +377,7 @@ Applying the per-protein export test across the same 1,401 genomes (@tbl-secreti
 | Protein hydrolysis | 868 | 106 | 12.2% |
 | Carbohydrate hydrolysis | 597 | 50 | 8.4% |
 | Lipid hydrolysis | 129 | 7 | 5.4% |
-| All intracellular modules | up to 1,337 | **0** | 0.0% |
+| All intracellular modules | up to 1,337 | 0 | 0.0% |
 
 : Genomes carrying a hydrolase family versus those encoding it on the same polypeptide as an export module. {#tbl-secretion}
 
@@ -408,8 +408,8 @@ two lineages is established, they belong in the lineage policy with a source, no
 
 The 90 anaerobic methane and alkane oxidisers (*Methanoperedenaceae*, *Methanocomedenaceae*,
 *Methanogasteraceae*, ANME-1, "*Ca.* Ethanoperedens") carry `mcr` and run the pathway in reverse.
-They are the clearest case for lineage confirmation: **65 of the 90 satisfy the hydrogenotrophic
-gene gate and 55 the acetoclastic one**, because reverse methanogenesis uses the same enzymes.
+They are the clearest case for lineage confirmation: 65 of the 90 satisfy the hydrogenotrophic
+gene gate and 55 the acetoclastic one, because reverse methanogenesis uses the same enzymes.
 Gene content cannot separate them from methanogens. That none of them receives a route is not an
 independent test: the class is defined by lineage and the same lineage policy removes the calls.
 The one outcome not fixed by construction is the methylotrophic gate, which no oxidiser triggered. Of the 1,056 methanogens, 819 were assigned at least
