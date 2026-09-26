@@ -90,13 +90,17 @@ route_panel <- function(route_name, title, fold_at, other_unit) {
     mutate(whole = calls_family_check, part = calls_lineage_policy,
            text = sprintf("%d of %d", part, whole),
            is_other = grepl("^[0-9]+ other ", lineage),
-           italic = !is_other & !grepl("oxidisers|^[A-Z]+[0-9]", lineage)) |>
+           italic = !is_other & !grepl("oxidisers|[0-9]|^unnamed", lineage)) |>
     arrange(is_other, whole) |>
     mutate(label = factor(lineage, levels = unique(c(lineage[is_other], lineage[!is_other]))))
   total <- sprintf("%s (%d → %d calls)", title, sum(d$whole), sum(d$part))
   # Genus and order names are italic; placeholder names (DQIP01) and the grouped rows are not.
   it <- setNames(d$italic, d$lineage)
-  lab <- function(x) lapply(x, function(v) if (it[[v]]) bquote(italic(.(v))) else v)
+  lab <- function(x) lapply(x, function(v) {
+    fam <- sub("^unnamed (\\S+) genera$", "\\1", v)
+    if (fam != v) bquote(paste("unnamed ", italic(.(fam)), " genera"))
+    else if (it[[v]]) bquote(italic(.(v))) else v
+  })
   paired_bars(d, "Family-level check", "Lineage policy", NULL) +
     labs(title = total) +
     scale_y_discrete(labels = lab)
@@ -125,7 +129,7 @@ fig_contig <- ggplot(contig, aes(x = contigs, y = lost)) +
                      labels = function(x) paste0(x, " %"), expand = expansion(mult = c(0, 0.08))) +
   scale_x_discrete(labels = setNames(contig$xlab, contig$contigs)) +
   labs(x = "Contigs in the genome",
-       y = "Route calls lost with --contig-level") +
+       y = "Methanogens losing every route") +
   theme_fig() +
   theme(panel.grid.major.x = element_blank(),
         panel.grid.major.y = element_line(colour = GRID, linewidth = 0.3),

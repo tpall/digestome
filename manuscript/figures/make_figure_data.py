@@ -9,11 +9,11 @@ No number in a figure is typed. The same scored directories feed the tables in R
 and the table beside it cannot disagree without one of these scripts changing.
 
 Inputs, under results/benchmarks/ (see fetch_benchmarks.sh for where each comes from):
-  gtdb/scored_2026-09-22f   the GTDB sample under the lineage policy (Results, tbl-gtdb, tbl-routes)
-  gtdb/scored               the same genomes under the family-level check (tbl-routes, "before")
-  gtdb/scored_contig        the August scoring with --contig-level, paired with gtdb/scored
-  gtdb/contig_counts.tsv    contigs per genome, counted from the Prodigal proteomes
-  catalogue/scored_2026-09-22e   the 1,401 digester MAGs (tbl-secretion)
+  gtdb/scored_2026-09-26         the GTDB sample under the lineage policy (Results, tbl-gtdb, tbl-routes)
+  gtdb/scored                    the same genomes under the family-level check (tbl-routes, "before")
+  gtdb/scored_contig_2026-09-26  the final scorer with --contig-level, paired with scored_2026-09-26
+  gtdb/contig_counts.tsv         contigs per genome, counted from the Prodigal proteomes
+  catalogue/scored_2026-09-26    the 1,401 digester MAGs (tbl-secretion)
 """
 import collections
 import csv
@@ -29,7 +29,8 @@ from panel_scored import load_acetate_lineages, lineage_in_role  # noqa: E402
 
 B = ROOT / 'results' / 'benchmarks'
 GTDB, CAT = B / 'gtdb', B / 'catalogue'
-AFTER, BEFORE, CONTIG = 'scored_2026-09-22f', 'scored', 'scored_contig'
+AFTER, BEFORE, CONTIG = 'scored_2026-09-26', 'scored', 'scored_contig_2026-09-26'
+CATALOGUE = 'scored_2026-09-26'
 OUT = HERE / 'data'
 
 GATE = re.compile(r'\[([x ?])\]\s+methanogenesis:\s*(\S+)')
@@ -86,10 +87,28 @@ before, after = routes(GTDB / BEFORE), routes(GTDB / AFTER)
 common = sorted(set(before) & set(after))
 
 
+RELABEL_AS_METHANOGEN = {'o__Methanonatronarchaeales'}   # as in scripts/summarise_gtdb_benchmark.py
+
+
+def klass(a):
+    """The benchmark's three classes: oxidisers by lineage policy, one sourced relabel, else the stratum."""
+    if lineage.get(a) and lineage_in_role(lineage[a], 'methane_oxidiser', policy):
+        return 'methane_oxidiser'
+    st = meta.get(a, {}).get('stratum', '?')
+    if st == 'background' and meta.get(a, {}).get('order') in RELABEL_AS_METHANOGEN:
+        return 'methanogen'
+    return st
+
+
 def group(a, route):
     if lineage.get(a) and lineage_in_role(lineage[a], 'methane_oxidiser', policy):
         return 'Anaerobic methane / alkane oxidisers'
-    return rank(a, 'g' if route == 'acetoclastic' else 'o')
+    if route == 'acetoclastic':
+        # GTDB placeholder genera (DQIP01, Fen-7) are pooled by family: the policy treats the two
+        # families differently, and one row per placeholder hides that.
+        g = rank(a, 'g')
+        return f'unnamed {rank(a, "f")} genera' if re.search(r'\d', g) else g
+    return rank(a, 'o')
 
 
 rows = []
@@ -105,17 +124,19 @@ for route in ROUTES:
 write('route_calls_by_lineage.tsv', ('route', 'lineage', 'calls_family_check', 'calls_lineage_policy'), rows)
 
 # --- Figure: what --contig-level costs, against assembly fragmentation ---------------------------
+# Paired with the final call set, and counted over the same methanogen class as tbl-gtdb, so the
+# genome-level totals here are the paper's methanogens with a route.
 contig = routes(GTDB / CONTIG)
 ncontig = {}
 for line in need(GTDB / 'contig_counts.tsv').read_text().splitlines():
     a, n = line.split('\t')
     ncontig[a] = int(n)
 BINS = [('1', 1, 1), ('2–10', 2, 10), ('11–50', 11, 50), ('51–200', 51, 200), ('201+', 201, 10 ** 9)]
-methanogens = [a for a in set(before) & set(contig) if meta.get(a, {}).get('stratum') == 'methanogen']
+methanogens = [a for a in set(after) & set(contig) if klass(a) == 'methanogen']
 rows = []
 for name, lo, hi in BINS:
     sub = [a for a in methanogens if lo <= ncontig.get(a, 0) <= hi]
-    g = sum(1 for a in sub if before[a])
+    g = sum(1 for a in sub if after[a])
     c = sum(1 for a in sub if contig[a])
     rows.append((name, len(sub), g, c))
 write('contig_level_loss.tsv', ('contigs', 'genomes', 'routed_genome_level', 'routed_contig_level'), rows)
@@ -123,7 +144,7 @@ write('contig_level_loss.tsv', ('contigs', 'genomes', 'routed_genome_level', 'ro
 # --- Figure: carries the family versus exports it, 1,401 digester MAGs ---------------------------
 carry, export = collections.Counter(), collections.Counter()
 stage = {}
-for f in need(CAT / 'scored_2026-09-22e').glob('*.modules.tsv'):
+for f in need(CAT / CATALOGUE).glob('*.modules.tsv'):
     for r in csv.DictReader(open(f), delimiter='\t'):
         if r['core_found'] not in ('', 'NA') and int(r['core_found']) > 0:
             carry[r['module']] += 1

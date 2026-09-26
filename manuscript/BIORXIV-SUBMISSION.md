@@ -32,7 +32,7 @@ which needs Quarto ≥ 1.9.36; `~/opt/quarto-1.10.18/bin/quarto` on the laptop).
 | Affiliation 1 | Magrittr OÜ, Tartu, Estonia |
 | Affiliation 2 | University of Tartu, Tartu, Estonia |
 
-**Abstract** (219 words, plain text — bioRxiv strips formatting, so paste from
+**Abstract** (224 words, plain text — bioRxiv strips formatting, so paste from
 `/tmp/abstract.txt` or the manuscript and check that the subscripts read as "H2/CO2" rather than
 broken characters)
 

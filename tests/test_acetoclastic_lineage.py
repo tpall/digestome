@@ -16,8 +16,9 @@ CASES = [
     ('d__Archaea;g__Methanosaeta;s__Methanosaeta concilii', True),          # NCBI-style, genus only
     (A + 'o__Methanotrichales;f__Methanotrichaceae;g__Methanothrix_B;s__Methanothrix_B sp1', True),
     (A + 'o__Methanotrichales;f__Methanotrichaceae;g__Methanocrinis;s__Methanocrinis harundinaceus', True),
-    # not confirmed: an unnamed genus is left for review even in Methanotrichaceae (fail closed)
-    (A + 'o__Methanotrichales;f__Methanotrichaceae;g__JAAYUN01;s__JAAYUN01 sp1', False),
+    # confirmed at family: every described Methanotrichaceae is an obligate acetoclast, so an unnamed
+    # genus there keeps the acetate route (the family is denied H2/CO2, so it would otherwise have none)
+    (A + 'o__Methanotrichales;f__Methanotrichaceae;g__JAAYUN01;s__JAAYUN01 sp1', True),
     # not confirmed: methylotrophic Methanosarcinaceae genera
     (A + 'o__Methanosarcinales;f__Methanosarcinaceae;g__Methanolobus;s__Methanolobus tindarius', False),
     (A + 'o__Methanosarcinales;f__Methanosarcinaceae;g__Methanococcoides;s__Methanococcoides burtonii', False),

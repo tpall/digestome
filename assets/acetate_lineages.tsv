@@ -6,7 +6,9 @@
 #   methylotrophs that do not use acetate (Methanolobus, Methanococcoides,
 #   Methanohalophilus, Methanomethylovorans, Methanimicrococcus), and an unnamed genus
 #   (GTDB placeholder) is left for review, not confirmed. GTDB suffixes are ignored
-#   (Methanothrix_B = Methanothrix).
+#   (Methanothrix_B = Methanothrix). One exception, at family level: Methanotrichaceae, every
+#   described member of which is an obligate acetoclast, so an unnamed genus there is confirmed
+#   rather than left with no route (the family is already denied the H2/CO2 route below).
 # role=anabolic_acetate_genes: methanogen orders whose members carry ACDS/CODH, acs,
 #   ackA/pta to build biomass from acetate or CO2, not to make methane from acetate.
 #   A genome in these orders with the genes is expected, not a candidate.
@@ -39,6 +41,7 @@ g	Methanosarcina	acetoclastic	Jetten et al. 1992 FEMS Microbiol Rev 8:181
 g	Methanothrix	acetoclastic	Jetten et al. 1992 FEMS Microbiol Rev 8:181
 g	Methanosaeta	acetoclastic	former name of Methanothrix
 g	Methanocrinis	acetoclastic	former Methanothrix harundinacea; obligate acetoclast
+f	Methanotrichaceae	acetoclastic	every described member is an obligate acetoclast (Methanothrix, Methanocrinis: Smith & Ingram-Smith 2007; Khomyakova et al. 2023); covers unnamed genera, as the not_hydrogenotrophic row does
 o	Methanomicrobiales	anabolic_acetate_genes	hydrogenotrophs
 o	Methanobacteriales	anabolic_acetate_genes	hydrogenotrophs (Methanothermobacter trips the gene test)
 o	Methanomassiliicoccales	anabolic_acetate_genes	H2-dependent methylotrophs

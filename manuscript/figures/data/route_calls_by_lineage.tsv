@@ -2,24 +2,14 @@ route	lineage	calls_family_check	calls_lineage_policy
 acetoclastic	Methanosarcina	32	32
 acetoclastic	Methanothrix	29	29
 acetoclastic	Methanolobus	27	0
+acetoclastic	unnamed Methanosarcinaceae genera	14	0
 acetoclastic	Methanocrinis	12	12
 acetoclastic	Methanococcoides	11	0
+acetoclastic	unnamed Methanotrichaceae genera	10	10
 acetoclastic	Methanohalophilus	9	0
 acetoclastic	Methanomethylovorans	8	0
-acetoclastic	DQIP01	6	0
-acetoclastic	MTP4	4	0
-acetoclastic	UBA204	2	0
-acetoclastic	Fen-7	2	0
-acetoclastic	JAIOTO01	2	0
-acetoclastic	JAQVBP01	2	0
 acetoclastic	Methanohalobium	2	0
 acetoclastic	Methanosalsum	2	0
-acetoclastic	MVQI01	1	0
-acetoclastic	UBA114	1	0
-acetoclastic	JABLXE01	1	0
-acetoclastic	JAFGMR01	1	0
-acetoclastic	JALHSR01	1	0
-acetoclastic	DATMZB01	1	0
 hydrogenotrophic	Methanomicrobiales	214	210
 hydrogenotrophic	Methanobacteriales	185	181
 hydrogenotrophic	Methanosarcinales	110	49

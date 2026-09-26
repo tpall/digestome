@@ -13,8 +13,8 @@ SRC=${SRC:-/gpfs/space/projects/preterm/databases/ad_panel_test}
 DST=results/benchmarks
 mkdir -p "$DST/gtdb" "$DST/catalogue"
 
-rsync -a "$HOST:$SRC/gtdb/"{scored,scored_2026-09-22f,scored_contig,gtdb_sample.tsv,gtdbtk_sample.tsv,pf05369_hits.txt} "$DST/gtdb/"
-rsync -a "$HOST:$SRC/biogas_catalogue/"{scored_2026-09-22e,catalogue_taxonomy.tsv} "$DST/catalogue/"
+rsync -a "$HOST:$SRC/gtdb/"{scored,scored_2026-09-26,scored_contig_2026-09-26,gtdb_sample.tsv,gtdbtk_sample.tsv,pf05369_hits.txt} "$DST/gtdb/"
+rsync -a "$HOST:$SRC/biogas_catalogue/"{scored_2026-09-26,catalogue_taxonomy.tsv} "$DST/catalogue/"
 
 # Contigs per genome, counted from the Prodigal proteomes on the cluster: the proteomes themselves are
 # large and only this count is needed. Prodigal names proteins <contig>_<n>.
