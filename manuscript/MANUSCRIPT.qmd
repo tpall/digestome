@@ -38,15 +38,18 @@ keywords: [anaerobic digestion, biogas, metagenomics, functional annotation, met
 bibliography: references.bib
 format:
   html:
+    default-image-extension: svg
     toc: true
     toc-depth: 2
     number-sections: false
     theme: cosmo
   docx:
+    default-image-extension: png
     toc: false
     number-sections: false
   # PDF for bioRxiv: mvuorre/quarto-preprint (Typst), vendored in _extensions/. Needs Quarto >= 1.9.36.
   preprint-typst:
+    default-image-extension: svg
     output-file: MANUSCRIPT.pdf
     include-in-header:
       # Justified text in narrow table cells leaves rivers of space; tables read better ragged-right.
@@ -389,7 +392,7 @@ and those in which a core marker's catalytic domain sits on the same polypeptide
 (dark). Only the hydrolysis modules have an exported marker. Intracellular modules are counted by any
 core marker, and some of these are common in bacteria, such as acetate kinase and
 phosphotransacetylase in the acetoclastic module; carrying one is not a route
-call.](figures/fig-export.png){#fig-export}
+call.](figures/fig-export){#fig-export}
 
 ## Specificity holds on genomes built a different way
 
@@ -458,7 +461,7 @@ are shown at genus and order. Anaerobic
 methane and alkane oxidisers are shown as one group rather than inside the orders that contain
 them. GTDB placeholder genera are pooled by family, and named acetoclastic genera with at most two calls, all removed, are pooled. The two single-genome
 hydrogenotrophic rows that are kept, *Hadarchaeales* and DAOWMC01, are the two background genomes
-counted as false positives in @tbl-gtdb.](figures/fig-route-lineage.png){#fig-routes}
+counted as false positives in @tbl-gtdb.](figures/fig-route-lineage){#fig-routes}
 
 Of the 156 acetoclastic calls under the family-level check, 59 were in methylotrophic genera that do
 not use acetate and 14 in unnamed *Methanosarcinaceae* genera the policy leaves unconfirmed, and more
@@ -620,7 +623,7 @@ sample. The two questions have different error models and should not be conflate
 by the number of contigs in the genome. The share is of genomes with at least one route under
 genome-level scoring, not of individual route calls. Below each bin, methanogens with a route under
 genome-level → contig-level scoring. Both scorings use the final scorer and lineage policy; contig
-counts are taken from the Prodigal gene calls.](figures/fig-contig-loss.png){#fig-contig width=60%}
+counts are taken from the Prodigal gene calls.](figures/fig-contig-loss){#fig-contig width=60%}
 
 **Taxonomic ground truth.** Both the specificity and the sensitivity figures are measured
 against order-level labels, and those labels were wrong in both directions here.

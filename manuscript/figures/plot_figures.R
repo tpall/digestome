@@ -49,7 +49,10 @@ save_fig <- function(p, name, w_mm, h_mm) {
          units = "mm", device = cairo_pdf)
   ggsave(file.path(here, paste0("fig-", name, ".png")), p, width = w_mm, height = h_mm,
          units = "mm", dpi = 300, device = ragg::agg_png, bg = "white")
-  message("  fig-", name, ".{pdf,png}")
+  # Vector for the preprint PDF and the HTML; the PNG stays for Word, which renders SVG poorly.
+  ggsave(file.path(here, paste0("fig-", name, ".svg")), p, width = w_mm, height = h_mm,
+         units = "mm", device = svglite::svglite, bg = "white")
+  message("  fig-", name, ".{pdf,png,svg}")
 }
 
 # Two overlaid horizontal bars per row with a "part of whole" label, the shared form of two figures.
@@ -98,7 +101,7 @@ route_panel <- function(route_name, title, fold_at, other_unit) {
   it <- setNames(d$italic, d$lineage)
   lab <- function(x) lapply(x, function(v) {
     fam <- sub("^unnamed (\\S+) genera$", "\\1", v)
-    if (fam != v) bquote(paste("unnamed ", italic(.(fam)), " genera"))
+    if (fam != v) bquote(unnamed ~ italic(.(fam)) ~ genera)
     else if (it[[v]]) bquote(italic(.(v))) else v
   })
   paired_bars(d, "Family-level check", "Lineage policy", NULL) +
