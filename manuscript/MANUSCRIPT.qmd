@@ -561,35 +561,35 @@ DRAM and was separated once it became clear that nothing in it depended on the h
 
 ## Limitations
 
-**Capacity, not activity.** The panel measures what a community is equipped to do. It cannot
+Capacity, not activity. The panel measures what a community is equipped to do. It cannot
 report expression, rate or flux; those require transcriptomics, proteomics or process measurement.
 Secretion evidence extends the claim from *encoded* to *encoded and built for export*, which is
 still not *active*.
 
-**Markers with no licence-clean detector.** Nine of 86 markers remain unresolved. `bcd` and
+Markers with no licence-clean detector. Nine of 86 markers remain unresolved. `bcd` and
 `crt` have no model in either source, so syntrophic butyrate oxidation is reported as unassessable
 rather than absent, including in an organism that performs it.
 
-**Dependence on upstream gene calling.** The pyrrolysine result above is a property of the
+Dependence on upstream gene calling. The pyrrolysine result above is a property of the
 annotation, not of the panel, and it cuts both ways: `mtmB` is detectable from Prodigal calls and
 invisible in NCBI reference proteomes. Any input built by an annotation pipeline that does not
 translate through in-frame amber codons will under-report methylamine methyltransferases, and the
 panel cannot detect that this has happened. The same caution applies to any marker whose gene
 carries a recoded codon.
 
-**Family-level resolution in hydrolysis.** Pfam families do not distinguish secreted from
+Family-level resolution in hydrolysis. Pfam families do not distinguish secreted from
 cytoplasmic enzymes on their own (hence the export test), nor do they resolve substrate
 specificity within a family. The export layer detects the cellulosomal and cell-surface-anchored
 routes; a plain Sec-secreted enzyme carrying no binding module would be missed.
 
-**Taxonomy dependence.** The acetoclastic, hydrogenotrophic and MT2-only methylotrophic calls are
+Taxonomy dependence. The acetoclastic, hydrogenotrophic and MT2-only methylotrophic calls are
 only as good as the supplied lineage and the policy that reads it. Without taxonomy they degrade
 to gene evidence, which over-calls, and the NCBI names that accompany many catalogues give a genus
 only, too coarse for the order-level rules. The policy is data, one table with a source per row,
 so a new lineage is a reviewed edit rather than a code change; a lineage it does not know is
 reported, not guessed.
 
-**Prevalence is measured over binned genomes.** Scoring is per genome, so a marker carried by
+Prevalence is measured over binned genomes. Scoring is per genome, so a marker carried by
 taxa that do not bin is not counted. In a parallel analysis of bile-acid 7alpha-dehydroxylation in
 human gut metagenomes, searching whole-assembly proteomes instead of binned ones raised the
 prevalence of a single diagnostic gene from 2.1% to 17.9% of samples, with 31% of carrying contigs
@@ -625,7 +625,7 @@ genome-level scoring, not of individual route calls. Below each bin, methanogens
 genome-level → contig-level scoring. Both scorings use the final scorer and lineage policy; contig
 counts are taken from the Prodigal gene calls.](figures/fig-contig-loss){#fig-contig width=60%}
 
-**Taxonomic ground truth.** Both the specificity and the sensitivity figures are measured
+Taxonomic ground truth. Both the specificity and the sensitivity figures are measured
 against order-level labels, and those labels were wrong in both directions here.
 *Methanonatronarchaeales* are methanogens that our order list did not include, so a correct call
 counted as a false positive until the benchmark classes were corrected. The anaerobic methane and alkane oxidisers sit inside methanogen
@@ -634,7 +634,7 @@ for 65 of them before the lineage policy. Both indicate that a benchmark of this
 the reference labels as much as the tool, and that a specificity test against non-methanogens
 has to be paired with a check of which route each methanogen receives.
 
-**Benchmark scope.** Specificity now rests on two collections that differ in construction, one
+Benchmark scope. Specificity now rests on two collections that differ in construction, one
 binned from digester metagenomes by a single group and one drawn from GTDB representatives, which
 removes the possibility that the result is an artefact of one binning pipeline. Both remain
 snapshots of public sequence databases, and neither tests genomes from a digester the panel has
