@@ -10,7 +10,7 @@ which needs Quarto ≥ 1.9.36; `~/opt/quarto-1.10.18/bin/quarto` on the laptop).
 | | |
 |---|---|
 | File to upload | `~/Projects/digestome/manuscript/MANUSCRIPT.pdf` |
-| Rendered from | `MANUSCRIPT.qmd`, digestome commit `28dc6e4` |
+| Rendered from | `MANUSCRIPT.qmd`, digestome commit `2701ece` |
 | Software cited in it | Zenodo v0.1.0 DOI 10.5281/zenodo.22913616 (already live) |
 
 ## Field by field
