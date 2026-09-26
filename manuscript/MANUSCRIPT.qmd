@@ -57,12 +57,6 @@ execute:
   echo: false
 ---
 
-::: {.callout-important}
-## Preprint draft
-Not yet posted. Values are as measured on 2026-09-22 with the final scorer, and are reproducible
-from the archived release cited in Data and code availability below.
-:::
-
 # Introduction
 
 Anaerobic digestion is frequently described as a black box: operators manage a microbial process

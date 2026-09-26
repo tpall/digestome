@@ -1,7 +1,7 @@
 # bioRxiv submission — everything to paste, 2026-09-24
 
 _Prepared for the account holder to submit at <https://submit.biorxiv.org>. Nothing here has been
-submitted. The PDF is `manuscript/MANUSCRIPT.pdf` (15 pages with three figures, rendered from `MANUSCRIPT.qmd` at
+submitted. The PDF is `manuscript/MANUSCRIPT.pdf` (16 pages with three figures, rendered from `MANUSCRIPT.qmd` at
 the commit below in the quarto-preprint style: `quarto render MANUSCRIPT.qmd --to preprint-typst`,
 which needs Quarto ≥ 1.9.36; `~/opt/quarto-1.10.18/bin/quarto` on the laptop)._
 
