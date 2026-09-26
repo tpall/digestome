@@ -364,7 +364,7 @@ which is why a call resting on it now needs a confirming lineage (Methods).
 
 ## The export test reduces attributed hydrolytic capacity
 
-Applying the per-protein export test across the same 1,401 genomes (@tbl-secretion):
+Applying the per-protein export test across the same 1,401 genomes (@tbl-secretion, @fig-export):
 
 | module | carry the family | export it | |
 |---|---|---|---|
@@ -377,6 +377,13 @@ Applying the per-protein export test across the same 1,401 genomes (@tbl-secreti
 
 The zero across every intracellular module is the control: the test fires only on hydrolysis, the
 sole exported step.
+
+![Genomes among the 1,401 digester MAGs that carry at least one core marker of each module (light)
+and those in which a core marker's catalytic domain sits on the same polypeptide as an export module
+(dark). Only the hydrolysis modules have an exported marker. Intracellular modules are counted by any
+core marker, and some of these are common in bacteria, such as acetate kinase and
+phosphotransacetylase in the acetoclastic module; carrying one is not a route
+call.](figures/fig-export.png){#fig-export}
 
 ## Specificity holds on genomes built a different way
 
@@ -422,7 +429,7 @@ a report, genome completeness (CheckM2) is shown beside every methanogen for tha
 Specificity against non-methanogens does not show that a methanogen was given the right route. We
 therefore tabulated every route call by GTDB lineage (`scripts/summarise_gtdb_benchmark.py`), first
 with a family-level acetoclastic check and gene-only hydrogenotrophic and methylotrophic gates,
-then with the lineage policy described in Methods (@tbl-routes).
+then with the lineage policy described in Methods (@tbl-routes, @fig-routes).
 
 | route | calls, family-level check | calls, lineage policy | removed |
 |---|---|---|---|
@@ -431,6 +438,15 @@ then with the lineage policy described in Methods (@tbl-routes).
 | methylotrophic | 388 | 376 | 12: MT2 marker alone in *Methanococcus*, *Methanoculleus*, *Methanomicrobium*, *Methanothrix* and others |
 
 : Route calls in the GTDB sample before and after lineage confirmation. After it, every acetoclastic call is *Methanosarcina* (32), *Methanothrix* (29) or *Methanocrinis* (12). {#tbl-routes}
+
+![Methanogenesis route calls in the 3,043-genome GTDB sample by lineage, under the family-level
+acetoclastic check with gene-only hydrogenotrophic and methylotrophic gates (light), and under the
+lineage policy (dark). Labels give calls kept of calls made. The acetoclastic route is confirmed at
+genus level and the other two at order level, so lineages are shown at those ranks. Anaerobic
+methane and alkane oxidisers are shown as one group rather than inside the orders that contain
+them. Acetoclastic genera with at most two calls, all removed, are pooled. The two single-genome
+hydrogenotrophic rows that are kept, *Hadarchaeales* and DAOWMC01, are the two background genomes
+counted as false positives in @tbl-gtdb.](figures/fig-route-lineage.png){#fig-routes}
 
 Half of the acetoclastic calls under the family-level check were methylotrophs that do not use
 acetate, and more than a quarter of the hydrogenotrophic calls fell on organisms that run the C1
@@ -577,7 +593,7 @@ present in 39% and 48% of samples and carried by organisms that do not perform t
 Contig-level co-occurrence preserves single-organism evidence without requiring a bin, and the
 scorer implements it, but measuring its cost on the GTDB set shows it does not transfer to these
 gates. Requiring every term on one contig discards 64% of methanogenesis route calls, and the loss
-tracks assembly contiguity exactly: nothing for single-contig genomes, 9% at two to ten contigs,
+tracks assembly contiguity exactly (@fig-contig): nothing for single-contig genomes, 9% at two to ten contigs,
 82% at fifty to two hundred, and 94% beyond that. The reason is gene arrangement rather than
 assembly quality. The rule is cheap for an operon-encoded pathway, where the members sit side by
 side, and prohibitive for a distributed one: the `mcr`, `fwd` and `mtr` loci lie apart on the
@@ -586,6 +602,11 @@ that spans most of a replicon. The option exists for pathways it suits; these ga
 for, and should be run on, binned genomes. Binned input answers
 what an organism can do, and assembly-level search answers whether a capability is present in a
 sample. The two questions have different error models and should not be conflated.
+
+![Methanogenesis route calls lost when every gate term must lie on one contig, among the methanogens
+of the GTDB sample, by the number of contigs in the genome. Below each bin, methanogens with a route
+under genome-level scoring → under contig-level scoring. Contig counts are taken from the Prodigal
+gene calls.](figures/fig-contig-loss.png){#fig-contig width=60%}
 
 **Taxonomic ground truth.** Both the specificity and the sensitivity figures are measured
 against order-level labels, and those labels were wrong in both directions here.
