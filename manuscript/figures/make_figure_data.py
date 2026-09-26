@@ -9,11 +9,11 @@ No number in a figure is typed. The same scored directories feed the tables in R
 and the table beside it cannot disagree without one of these scripts changing.
 
 Inputs, under results/benchmarks/ (see fetch_benchmarks.sh for where each comes from):
-  gtdb/scored_2026-09-26         the GTDB sample under the lineage policy (Results, tbl-gtdb, tbl-routes)
-  gtdb/scored                    the same genomes under the family-level check (tbl-routes, "before")
-  gtdb/scored_contig_2026-09-26  the final scorer with --contig-level, paired with scored_2026-09-26
-  gtdb/contig_counts.tsv         contigs per genome, counted from the Prodigal proteomes
-  catalogue/scored_2026-09-26    the 1,401 digester MAGs (tbl-secretion)
+  gtdb/final               the GTDB sample under the lineage policy (Results, tbl-gtdb, tbl-routes)
+  gtdb/family_level_aug11  the same genomes under the family-level check (tbl-routes, "before"; d2daee1)
+  gtdb/contig_final        the final scorer with --contig-level, paired with gtdb/final
+  gtdb/contig_counts.tsv   contigs per genome, counted from the Prodigal proteomes
+  catalogue/final          the 1,401 digester MAGs (tbl-secretion)
 """
 import collections
 import csv
@@ -29,8 +29,8 @@ from panel_scored import load_acetate_lineages, lineage_in_role  # noqa: E402
 
 B = ROOT / 'results' / 'benchmarks'
 GTDB, CAT = B / 'gtdb', B / 'catalogue'
-AFTER, BEFORE, CONTIG = 'scored_2026-09-26', 'scored', 'scored_contig_2026-09-26'
-CATALOGUE = 'scored_2026-09-26'
+AFTER, BEFORE, CONTIG = 'final', 'family_level_aug11', 'contig_final'
+CATALOGUE = 'final'
 OUT = HERE / 'data'
 
 GATE = re.compile(r'\[([x ?])\]\s+methanogenesis:\s*(\S+)')

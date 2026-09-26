@@ -4,17 +4,22 @@
 #
 #   bash manuscript/figures/fetch_benchmarks.sh
 #
-# The benchmarks were scored on the academic account (public data only). Each directory is named for
-# the run the manuscript reports; see make_figure_data.py for which table each one feeds.
+# The benchmarks were scored on Magrittr OÜ's commercial allocation at the University of Tartu HPC
+# Centre, from inputs rebuilt there from public sources (GTDB r226 files, NCBI). Remote directory
+# names are mapped to the local ones make_figure_data.py reads.
 set -euo pipefail
 cd "$(dirname "$0")/../.."
-HOST=${HOST:-taavi74@login1.hpc.ut.ee}
-SRC=${SRC:-/gpfs/space/projects/preterm/databases/ad_panel_test}
+HOST=${HOST:-magrittr-hpc}
+SRC=${SRC:-databases/ad_panel_test}
 DST=results/benchmarks
 mkdir -p "$DST/gtdb" "$DST/catalogue"
 
-rsync -a "$HOST:$SRC/gtdb/"{scored,scored_2026-09-26,scored_contig_2026-09-26,gtdb_sample.tsv,gtdbtk_sample.tsv,pf05369_hits.txt} "$DST/gtdb/"
-rsync -a "$HOST:$SRC/biogas_catalogue/"{scored_2026-09-26,catalogue_taxonomy.tsv} "$DST/catalogue/"
+rsync -a "$HOST:$SRC/gtdb/"{gtdb_sample.tsv,gtdbtk_sample.tsv} "$DST/gtdb/"
+rsync -a --delete "$HOST:$SRC/gtdb/scored_final/" "$DST/gtdb/final/"
+rsync -a --delete "$HOST:$SRC/gtdb/scored_contig_final/" "$DST/gtdb/contig_final/"
+rsync -a --delete "$HOST:$SRC/gtdb_aug11/scored/" "$DST/gtdb/family_level_aug11/"   # scorer at d2daee1
+rsync -a "$HOST:$SRC/biogas_catalogue/catalogue_taxonomy.tsv" "$DST/catalogue/"
+rsync -a --delete "$HOST:$SRC/biogas_catalogue/scored_final_run1/" "$DST/catalogue/final/"
 
 # Contigs per genome, counted from the Prodigal proteomes on the cluster: the proteomes themselves are
 # large and only this count is needed. Prodigal names proteins <contig>_<n>.

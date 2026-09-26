@@ -30,7 +30,6 @@ which needs Quarto ≥ 1.9.36; `~/opt/quarto-1.10.18/bin/quarto` on the laptop).
 | E-mail | taavi@magrittr.ee |
 | Corresponding | yes |
 | Affiliation 1 | Magrittr OÜ, Tartu, Estonia |
-| Affiliation 2 | University of Tartu, Tartu, Estonia |
 
 **Abstract** (224 words, plain text — bioRxiv strips formatting, so paste from
 `/tmp/abstract.txt` or the manuscript and check that the subscripts read as "H2/CO2" rather than
@@ -56,8 +55,8 @@ licence-freedom. CC0 gives away attribution, which we want to keep.
 
 **Funding statement**
 
-> No external funding. The work was carried out by the author, and the compute for the benchmarks ran
-> on the University of Tartu HPC centre, in part on a paid commercial allocation held by Magrittr OÜ.
+> No external funding. The work was carried out by the author at Magrittr OÜ. Computation was bought
+> from the University of Tartu High Performance Computing Centre under a commercial service agreement.
 
 **Has this been submitted to a journal?** No.
 

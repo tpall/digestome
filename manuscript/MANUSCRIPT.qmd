@@ -9,9 +9,6 @@ author:
       - name: Magrittr OÜ
         city: Tartu
         country: Estonia
-      - name: University of Tartu
-        city: Tartu
-        country: Estonia
 date: last-modified
 abstract: |
   Functional profiling of anaerobic digestion (AD) microbiomes is routinely performed
@@ -290,8 +287,8 @@ network access and gain nothing from a task graph.
 ## Compute environment
 
 All runs used HMMER 3 on 16 cores of an AMD EPYC 7742. Scoring the 1,401-genome
-catalogue took 7 min 57 s of wall-clock time and 1.6 CPU-hours in four repeat runs
-(range 7 min 37 s to 8 min 5 s), or approximately 4 CPU-seconds per genome, of which
+catalogue took 8 min 8 s of wall-clock time and 1.6 CPU-hours in four repeat runs
+(range 7 min 38 s to 8 min 31 s), or approximately 4 CPU-seconds per genome, of which
 `hmmsearch` against the 144-model database is nearly all. Peak memory stayed within
 16 GB for the job as a whole. The cost scales linearly with genome count and the work
 is embarrassingly parallel, so a single core processes a genome in a few seconds and
@@ -322,8 +319,10 @@ rather than binned from digester metagenomes: every representative of eleven met
 genomes allocated across 203 phyla in proportion to the square root of phylum size. Proportional
 allocation would spend the budget on the largest phyla and equal allocation would weight a
 singleton phylum like a 36,000-genome one; selection within a phylum is by even stride over
-sorted accessions, so the sample is reproducible without a seed. The sample was drawn from, and
-classified against, GTDB r226. Reports print r232, the release current at the time of writing; every
+sorted accessions, so the sample is reproducible without a seed. The sample was drawn from the GTDB
+r226 taxonomy and species-cluster files with the sampler as first released; the accession list is
+distributed with the release, since a later change to the sampler's order list moves five background
+genomes. It was classified against GTDB r226. Reports print r232, the release current at the time of writing; every
 name in the lineage policy was checked to occur verbatim in the r232 taxonomy, and every name the
 benchmark relies on occurs in the r226 sample, so the policy reads the same under either release.
 
@@ -684,12 +683,13 @@ commercial interest.
 
 ## Funding
 
-No external funding. The work was carried out by the author, and the compute for the benchmarks ran
-on the University of Tartu HPC centre, in part on a paid commercial allocation held by Magrittr OÜ.
+No external funding. The work was carried out by the author at Magrittr OÜ. Computation was bought
+from the University of Tartu High Performance Computing Centre under a commercial service agreement.
 
 ## Acknowledgements
 
-The author thanks the HPC centre of the University of Tartu for computing resources, and the
+The author thanks the High Performance Computing Centre of the University of Tartu for its computing
+service [@utrocket2018], and the
 authors of the biogas MAG catalogue [@campanaro2020] for making both the genomes and the per-sample
 abundances public: the specificity benchmark in this work is only possible because they did.
 
