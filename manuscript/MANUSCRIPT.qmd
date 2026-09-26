@@ -44,10 +44,14 @@ format:
   docx:
     toc: false
     number-sections: false
-  pdf:
-    documentclass: article
-    geometry: margin=1in
-    number-sections: false
+  # PDF for bioRxiv: mvuorre/quarto-preprint (Typst), vendored in _extensions/. Needs Quarto >= 1.9.36.
+  preprint-typst:
+    output-file: MANUSCRIPT.pdf
+    include-in-header:
+      # Justified text in narrow table cells leaves rivers of space; tables read better ragged-right.
+      text: |
+        #show table.cell: set par(justify: false)
+        #show table.cell: set text(hyphenate: false)
 execute:
   echo: false
 ---
@@ -86,7 +90,7 @@ so a KEGG-free configuration is not yet a commercially clean one. The requiremen
 not *KEGG-free* but *free of every licence-encumbered dependency in the stack*.
 
 | | module-level from MAGs | independent of KEGG | no restricted dependency anywhere | AD pathway model |
-|---|---|---|---|---|
+|:---|:---|:---|:---|:---|
 | DRAM [@shaffer2020dram] | ✓ | optional | ✗ (dbCAN, MEROPS) | ✗ |
 | METABOLIC [@zhou2022metabolic] | ✓ | ✗ (KOfam) | ✗ | ✗ |
 | KEMET [@palu2022kemet] | ✓ | ✗ (KEGG Modules) | ✗ | ✗ |
@@ -336,7 +340,7 @@ negative assertion on *E. coli*.
 The panel was applied to the 1,401 digester MAGs (@tbl-specificity).
 
 | | |
-|---|---|
+|:---|---:|
 | MAGs carrying `mcrA` | 40 of 1,401 |
 | Acetoclastic calls | 6, all *Methanosarcina* or *Methanothrix* |
 | Acetoclastic calls outside those genera | **0** |
@@ -367,7 +371,7 @@ which is why a call resting on it now needs a confirming lineage (Methods).
 Applying the per-protein export test across the same 1,401 genomes (@tbl-secretion, @fig-export):
 
 | module | carry the family | export it | |
-|---|---|---|---|
+|:---|---:|---:|---:|
 | Protein hydrolysis | 868 | 106 | 12.2% |
 | Carbohydrate hydrolysis | 597 | 50 | 8.4% |
 | Lipid hydrolysis | 129 | 7 | 5.4% |
@@ -417,7 +421,7 @@ not resolvable from gene content, which is the honest position for a capability 
 a report, genome completeness (CheckM2) is shown beside every methanogen for that reason.
 
 | | background | methanogen | anaerobic methane / alkane oxidiser |
-|---|---|---|---|
+|:---|:---|:---|:---|
 | genomes | 1,897 | 1,056 | 90 |
 | route assigned | 2, both `mcrA`-positive archaea | 809 | 0 |
 | no route | 1,895 | 247, of which 217 lack `mcrA` | 90 |
@@ -432,7 +436,7 @@ with a family-level acetoclastic check and gene-only hydrogenotrophic and methyl
 then with the lineage policy described in Methods (@tbl-routes, @fig-routes).
 
 | route | calls, family-level check | calls, lineage policy | removed |
-|---|---|---|---|
+|:--------------|---------:|---------:|:-------------------------------------|
 | acetoclastic | 156 | 73 | 83: methylotrophic *Methanosarcinaceae* (*Methanolobus* 27, *Methanococcoides* 11, *Methanohalophilus* 9, *Methanomethylovorans* 8, others 4) and 24 unnamed *Methanosarcinaceae* and *Methanotrichaceae* genera |
 | hydrogenotrophic | 677 | 486 | 191: anaerobic methane and ethane oxidisers 65, methylotrophic *Methanosarcinaceae* 61, *Methanotrichaceae* 56, isoenzymes counted twice 8, *Methanonatronarchaeales* 1 |
 | methylotrophic | 388 | 376 | 12: MT2 marker alone in *Methanococcus*, *Methanoculleus*, *Methanomicrobium*, *Methanothrix* and others |
@@ -459,7 +463,7 @@ genomes with a route is correctness, not lost sensitivity (@tbl-sens): only the 
 hydrogenotrophs that reach three of the six C1 steps once isoenzymes count once are a cost.
 
 | genomes in methanogen orders with ≥ 1 route | genomes | kind |
-|---|---|---|
+|:------------------------|---:|:---|
 | August benchmark, order labels | 896 | |
 | anaerobic methane / alkane oxidisers, route removed | −65 | correctness |
 | *Methanothrix* bins whose only call was a false hydrogenotrophic one | −15 | correctness |
