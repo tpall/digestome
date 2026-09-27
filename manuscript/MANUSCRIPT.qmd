@@ -124,12 +124,13 @@ independently curated pathway model. Constructing such a model for a single spec
 rather than for the entirety of global metabolism, is precisely what makes this problem tractable,
 and it explains why this panel is explicitly scoped to anaerobic digestion.
 
-The general metagenomic workflows are not comparators here and are better understood as
-upstream complements. nf-core/mag [@krakau2022mag] ends at binning and taxonomic
-classification, and nf-core/metatdenovo [@metatdenovo2025] produces per-gene annotated
-catalogues without binning at all, directing users elsewhere for MAGs. Neither attempts
-module-level reconstruction; they produce, or stop just short of producing, the MAGs that a
-tool of this kind consumes.
+General metagenomic workflows do not serve as direct comparators to this panel; rather, they are
+better understood as upstream complements. For instance, nf-core/mag [@krakau2022mag] terminates at
+the binning and taxonomic classification stages, while nf-core/metatdenovo [@metatdenovo2025]
+generates per-gene annotated catalogues without binning, directing users elsewhere for MAG
+generation. Neither workflow attempts module-level metabolic reconstruction. Instead, they produce,
+or stop just short of producing, the raw MAGs that a downstream tool of this nature ultimately
+consumes.
 
 The second obstacle is interpretive, stemming from the fact that marker-gene profiling merely
 reports what a genome carries. Three routine gaps separate this raw genomic profile from the
