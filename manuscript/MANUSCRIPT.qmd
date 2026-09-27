@@ -664,10 +664,10 @@ reproduce anything reported here.
 
 ## Competing interests
 
-The author is the owner of Magrittr OÜ, which sells analyses of anaerobic digestion microbiomes to
-biogas plant operators using the panel described here. The panel, the scorer and the validation
-scripts are released openly so that the results can be reproduced and checked independently of that
-commercial interest.
+The author is the owner of Magrittr OÜ, which commercially provides anaerobic digestion microbiome
+analyses to biogas plant operators using the panel described herein. To mitigate this conflict of
+interest, the panel, scoring methodology and validation scripts are openly available to facilitate
+independent replication and verification of the results.
 
 ## Funding
 
