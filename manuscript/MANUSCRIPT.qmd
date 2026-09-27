@@ -70,18 +70,18 @@ ratio, ammonium, gas composition) that register a disturbance only after it has 
 metagenomics is widely proposed as the route to leading rather than lagging indicators
 [@adblackbox2024].
 
-Two obstacles stand between that proposal and a commercial service.
-
-The first is licensing. The reference resources that make functional annotation convenient
-are all restricted for commercial use. KEGG is not publicly funded: its FTP distribution has
-been subscription-only since 2011, academic access is USD 2,000–5,000 per year, and
-non-academic use requires a separate commercial licence [@kegglicensing]. MetaCyc and BRENDA
-carry comparable restrictions, and for carbohydrate-active enzymes CAZy and dbCAN are
-non-commercial in their public form, requiring separate agreements with two institutions
-[@cazylicensing]. A consultancy producing a paid report for a biogas plant is squarely within
-the triggering case for each. This is not a hypothetical constraint on the AD field: published
-reconstructions of digestion pathways build their references from KEGG, MetaCyc and BRENDA,
-so the standard route to a pathway-level answer is closed to commercial work by construction.
+Two primary obstacles prevent this proposal from becoming a viable commercial service. The first is
+licensing. The reference resources that streamline functional annotation are tightly restricted for
+commercial use. For instance, KEGG is not publicly funded; its FTP distribution has been
+subscription-only since 2011, academic access costs USD 2,000–5,000 per year, and non-academic use
+requires a separate commercial licence [@kegglicensing]. MetaCyc and BRENDA carry comparable
+restrictions. Similarly, for carbohydrate-active enzymes, CAZy and dbCAN are non-commercial in their
+public forms, requiring separate agreements with two independent institutions [@cazylicensing]. A
+consultancy producing a paid report for a biogas plant operator falls squarely within these
+restrictive terms. Far from a hypothetical constraint on the anaerobic digestion (AD) field, this
+presents a structural barrier: because published reconstructions of digestion pathways rely heavily
+on references from KEGG, MetaCyc, and BRENDA, the standard route to a pathway-level analysis is
+effectively closed to commercial enterprises.
 
 The gap that remains is finer than KEGG dependence alone. DRAM established the approach this work
 follows, distilling per-gene annotations into statements about pathways at genome resolution
@@ -129,12 +129,14 @@ catalogues without binning at all, directing users elsewhere for MAGs. Neither a
 module-level reconstruction; they produce, or stop just short of producing, the MAGs that a
 tool of this kind consumes.
 
-The second obstacle is interpretive. Marker-gene profiling reports what a genome *carries*.
-Three gaps routinely open between that and what an operator needs to know: a gene may be
-present but the pathway it serves may run in the opposite direction; an enzyme may be encoded
-but never leave the cell, which for hydrolysis means it never meets the substrate at all; and a
-marker for which no detector exists is easily rendered as a zero, which reads as pathway
-absence.
+The second obstacle is interpretive, stemming from the fact that marker-gene profiling merely
+reports what a genome carries. Three routine gaps separate this raw genomic profile from the
+actionable insights a plant operator actually requires. First, a gene may be present, but the
+pathway it serves may operate in the opposite direction. Second, an enzyme may be encoded but never
+secreted from the cell; in the context of extracellular hydrolysis, this lack of transport means it
+never contacts its substrate. Third, a marker for which no detector exists is easily registered as a
+zero, which is then frequently misconstrued as a complete absence of the pathway. Consequently,
+translating genomic potential into definitive operational advice remains a fundamental challenge.
 
 Here we address both obstacles. We describe a curated marker panel for anaerobic digestion
 drawing only on commercially usable sources, and a scorer built so that each of the three
