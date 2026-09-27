@@ -115,13 +115,14 @@ MAGs, elevating them in some cases to the accuracy of models derived from comple
 completeness: the exact failure mode this panel is designed to counteract from the opposite
 direction. Crucially, KEMET distributes the KEGG licence alongside its source code, so that users inherit its commercial terms transparently.
 
-The constraint these tools share is therefore contextual rather than technical. It bites only
-where the work is commercial, and it is inseparable from what makes them useful: KEGG Modules
-*are* the pathway model, so removing KEGG does not leave a tool missing a database, it leaves a
-tool with no pathway definitions at all. A licence-clean replacement cannot simply substitute a
-source; it has to supply a curated pathway model of its own. Doing that for one domain, rather
-than for all of metabolism, is what makes the problem tractable here, and it is the reason this
-panel is scoped to anaerobic digestion.
+The constraint shared by these tools is therefore contextual rather than technical. It becomes
+restrictive only when applied to commercial work, and it is intrinsically tied to what makes these
+tools useful: because KEGG Modules serve as the underlying pathway framework, removing KEGG does not
+merely strip a tool of a database, but leaves it entirely without pathway definitions. Consequently,
+a licence-clean alternative cannot simply swap out a sequence source; it must supply an
+independently curated pathway model. Constructing such a model for a single specialized domain,
+rather than for the entirety of global metabolism, is precisely what makes this problem tractable,
+and it explains why this panel is explicitly scoped to anaerobic digestion.
 
 The general metagenomic workflows are not comparators here and are better understood as
 upstream complements. nf-core/mag [@krakau2022mag] ends at binning and taxonomic
