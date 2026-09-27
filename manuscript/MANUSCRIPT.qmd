@@ -91,7 +91,7 @@ and MEROPS. Because both databases impose their own commercial restrictions, a K
 not yet a commercially clean solution. The true prerequisite is therefore not a KEGG-free pipeline,
 but one entirely free of licence-encumbered dependencies across the entire stack.
 
-| | module-level from MAGs | independent of KEGG | no restricted dependency anywhere | AD pathway model |
+| | module-level from MAGs | independent of KEGG | no restricted dependency anywhere | AD-specific pathway model |
 |:---|:---|:---|:---|:---|
 | DRAM [@shaffer2020dram] | ✓ | optional | ✗ (dbCAN, MEROPS) | ✗ |
 | METABOLIC [@zhou2022metabolic] | ✓ | ✗ (KOfam) | ✗ | ✗ |
@@ -99,10 +99,10 @@ but one entirely free of licence-encumbered dependencies across the entire stack
 | MetaPathPredict [@metapathpredict2024] | ✓ | ✗ (KEGG Modules) | ✗ | ✗ |
 | this work | ✓ | ✓ | ✓ | ✓ |
 
-: Module-level metabolic reconstruction tools and their reference dependencies. {#tbl-tools}
+: Module-level metabolic reconstruction tools and their reference dependencies. Module-level from MAGs: reconstructs pathway modules from metagenome-assembled genomes. Independent of KEGG: runs without KEGG data; where it does not, the KEGG component is named. No restricted dependency anywhere: no reference source in the stack needs a licence for commercial use; restricted sources are named. AD-specific pathway model: pathway definitions written for anaerobic digestion rather than general module definitions. {#tbl-tools}
 
 Virtually every tool designed to reconstruct metabolism at the module level from
-metagenome-assembled genomes (MAGs) relies on KEGG, a testament to the maturity of KEGG Modules as a
+metagenome-assembled genomes (MAGs) relies on KEGG (@tbl-tools), a testament to the maturity of KEGG Modules as a
 pathway model rather than a shortcoming of the tools themselves. For instance, METABOLIC couples
 KOfam searches with module context and incorporates motif validation for individual hits. Addressing
 the inherent challenge of incomplete genomes, MetaPathPredict uses machine learning to predict
