@@ -101,18 +101,20 @@ but one entirely free of licence-encumbered dependencies across the entire stack
 
 : Module-level metabolic reconstruction tools and their reference dependencies. {#tbl-tools}
 
-Every tool that reconstructs metabolism at module level from MAGs resolves it through KEGG,
-and this reflects the maturity of KEGG Modules as a pathway model rather than any shortcoming
-in the tools. METABOLIC couples KOfam search to module context and adds motif validation of
-individual hits. MetaPathPredict takes the problem of incomplete genomes seriously enough to
-learn module presence rather than count genes. KEMET addresses the same difficulty directly and
-from the angle closest to our own concerns: it uses HMM profiles to recover orthologs that
-plain assignment misses, and reports that annotations recovered this way substantially improve
-draft genome-scale models built from MAGs, in some cases bringing them to the accuracy of
-models from complete genomes [@palu2022kemet]. That is a result about MAG incompleteness
-distorting module completeness, which is precisely the failure mode this panel guards against
-from the other direction, and KEMET distributes the KEGG licence alongside its source so that
-users inherit the terms transparently.
+Virtually every tool designed to reconstruct metabolism at the module level from
+metagenome-assembled genomes (MAGs) relies on KEGG, a testament to the maturity of KEGG Modules as a
+pathway model rather than a shortcoming of the tools themselves. For instance, METABOLIC couples
+KOfam searches with module context and incorporates motif validation for individual hits. Addressing
+the inherent challenge of incomplete genomes, MetaPathPredict uses machine learning to predict
+module presence rather than simply tallying genes. KEMET targets this exact limitation through an
+approach that closely mirrors our own concerns: it leverages hidden Markov model (HMM) profiles to
+recover orthologs that standard annotation pipelines miss. Its authors demonstrate that recovering
+annotations in this manner substantially improves draft genome-scale metabolic models built from
+MAGs, elevating them in some cases to the accuracy of models derived from complete genomes
+[@palu2022kemet]. This finding highlights how MAG fragmentation can distort perceived module
+completeness: the exact failure mode this panel is designed to counteract from the opposite
+direction. Crucially, KEMET distributes the KEGG licence alongside its source code, forcing users to
+inherit its commercial terms transparently.
 
 The constraint these tools share is therefore contextual rather than technical. It bites only
 where the work is commercial, and it is inseparable from what makes them useful: KEGG Modules
@@ -136,7 +138,7 @@ pathway it serves may operate in the opposite direction. Second, an enzyme may b
 secreted from the cell; in the context of extracellular hydrolysis, this lack of transport means it
 never contacts its substrate. Third, a marker for which no detector exists is easily registered as a
 zero, which is then frequently misconstrued as a complete absence of the pathway. Consequently,
-translating genomic potential into definitive operational advice remains a fundamental challenge.
+translating genomic potential into operational advice remains a fundamental challenge.
 
 Here we address both obstacles. We describe a curated marker panel for anaerobic digestion
 drawing only on commercially usable sources, and a scorer built so that each of the three
