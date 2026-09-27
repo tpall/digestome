@@ -9,3 +9,6 @@ work/
 results/
 .nextflow*
 __pycache__/
+
+# Quarto render cache
+manuscript/.quarto/
