@@ -8,8 +8,8 @@
 
 Cite the archived release: Päll T. *digestome: a licence-clean marker-gene panel for functional
 profiling of anaerobic digestion microbiomes.* Zenodo, 2026. DOI
-[10.5281/zenodo.22913615](https://doi.org/10.5281/zenodo.22913615) (v0.1.0:
-[10.5281/zenodo.22913616](https://doi.org/10.5281/zenodo.22913616)).
+[10.5281/zenodo.22913615](https://doi.org/10.5281/zenodo.22913615) (v0.1.1, the release behind the manuscript:
+[10.5281/zenodo.22986804](https://doi.org/10.5281/zenodo.22986804)).
 
 > **Two entry points.** The command-line path needs only HMMER and Python 3
 > (standard library), with no licensed database at any stage. A Nextflow workflow
