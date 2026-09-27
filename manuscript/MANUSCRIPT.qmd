@@ -83,13 +83,13 @@ presents a structural barrier: because published reconstructions of digestion pa
 on references from KEGG, MetaCyc, and BRENDA, the standard route to a pathway-level analysis is
 effectively closed to commercial enterprises.
 
-The gap that remains is finer than KEGG dependence alone. DRAM established the approach this work
-follows, distilling per-gene annotations into statements about pathways at genome resolution
-[@shaffer2020dram], and it can already be run without KEGG; that option is deliberate and useful,
-but its remaining annotation sources for
-carbohydrate and peptidase function are dbCAN and MEROPS, which carry their own restrictions,
-so a KEGG-free configuration is not yet a commercially clean one. The requirement is therefore
-not *KEGG-free* but *free of every licence-encumbered dependency in the stack*.
+However, the underlying gap is more precise than a sole reliance on KEGG. DRAM pioneered the
+approach followed in this study by condensing individual gene annotations into pathway-level
+insights at genome resolution [@shaffer2020dram]. Although DRAM intentionally supports a KEGG-free
+configuration, its alternative annotation sources for carbohydrate and peptidase function are dbCAN
+and MEROPS. Because both databases impose their own commercial restrictions, a KEGG-free setup is
+not yet a commercially clean solution. The true prerequisite is therefore not a KEGG-free pipeline,
+but one entirely free of licence-encumbered dependencies across the entire stack.
 
 | | module-level from MAGs | independent of KEGG | no restricted dependency anywhere | AD pathway model |
 |:---|:---|:---|:---|:---|
