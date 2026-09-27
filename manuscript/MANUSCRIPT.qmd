@@ -113,8 +113,7 @@ annotations in this manner substantially improves draft genome-scale metabolic m
 MAGs, elevating them in some cases to the accuracy of models derived from complete genomes
 [@palu2022kemet]. This finding highlights how MAG fragmentation can distort perceived module
 completeness: the exact failure mode this panel is designed to counteract from the opposite
-direction. Crucially, KEMET distributes the KEGG licence alongside its source code, forcing users to
-inherit its commercial terms transparently.
+direction. Crucially, KEMET distributes the KEGG licence alongside its source code, so that users inherit its commercial terms transparently.
 
 The constraint these tools share is therefore contextual rather than technical. It bites only
 where the work is commercial, and it is inseparable from what makes them useful: KEGG Modules
