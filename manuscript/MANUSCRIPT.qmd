@@ -83,8 +83,10 @@ the triggering case for each. This is not a hypothetical constraint on the AD fi
 reconstructions of digestion pathways build their references from KEGG, MetaCyc and BRENDA,
 so the standard route to a pathway-level answer is closed to commercial work by construction.
 
-The gap that remains is finer than KEGG dependence alone. DRAM can already be run without
-KEGG, and that option is deliberate and useful; but its remaining annotation sources for
+The gap that remains is finer than KEGG dependence alone. DRAM established the approach this work
+follows, distilling per-gene annotations into statements about pathways at genome resolution
+[@shaffer2020dram], and it can already be run without KEGG; that option is deliberate and useful,
+but its remaining annotation sources for
 carbohydrate and peptidase function are dbCAN and MEROPS, which carry their own restrictions,
 so a KEGG-free configuration is not yet a commercially clean one. The requirement is therefore
 not *KEGG-free* but *free of every licence-encumbered dependency in the stack*.
@@ -548,20 +550,6 @@ The finding that seven `mcrA`-carrying genomes initially received no route illus
 of reporting non-measurement explicitly. Had those genomes been scored as zero rather than as
 unassigned, the gap would have read as a biological result about *Methanofastidiosia* rather
 than as a missing detector, and would probably not have been investigated.
-
-## Relationship to DRAM
-
-DRAM established the pattern this work follows: take per-gene annotations and distil them into
-statements about pathways, at genome resolution and at scale. That framing is the starting
-point here, and DRAM remains the more general tool, covering metabolism far beyond anaerobic
-digestion.
-
-The panel described here is nevertheless an independent implementation. It shares no code with
-DRAM, does not call it, and requires only HMMER and a Python interpreter. What differs is the
-reference basis and the interpretation: a curated pathway model specific to anaerobic digestion
-in place of general module definitions, sources chosen so that no component carries a
-commercial restriction, and the reporting guarantees described above. It began as a branch of
-DRAM and was separated once it became clear that nothing in it depended on the host.
 
 ## Limitations
 
