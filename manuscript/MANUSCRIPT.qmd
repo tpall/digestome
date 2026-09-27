@@ -120,7 +120,7 @@ restrictive only when applied to commercial work, and it is intrinsically tied t
 tools useful: because KEGG Modules serve as the underlying pathway framework, removing KEGG does not
 merely strip a tool of a database, but leaves it entirely without pathway definitions. Consequently,
 a licence-clean alternative cannot simply swap out a sequence source; it must supply an
-independently curated pathway model. Constructing such a model for a single specialized domain,
+independently curated pathway model. Constructing such a model for a single specialised domain,
 rather than for the entirety of global metabolism, is precisely what makes this problem tractable,
 and it explains why this panel is explicitly scoped to anaerobic digestion.
 
