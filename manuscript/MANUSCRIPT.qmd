@@ -44,6 +44,8 @@ format:
     theme: cosmo
   docx:
     default-image-extension: png
+    # Times New Roman, double-spaced body text; tables stay single-spaced.
+    reference-doc: reference.docx
     toc: false
     number-sections: false
   # PDF for bioRxiv: mvuorre/quarto-preprint (Typst), vendored in _extensions/. Needs Quarto >= 1.9.36.
@@ -64,11 +66,17 @@ execute:
 
 # Introduction
 
-Anaerobic digestion is frequently described as a black box: operators manage a microbial process
-they cannot observe, using physicochemical proxies (volatile fatty acids, the VOA/TIC
-ratio, ammonium, gas composition) that register a disturbance only after it has occurred. Genome-resolved
-metagenomics is widely proposed as the route to leading rather than lagging indicators
-[@adblackbox2024].
+Industrial anaerobic digestion is commonly regarded as a biological "black box"
+[@koch2014microbiomes; @devrieze2020frontier; @adblackbox2024]. Biogas plant operators must
+manage a highly complex microbial community that they cannot directly observe, forcing them to
+rely on physicochemical proxies, such as volatile fatty acids, the volatile organic acids to total
+inorganic carbon (VOA/TIC) ratio, ammonium, and biogas composition, that typically register a
+metabolic disturbance only after a process imbalance has already occurred
+[@koch2014microbiomes; @carballa2015management]. Surveys of many full-scale digesters show that
+community structure does reflect process condition [@hassa2021indicative], yet reviews from the
+same field still describe microbiome-based monitoring and control as a future prospect
+[@theuerl2019disturbances; @theuerl2019vision]. Genome-resolved metagenomics is widely proposed
+as the route to leading rather than lagging indicators [@adblackbox2024].
 
 Two primary obstacles prevent this proposal from becoming a viable commercial service. The first is
 licensing. The reference resources that streamline functional annotation are tightly restricted for
@@ -650,6 +658,14 @@ feeding it, and any marker whose gene carries a recoded codon will behave the sa
 approach itself is not specific to anaerobic digestion; the same construction, a curated
 domain-scoped pathway model over public-domain and CC0 profile HMMs, applies to any setting
 where licensing rather than biology is the obstacle.
+
+The premise this work starts from, that full-scale digesters are run on bulk parameters without
+microbial data, is itself asserted rather than measured. The reviews that state it cite no survey
+of operator practice [@koch2014microbiomes; @carballa2015management], and the largest multi-plant
+campaigns are research projects built on 16S rRNA amplicons rather than genome-resolved profiles
+[@hassa2021indicative]. We found no questionnaire, interview or audit study of what monitoring
+data plant operators use or act on. A structured survey of that kind would give the field a
+baseline against which the adoption of any microbial method, including this one, could be judged.
 
 ## Data and code availability
 
