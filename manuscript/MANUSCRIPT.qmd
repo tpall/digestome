@@ -155,9 +155,7 @@ accessory-tier), covering hydrolysis of carbohydrate, protein and lipid; acidoge
 butyrate, propionate, lactate, ethanol, hydrogen and via ethanolamine; acetogenesis including the
 Wood–Ljungdahl pathway and syntrophic oxidation; and hydrogenotrophic, acetoclastic and
 methylotrophic methanogenesis, with modules for energy conservation and direct interspecies
-electron transfer.
-
-Every row carries a unique `marker_id` of the form `MODULE:gene`, and all joins between panel,
+electron transfer. Every row carries a unique `marker_id` of the form `MODULE:gene`, and all joins between panel,
 model map and scorer are based on that identifier. Raw gene names are not used as keys. A three- or
 four-letter gene symbol is unique neither within a panel nor within a reference database, and
 using one as a join key produces errors that are difficult to see: an EC-based match collapses
@@ -166,26 +164,18 @@ rows can record only one of them, silently scoring the other as absent.
 
 ## Marker resolution
 
-Markers resolve to profile HMMs by curated accession, then gene symbol, then EC number.
-
-Models are drawn from NCBIfam and Pfam [@mistry2021pfam]. Curated accessions come first: a row
+Markers resolve to profile HMMs by curated accession, then gene symbol, then EC number. Models are drawn from NCBIfam and Pfam [@mistry2021pfam]. Curated accessions come first: a row
 can list the accessions of the models that detect it. Marker choice here follows the field where
 it has been tested directly: formyltetrahydrofolate synthetase outperforms 16S for tracking the
 acetogenic community in biogas reactors [@fthfs2021], and its model is assigned by curated
 accession in this panel. A row with curated accessions uses those models only: its gene symbol
 and EC are not indexed at all. Exclusivity is load-bearing rather than tidy: the archaeal A₁A₀ ATP
 synthase row matched 120 models through EC 7.1.2.2, an EC that spans every subunit of F-, V- and
-A-type synthases in both domains.
-
-Gene symbol matches are used for rows without curated accessions. This route is not automatically
+A-type synthases in both domains. Gene symbol matches are used for rows without curated accessions. This route is not automatically
 safe: `fmdA` is both the panel's formylmethanofuran dehydrogenase subunit A and a legitimate
-symbol for formamidase, an unrelated and common enzyme.
-
-EC numbers are the weakest route and are used last. Wildcard ECs (`2.1.1.-`, `3.4.-.-`) are
+symbol for formamidase, an unrelated and common enzyme. EC numbers are the weakest route and are used last. Wildcard ECs (`2.1.1.-`, `3.4.-.-`) are
 excluded entirely; they name an enzyme class rather than a gene, and matching them imported 58
-unrelated peptidases, lipases and glycosidases.
-
-Of 150 model-to-marker assignments in the current build, 54 are curated, 55 by gene symbol and 41
+unrelated peptidases, lipases and glycosidases. Of 150 model-to-marker assignments in the current build, 54 are curated, 55 by gene symbol and 41
 by EC. Giving curated accessions to a row that a gene symbol already resolved correctly changes
 no result, as the three
 methylamine methyltransferases show, but it fixes the assignment so that a later symbol collision
@@ -210,15 +200,11 @@ stops if any does not.
 
 Each pathway gate
 declares its requirements as groups of alternatives, and gates evaluate to true, false, or
-not assessable when a required marker has no detector in the database at all.
-
-The hydrogenotrophic gate requires `mcrA` and at least four of six C1 pathway steps
+not assessable when a required marker has no detector in the database at all. The hydrogenotrophic gate requires `mcrA` and at least four of six C1 pathway steps
 (`fwdB`|`fmdB`, `ftr`, `mch`, `mtd`|`hmd`, `mer`, `mtrA`); isoenzymes of one step count once. It
 also covers methanogens that reduce CO~2~ with formate. The acetoclastic gate requires `mcrA`,
 `cdhA` and acetate activation (`acs`, or `ackA` with `pta`); the methylotrophic gate requires
-`mcrA` and a substrate-specific methyltransferase or the shared MT2 step.
-
-The acetoclastic and hydrogenotrophic gates, and a methylotrophic call resting on MT2 alone, need
+`mcrA` and a substrate-specific methyltransferase or the shared MT2 step. The acetoclastic and hydrogenotrophic gates, and a methylotrophic call resting on MT2 alone, need
 a confirming lineage, supplied as a classification against the Genome Taxonomy Database (GTDB)
 with GTDB-Tk [@chaumeil2022gtdbtk], because the pathways they read are reversible or shared, and gene content
 cannot tell the direction. The ACDS/CODH complex serves autotrophic hydrogenotrophs to *fix*
@@ -256,9 +242,7 @@ domain and an export module (dockerin, cohesin, carbohydrate-binding module or S
 occur on the same polypeptide, which is the architecture of a cellulosome. The test is
 per-protein; the same two domains in one genome but on different proteins carry no such
 implication. All five export modules are Pfam families. Signal-peptide prediction was deliberately
-not used, the standard tool being fee-licensed for commercial work.
-
-The three methylamine methyltransferases (mono-, di- and trimethylamine) are assigned by
+not used, the standard tool being fee-licensed for commercial work. The three methylamine methyltransferases (mono-, di- and trimethylamine) are assigned by
 curated accession to pyrrolysine-specific models: PF05369 for the first and the NCBIfam models `dimeth_PyL` and
 `trimeth_pyl` for the other two. The corresponding Pfam superfamily spans bacterial homologues
 that are not methylamine methyltransferases and is not used for detection. All three enzymes carry
@@ -273,7 +257,7 @@ licence-clean source. The same rule applies to gates and, through `core_detectab
 completeness percentages, which must be read against what could be detected rather than against
 what the panel defines.
 
-## Software implementation
+## Software implementation and compute environment
 
 The panel, builder and scorer are command-line tools requiring only HMMER and a Python
 interpreter, with no third-party Python packages. A Nextflow workflow wraps the analysis path
@@ -283,15 +267,13 @@ without modification. The workflow invokes the same command-line tools rather th
 reimplementing them, so neither entry point is privileged: a user with three genomes needs no
 workflow engine, and a user with fourteen hundred does not hand-roll parallelism. Database
 staging and panel construction remain scripts, being one-time operations that need outbound
-network access.
-
-## Compute environment
-
-All runs used HMMER 3 on 16 cores of an AMD EPYC 7742.
+network access. All runs used HMMER 3 on 16 cores of an AMD EPYC 7742.
 
 ## Validation datasets
 
-Reference genomes. Seven reference genomes of known metabolism were chosen to be
+### Reference genomes
+
+Seven reference genomes of known metabolism were chosen to be
 falsifiable: a metabolic generalist (*Methanosarcina barkeri*), an obligate
 acetoclastic methanogen (*Methanothrix soehngenii*), two obligate hydrogenotrophs
 (*Methanoculleus bourgensis*, *M. thermautotrophicus*), an acetogen (*Clostridium ljungdahlii*), a
@@ -300,14 +282,14 @@ control. *E. coli* carries `pta`, `ackA`, `folD`, `atoB` and the complete *eut* 
 most of the gene-symbol collisions the panel guards against; any methanogenesis gate firing on it
 indicates a defect. An assertion suite runs the full path (proteome, `hmmsearch`, scorer) over
 these genomes and checks 24 statements about gates, markers and genus assignment, exiting
-non-zero on disagreement.
-
-One assertion is deliberately inverted: syntrophic butyrate oxidation must report as *not assessable*
+non-zero on disagreement. One assertion is deliberately inverted: syntrophic butyrate oxidation must report as *not assessable*
 in *S. wolfei*, an organism that performs the pathway, because two of its four required markers
 have no licence-clean model. Asserting the honest blank prevents it from silently degrading into a
 false negative.
 
-GTDB representatives. This set tests whether specificity depends on how genomes were
+### GTDB representatives
+
+This set tests whether specificity depends on how genomes were
 constructed. It is
 3,043 GTDB r226 species representatives, which are isolate-derived or independently assembled
 rather than binned from digester metagenomes: every representative of eleven methanogen orders
@@ -324,14 +306,14 @@ benchmark relies on occurs in the r226 sample, so the policy reads the same unde
 For scoring, one *Methanonatronarchaeales* genome sampled as background counts as a methanogen, and
 the 90 genomes in anaerobic methane and alkane oxidiser lineages (89 sampled in methanogen orders,
 one as background) form a class of their own, so the classes hold 1,056 methanogens and 1,897
-background genomes (Results).
-
-Genes were called with Prodigal. A third of GTDB representatives are assemblies with no NCBI annotation, and the gap falls
+background genomes (Results). Genes were called with Prodigal. A third of GTDB representatives are assemblies with no NCBI annotation, and the gap falls
 on uncultured lineages, so downloading proteomes lost 28 phyla outright. Calling genes also keeps
 this benchmark comparable with the digester catalogue, which was itself Prodigal-called, and it is
 required for the pyrrolysine marker described below.
 
-Digester catalogue. The catalogue comprises 1,401 metagenome-assembled genomes recovered from 134
+### Digester catalogue
+
+The catalogue comprises 1,401 metagenome-assembled genomes recovered from 134
 anaerobic digesters
 spanning multiple plants, feedstocks and operating temperatures [@campanaro2020; NCBI
 BioProject PRJNA602310]. Taxonomic assignments accompanying the catalogue were used for the
@@ -423,9 +405,7 @@ The one outcome not fixed by construction is the methylotrophic gate, which no o
 one route. Of the 237 that were not, 217 carry no detectable `mcrA` at all. GTDB representatives
 include many incomplete genomes, and a genome that does not contain the defining marker should not
 be given a route. Sensitivity is therefore 78% of the methanogens sampled, and 98% (819 of 839) of
-those in which `mcrA` was detected; most of the gap is genomes that lack the defining marker.
-
-The 20 that carry `mcrA` without an assignable route are the informative residue. They include
+those in which `mcrA` was detected; most of the gap is genomes that lack the defining marker. The 20 that carry `mcrA` without an assignable route are the informative residue. They include
 three *Methanomassiliicoccales*, obligate hydrogen-dependent methylotrophs that lack the Mtr/H4MPT
 set as a matter of biology and here carry none of the three methyltransferases the methylotrophic
 gate accepts, neither the substrate-specific MtaB and MttB nor the shared MT2; five *Methanothrix*
@@ -507,9 +487,7 @@ genes with Prodigal recovers it. Under the standard translation table, each of t
 is truncated at the in-frame amber codon into fragments of 238 and 202 residues, against a
 450-residue model, and both clear the gathering threshold independently. Under a table that reads
 TAG through, each copy is reconstructed as a single protein of 556 and 535 residues at roughly
-twice the bit score, with the substituted residue at the expected pyrrolysine position.
-
-Across the GTDB sample, the family was found in 278 of 1,144 methanogens, concentrated in
+twice the bit score, with the substituted residue at the expected pyrrolysine position. Across the GTDB sample, the family was found in 278 of 1,144 methanogens, concentrated in
 *Methanomassiliicoccales* (137), *Methanosarcinales* (119) and *Methanomethylicales* (22), against
 18 of 1,899 background genomes. Those background hits cannot by themselves place a genome on a
 methylotrophic route, because that gate independently requires `mcrA`.
