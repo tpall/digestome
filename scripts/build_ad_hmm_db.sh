@@ -286,20 +286,21 @@ hmmpress -f "$OUT/ad_panel.hmm"
 
 # The documented run mode is `hmmsearch --cut_nc`, which uses each model's own
 # curated cutoff. That only works if every pressed model carries the NC line --
-# hmmsearch aborts on the first one that does not. Assert it here rather than
-# discovering it mid-run. Per-model cutoffs are also why a single global -T is
-# the wrong tool: across this DB the curated values span ~65 to ~1400 bits, so
+# hmmsearch aborts on the first one that does not. Stop the build here rather
+# than discover it mid-run. Per-model cutoffs are also why a single global -T is
+# the wrong tool: across this DB the curated values span ~20 to ~1400 bits, so
 # any one threshold is simultaneously too strict for some models and too lenient
 # for others.
 missing_nc=$(awk '/^NAME /{n=$2; nc=0} /^NC /{nc=1} /^\/\//{if(!nc) print n}' "$OUT/ad_panel.hmm")
 if [ -n "$missing_nc" ]; then
   echo "    !! models lacking an NC cutoff line -- hmmsearch --cut_nc would fail on them:" >&2
   echo "$missing_nc" | sed 's/^/       /' >&2
+  exit 1
 else
   n_m=$(grep -c '^NAME ' "$OUT/ad_panel.hmm")
   echo "    all $n_m models carry curated GA/TC/NC cutoffs -- --cut_nc is safe"
-  echo "    curated cutoff spread: $(grep '^GA ' "$OUT/ad_panel.hmm" | awk '{print $2}' \
-        | LC_ALL=C sort -n | awk '{v[NR]=$1} END{printf "min=%s median=%s max=%s", v[1], v[int(NR/2)], v[NR]}')"
+  echo "    curated NC cutoff spread: $(grep '^NC ' "$OUT/ad_panel.hmm" | awk '{print $2}' \
+        | LC_ALL=C sort -n | awk '{v[NR]=$1} END{m=(NR%2)?v[(NR+1)/2]:(v[NR/2]+v[NR/2+1])/2; printf "min=%s median=%s max=%s", v[1], m, v[NR]}')"
 fi
 
 # Keep the map honest: it must describe only what is in the pressed DB.
