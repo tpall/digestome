@@ -1,7 +1,8 @@
 # bioRxiv submission — everything to paste, 2026-09-28
 
 _Prepared for the account holder to submit at <https://submit.biorxiv.org>. **Submitted 2026-09-28**
-(New Results, Bioinformatics, CC BY 4.0); awaiting screening. The PDF is `manuscript/MANUSCRIPT.pdf` (16 pages with three figures, rendered from `MANUSCRIPT.qmd` at
+as BIORXIV/2026/755039 (New Results, Bioinformatics, CC BY 4.0). Before approving: the author
+block must show taavi@magrittr.ee (the account email was being switched from the UT address). The PDF is `manuscript/MANUSCRIPT.pdf` (16 pages with three figures, rendered from `MANUSCRIPT.qmd` at
 the commit below in the quarto-preprint style: `quarto render MANUSCRIPT.qmd --to preprint-typst`,
 which needs Quarto ≥ 1.9.36; `~/opt/quarto-1.10.18/bin/quarto` on the laptop)._
 
