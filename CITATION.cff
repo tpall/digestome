@@ -16,9 +16,6 @@ identifiers:
   - type: doi
     value: "10.5281/zenodo.22913615"
     description: "Version-independent DOI: always the latest release"
-  - type: doi
-    value: "10.5281/zenodo.22986804"
-    description: "Version 0.1.1, the release behind the manuscript"
 keywords:
   - anaerobic digestion
   - biogas
