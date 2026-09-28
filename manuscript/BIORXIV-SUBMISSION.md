@@ -1,4 +1,4 @@
-# bioRxiv submission — everything to paste, 2026-09-24
+# bioRxiv submission — everything to paste, 2026-09-28
 
 _Prepared for the account holder to submit at <https://submit.biorxiv.org>. Nothing here has been
 submitted. The PDF is `manuscript/MANUSCRIPT.pdf` (16 pages with three figures, rendered from `MANUSCRIPT.qmd` at
@@ -10,7 +10,7 @@ which needs Quarto ≥ 1.9.36; `~/opt/quarto-1.10.18/bin/quarto` on the laptop).
 | | |
 |---|---|
 | File to upload | `~/Projects/digestome/manuscript/MANUSCRIPT.pdf` |
-| Rendered from | `MANUSCRIPT.qmd`, digestome commit `b47219f` |
+| Rendered from | `MANUSCRIPT.qmd`, digestome commit `359044c` |
 | Software cited in it | digestome v0.1.2 (tag `v0.1.2`), Zenodo DOI 10.5281/zenodo.22913615 (all versions) |
 
 ## Field by field
@@ -31,7 +31,7 @@ which needs Quarto ≥ 1.9.36; `~/opt/quarto-1.10.18/bin/quarto` on the laptop).
 | Corresponding | yes |
 | Affiliation 1 | Magrittr OÜ, Tartu, Estonia |
 
-**Abstract** (224 words, plain text — bioRxiv strips formatting, so paste from
+**Abstract** (236 words, plain text — bioRxiv strips formatting, so paste from
 `/tmp/abstract.txt` or the manuscript and check that the subscripts read as "H2/CO2" rather than
 broken characters)
 
