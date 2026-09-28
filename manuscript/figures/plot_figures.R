@@ -109,7 +109,7 @@ route_panel <- function(route_name, title, fold_at, other_unit) {
     scale_y_discrete(labels = lab)
 }
 
-p_aceto <- route_panel("acetoclastic", "Acetoclastic, by genus", 2, "genera")
+p_aceto <- route_panel("acetoclastic", "Acetoclastic, by genus or family", 2, "genera")
 p_hydro <- route_panel("hydrogenotrophic", "Hydrogenotrophic, by order", 0, "orders")
 p_methyl <- route_panel("methylotrophic", "Methylotrophic, by order", 0, "orders")
 n_rows <- function(p) nlevels(p$data$label)

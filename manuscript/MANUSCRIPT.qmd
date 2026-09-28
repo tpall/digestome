@@ -11,7 +11,7 @@ author:
         country: Estonia
 date: last-modified
 abstract: |
-  Functional profiling of anaerobic digestion (AD) microbiomes is routinely performed
+  Functional profiling of anaerobic digestion microbiomes is routinely performed
   against KEGG or MetaCyc, both of which require a paid licence for commercial use. This
   blocks fee-for-service analysis for biogas operators, the setting where the results have
   the most immediate operational value. We present `digestome`, a curated marker-gene panel for
@@ -21,13 +21,13 @@ abstract: |
   is built for export. Benchmarked against 1,401 metagenome-assembled genomes from 134
   anaerobic digesters, the panel assigned no methanogenesis route to any of 1,361
   non-methanogens, and every acetoclastic call fell within *Methanosarcina* or
-  *Methanothrix*. The result held on 3,043 GTDB species representatives spanning 203 phyla,
+  *Methanothrix*. The result held for 3,043 species representatives from the Genome Taxonomy Database, spanning 203 phyla,
   which are built differently from binned metagenomes: the only background genomes given a
-  route were two archaea carrying `mcrA`, and none of 90 anaerobic methane and alkane oxidisers
+  route were two archaea carrying `mcrA`, and none of the 90 anaerobic methane and alkane oxidisers
   was given one. Specificity against non-methanogens does not show
   that a methanogen gets the right route: with a family-level check, 59 of 156 acetoclastic calls
   in that sample fell on methylotrophic genera that do not use acetate, and a lineage policy removed
-  them.
+  them, with 14 more left unconfirmed in unnamed genera.
   Testing whether a catalytic domain shares a
   polypeptide with an export module reduced the genomes credited with cellulolytic capacity
   from 597 to 50.
@@ -73,15 +73,14 @@ rely on physicochemical proxies, such as volatile fatty acids, the volatile orga
 inorganic carbon (VOA/TIC) ratio, ammonium, and biogas composition, that typically register a
 metabolic disturbance only after a process imbalance has already occurred
 [@koch2014microbiomes; @carballa2015management]. Surveys of many full-scale digesters show that
-community structure does reflect process condition [@hassa2021indicative], yet reviews from the
-same field still describe microbiome-based monitoring and control as a future prospect
+community structure reflects process condition [@hassa2021indicative], yet reviews in the
+same field still describe microbiome-based monitoring and control as a prospect
 [@theuerl2019disturbances; @theuerl2019vision]. Genome-resolved metagenomics is widely proposed
-as the route to leading rather than lagging indicators [@adblackbox2024].
+as a route to leading, rather than lagging, indicators [@adblackbox2024].
 
-Two primary obstacles prevent this proposal from becoming a viable commercial service. The first is
-licensing. The reference resources that streamline functional annotation are tightly restricted for
+Licensing is what first stands between this proposal and a commercial service. The reference resources that streamline functional annotation are tightly restricted for
 commercial use. For instance, KEGG is not publicly funded; its FTP distribution has been
-subscription-only since 2011, academic access costs USD 2,000–5,000 per year, and non-academic use
+subscription-only since 2011, academic FTP access costs USD 5,000 per year outside Japan, and non-academic use
 requires a separate commercial licence [@kegglicensing]. MetaCyc and BRENDA carry comparable
 restrictions. Similarly, for carbohydrate-active enzymes, CAZy and dbCAN are non-commercial in their
 public forms, requiring separate agreements with two independent institutions [@cazylicensing]. A
@@ -92,7 +91,7 @@ on references from KEGG, MetaCyc, and BRENDA, the standard route to a pathway-le
 effectively closed to commercial enterprises.
 
 However, the underlying gap is more precise than a sole reliance on KEGG. DRAM pioneered the
-approach followed in this study by condensing individual gene annotations into pathway-level
+approach this study follows by condensing individual gene annotations into pathway-level
 insights at genome resolution [@shaffer2020dram]. Although DRAM intentionally supports a KEGG-free
 configuration, its alternative annotation sources for carbohydrate and peptidase function are dbCAN
 and MEROPS. Because both databases impose their own commercial restrictions, a KEGG-free setup is
@@ -129,29 +128,20 @@ tools useful: because KEGG Modules serve as the underlying pathway framework, re
 merely strip a tool of a database, but leaves it entirely without pathway definitions. Consequently,
 a licence-clean alternative cannot simply swap out a sequence source; it must supply an
 independently curated pathway model. Constructing such a model for a single specialised domain,
-rather than for the entirety of global metabolism, is precisely what makes this problem tractable,
-and it explains why this panel is explicitly scoped to anaerobic digestion.
+rather than for the entirety of global metabolism, is precisely what makes this problem tractable.
 
-General metagenomic workflows do not serve as direct comparators to this panel; rather, they are
-better understood as upstream complements. For instance, nf-core/mag [@krakau2022mag] terminates at
-the binning and taxonomic classification stages, while nf-core/metatdenovo [@metatdenovo2025]
-generates per-gene annotated catalogues without binning, directing users elsewhere for MAG
-generation. Neither workflow attempts module-level metabolic reconstruction. Instead, they produce,
-or stop just short of producing, the raw MAGs that a downstream tool of this nature ultimately
-consumes.
-
-The second obstacle is interpretive, stemming from the fact that marker-gene profiling merely
-reports what a genome carries. Three routine gaps separate this raw genomic profile from the
+The other obstacle is interpretive, stemming from the fact that marker-gene profiling merely
+reports what a genome carries, leaving gaps that separate this raw genomic profile from the
 actionable insights a plant operator actually requires. First, a gene may be present, but the
 pathway it serves may operate in the opposite direction. Second, an enzyme may be encoded but never
 secreted from the cell; in the context of extracellular hydrolysis, this lack of transport means it
-never contacts its substrate. Third, a marker for which no detector exists is easily registered as a
+never contacts its substrate. Beyond these, a marker for which no detector exists is easily registered as a
 zero, which is then frequently misconstrued as a complete absence of the pathway. Consequently,
 translating genomic potential into operational advice remains a fundamental challenge.
 
-Here we address both obstacles. We describe a curated marker panel for anaerobic digestion
-drawing only on commercially usable sources, and a scorer built so that each of the three
-interpretive gaps produces an explicit statement rather than a misleading number. We then
+Here we address licensing and interpretation together. We describe a curated marker panel for anaerobic digestion
+drawing only on commercially usable sources, and a scorer built so that each of these
+gaps produces an explicit statement rather than a potentially misleading number. We then
 assess specificity against reference genomes of known metabolism and against 1,401
 metagenome-assembled genomes from full-scale digesters, and quantify how much the export
 test changes the hydrolytic capacity attributed to a community.
@@ -168,7 +158,7 @@ methylotrophic methanogenesis, with modules for energy conservation and direct i
 electron transfer.
 
 Every row carries a unique `marker_id` of the form `MODULE:gene`, and all joins between panel,
-model map and scorer are on that identifier. Gene names are not used as keys. A three- or
+model map and scorer are based on that identifier. Raw gene names are not used as keys. A three- or
 four-letter gene symbol is unique neither within a panel nor within a reference database, and
 using one as a join key produces errors that are difficult to see: an EC-based match collapses
 every model sharing that EC onto a single arbitrary gene name, and a model serving two panel
@@ -176,18 +166,18 @@ rows can record only one of them, silently scoring the other as absent.
 
 ## Marker resolution
 
-Markers resolve to profile HMMs by three routes, in strict precedence.
+Markers resolve to profile HMMs by curated accession, then gene symbol, then EC number.
 
-Models are drawn from NCBIfam and Pfam [@mistry2021pfam]. Curated accessions pin a row to
-named models. A pinned row is exclusive: its gene symbol and
-EC are not indexed at all. Exclusivity is load-bearing rather than tidy: the archaeal A₁A₀ ATP
+Models are drawn from NCBIfam and Pfam [@mistry2021pfam]. Curated accessions come first: a row
+can list the accessions of the models that detect it. Marker choice here follows the field where
+it has been tested directly: formyltetrahydrofolate synthetase outperforms 16S for tracking the
+acetogenic community in biogas reactors [@fthfs2021], and its model is assigned by curated
+accession in this panel. A row with curated accessions uses those models only: its gene symbol
+and EC are not indexed at all. Exclusivity is load-bearing rather than tidy: the archaeal A₁A₀ ATP
 synthase row matched 120 models through EC 7.1.2.2, an EC that spans every subunit of F-, V- and
 A-type synthases in both domains.
 
-Gene symbol matches are used where no accession is pinned. Marker choice here follows
-the field where it has been tested directly: formyltetrahydrofolate synthetase outperforms 16S
-for tracking the acetogenic community in biogas reactors [@fthfs2021], and it is a pinned
-marker in this panel. This route is not automatically
+Gene symbol matches are used for rows without curated accessions. This route is not automatically
 safe: `fmdA` is both the panel's formylmethanofuran dehydrogenase subunit A and a legitimate
 symbol for formamidase, an unrelated and common enzyme.
 
@@ -196,7 +186,8 @@ excluded entirely; they name an enzyme class rather than a gene, and matching th
 unrelated peptidases, lipases and glycosidases.
 
 Of 150 model-to-marker assignments in the current build, 54 are curated, 55 by gene symbol and 41
-by EC. Pinning a row that a gene symbol already resolved correctly changes no result, as the three
+by EC. Giving curated accessions to a row that a gene symbol already resolved correctly changes
+no result, as the three
 methylamine methyltransferases show, but it fixes the assignment so that a later symbol collision
 cannot silently redirect it. Every non-curated route is auditable: `audit_symbol_matches.py` compares the enzyme the
 panel requests against the product name of each matched model.
@@ -206,23 +197,18 @@ panel requests against the product name of each matched model.
 Each model is applied at its own curated cutoff (`hmmsearch` from HMMER 3 [@eddy2011hmmer]
 with `--cut_nc`) rather than a global
 threshold, an approach shown to materially affect functional and metabolic inference
-[@hmmthresholds2025]. Across the 144 models these span 20.8 to 1,400 bits (median 380), so no single
-threshold is defensible; a hardcoded cutoff of 450 bits, for instance, would silently discard
-more than half the panel. Pfam and NCBIfam use different conventions. Pfam curates a gathering
-threshold (GA) that sits above its noise cutoff (NC), while NCBIfam curates NC, so on import each Pfam
-model's NC is set to its GA, allowing one search to apply each source's intended cutoff. The build
-asserts that every pressed model carries a curated cutoff.
+[@hmmthresholds2025]. Across the 144 models, these span 20.8 to 1,400 bits (median 381), so no single
+threshold is defensible: 94 of the 144 models have a curated cutoff below 450 bits, so a global
+threshold at that level would reject genuine hits for most of the panel. Pfam and NCBIfam use different conventions. Pfam's membership
+threshold is its gathering threshold (GA), which sits above its noise cutoff (NC). For NCBIfam the
+panel uses NC, the most inclusive of its three curated values (lower than GA for 46 of 127 models).
+On import each Pfam model's NC is therefore set to its GA, so one search applies GA to Pfam models
+and NC to NCBIfam models. The build checks that every pressed model carries a curated cutoff and
+stops if any does not.
 
 ## Pathway gates and taxonomic confirmation
 
-The distinction the gates draw is the one that carries operational meaning. Acetoclastic
-methanogens are more ammonia-sensitive than hydrogenotrophic ones, so a reactor under rising
-ammonia load shifts from acetate-consuming methanogens towards syntrophic acetate oxidation
-coupled to hydrogenotrophic methanogenesis [@wang2015ammonia]. Which route a community
-can run is therefore not a taxonomic curiosity but the axis along which digester stress
-expresses itself.
-
-Branch capability is evaluated by explicit gates rather than completeness thresholds. Each gate
+Each pathway gate
 declares its requirements as groups of alternatives, and gates evaluate to true, false, or
 not assessable when a required marker has no detector in the database at all.
 
@@ -232,8 +218,9 @@ also covers methanogens that reduce CO~2~ with formate. The acetoclastic gate re
 `cdhA` and acetate activation (`acs`, or `ackA` with `pta`); the methylotrophic gate requires
 `mcrA` and a substrate-specific methyltransferase or the shared MT2 step.
 
-Three of these gates need a confirming lineage, supplied as a GTDB-Tk classification
-[@chaumeil2022gtdbtk], because the pathways they read are reversible or shared, and gene content
+The acetoclastic and hydrogenotrophic gates, and a methylotrophic call resting on MT2 alone, need
+a confirming lineage, supplied as a classification against the Genome Taxonomy Database (GTDB)
+with GTDB-Tk [@chaumeil2022gtdbtk], because the pathways they read are reversible or shared, and gene content
 cannot tell the direction. The ACDS/CODH complex serves autotrophic hydrogenotrophs to *fix*
 carbon rather than to cleave acetyl-CoA, and *Methanothermobacter thermautotrophicus*, an obligate
 hydrogenotroph, satisfies the acetoclastic gene test. The C1 pathway runs oxidatively in
@@ -241,7 +228,7 @@ acetoclasts and methylotrophs and in reverse in anaerobic methane oxidisers, all
 the hydrogenotrophic gene test. The lineage policy is a single table read by the scorer and by
 report renderers (`assets/acetate_lineages.tsv`), each row with its source. The acetoclastic call
 is an allow list at genus level: *Methanosarcina*, *Methanothrix* and *Methanocrinis*
-[@jetten1992; @smith2007methanosaeta; @khomyakova2023methanocrinis]. For *Methanosarcinaceae* a
+[@jetten1992; @smith2007methanosaeta; @khomyakova2023methanocrinis]. For *Methanosarcinaceae*, a
 family does not suffice, because the family is mostly methylotrophs that do not use acetate
 [@oren2014methanosarcinaceae], so an unnamed genus there is left unconfirmed; that is conservative
 by design, and it costs sensitivity rather than correcting an error. *Methanotrichaceae* is the one
@@ -257,23 +244,22 @@ licence-clean substrate-specific marker: *Methanosphaera*, *Methanomassiliicocca
 [@fricke2006methanosphaera; @vanwonterghem2016verstraete; @nobu2016methanofastidiosa;
 @sorokin2017methanonatronarchaeia]. `mcr` carriers in anaerobic methane and alkane oxidiser lineages
 (ANME-1, ANME-2a/b/c/d, *Ethanoperedens*, *Syntrophoarchaeum*) are counted apart from methanogens.
-Where taxonomy places a genome outside these rules the gate is
+Where taxonomy places a genome outside these rules, the gate is
 scored absent with the reason stated; where no taxonomy is supplied, or it is too coarse to place
 the genome, the gate falls back to gene evidence and says so. A genome missing from the taxonomy
 table is treated as unclassified, never as a negative.
 
 ## Secretion evidence
 
-Hydrolysis is the only extracellular step of anaerobic digestion, so an encoded but unexported
-enzyme contributes nothing to feedstock breakdown. The scorer therefore tests whether a catalytic
+The scorer tests whether a catalytic
 domain and an export module (dockerin, cohesin, carbohydrate-binding module or S-layer domain)
 occur on the same polypeptide, which is the architecture of a cellulosome. The test is
 per-protein; the same two domains in one genome but on different proteins carry no such
 implication. All five export modules are Pfam families. Signal-peptide prediction was deliberately
 not used, the standard tool being fee-licensed for commercial work.
 
-The three methylamine methyltransferases (mono-, di- and trimethylamine) are pinned to
-pyrrolysine-specific models: PF05369 for the first and the NCBIfam models `dimeth_PyL` and
+The three methylamine methyltransferases (mono-, di- and trimethylamine) are assigned by
+curated accession to pyrrolysine-specific models: PF05369 for the first and the NCBIfam models `dimeth_PyL` and
 `trimeth_pyl` for the other two. The corresponding Pfam superfamily spans bacterial homologues
 that are not methylamine methyltransferases and is not used for detection. All three enzymes carry
 in-frame amber codons, so all three depend on gene calling that reads through them.
@@ -297,22 +283,16 @@ without modification. The workflow invokes the same command-line tools rather th
 reimplementing them, so neither entry point is privileged: a user with three genomes needs no
 workflow engine, and a user with fourteen hundred does not hand-roll parallelism. Database
 staging and panel construction remain scripts, being one-time operations that need outbound
-network access and gain nothing from a task graph.
+network access.
 
 ## Compute environment
 
-All runs used HMMER 3 on 16 cores of an AMD EPYC 7742. Scoring the 1,401-genome
-catalogue took 8 min 8 s of wall-clock time and 1.6 CPU-hours in four repeat runs
-(range 7 min 38 s to 8 min 31 s), or approximately 4 CPU-seconds per genome, of which
-`hmmsearch` against the 144-model database is nearly all. Peak memory stayed within
-16 GB for the job as a whole. The cost scales linearly with genome count and the work
-is embarrassingly parallel, so a single core processes a genome in a few seconds and
-a laptop handles a few hundred genomes in minutes; nothing here requires a cluster.
+All runs used HMMER 3 on 16 cores of an AMD EPYC 7742.
 
 ## Validation datasets
 
-Three datasets were used. The first is a set of seven reference genomes of known metabolism,
-chosen to be falsifiable: a metabolic generalist (*Methanosarcina barkeri*), an obligate
+Reference genomes. Seven reference genomes of known metabolism were chosen to be
+falsifiable: a metabolic generalist (*Methanosarcina barkeri*), an obligate
 acetoclastic methanogen (*Methanothrix soehngenii*), two obligate hydrogenotrophs
 (*Methanoculleus bourgensis*, *M. thermautotrophicus*), an acetogen (*Clostridium ljungdahlii*), a
 syntrophic fatty-acid oxidiser (*Syntrophomonas wolfei*), and *Escherichia coli* as a specificity
@@ -322,17 +302,18 @@ indicates a defect. An assertion suite runs the full path (proteome, `hmmsearch`
 these genomes and checks 24 statements about gates, markers and genus assignment, exiting
 non-zero on disagreement.
 
-One assertion is deliberately inverted: syntrophic butyrate oxidation must report *not assessable*
+One assertion is deliberately inverted: syntrophic butyrate oxidation must report as *not assessable*
 in *S. wolfei*, an organism that performs the pathway, because two of its four required markers
-have no licence-clean model. Asserting the honest blank prevents it silently degrading into a
+have no licence-clean model. Asserting the honest blank prevents it from silently degrading into a
 false negative.
 
-The second dataset tests whether specificity depends on how genomes were constructed. It is
+GTDB representatives. This set tests whether specificity depends on how genomes were
+constructed. It is
 3,043 GTDB r226 species representatives, which are isolate-derived or independently assembled
 rather than binned from digester metagenomes: every representative of eleven methanogen orders
 (1,144 genomes, taken whole because they measure sensitivity) together with 1,899 background
 genomes allocated across 203 phyla in proportion to the square root of phylum size. Proportional
-allocation would spend the budget on the largest phyla and equal allocation would weight a
+allocation would spend the budget on the largest phyla, and equal allocation would weight a
 singleton phylum like a 36,000-genome one; selection within a phylum is by even stride over
 sorted accessions, so the sample is reproducible without a seed. The sample was drawn from the GTDB
 r226 taxonomy and species-cluster files with the sampler as first released; the accession list is
@@ -340,14 +321,18 @@ distributed with the release, since a later change to the sampler's order list m
 genomes. It was classified against GTDB r226. Reports print r232, the release current at the time of writing; every
 name in the lineage policy was checked to occur verbatim in the r232 taxonomy, and every name the
 benchmark relies on occurs in the r226 sample, so the policy reads the same under either release.
+For scoring, one *Methanonatronarchaeales* genome sampled as background counts as a methanogen, and
+the 90 genomes in anaerobic methane and alkane oxidiser lineages (89 sampled in methanogen orders,
+one as background) form a class of their own, so the classes hold 1,056 methanogens and 1,897
+background genomes (Results).
 
-Genes were called with Prodigal for every genome in this set rather than taking NCBI protein
-sets. A third of GTDB representatives are assemblies with no NCBI annotation, and the gap falls
+Genes were called with Prodigal. A third of GTDB representatives are assemblies with no NCBI annotation, and the gap falls
 on uncultured lineages, so downloading proteomes lost 28 phyla outright. Calling genes also keeps
 this benchmark comparable with the digester catalogue, which was itself Prodigal-called, and it is
 required for the pyrrolysine marker described below.
 
-The third dataset is 1,401 metagenome-assembled genomes recovered from 134 anaerobic digesters
+Digester catalogue. The catalogue comprises 1,401 metagenome-assembled genomes recovered from 134
+anaerobic digesters
 spanning multiple plants, feedstocks and operating temperatures [@campanaro2020; NCBI
 BioProject PRJNA602310]. Taxonomic assignments accompanying the catalogue were used for the
 lineage-confirmed gates.
@@ -386,9 +371,9 @@ methylotrophs among *Methanofastidiosia* and *Thermoplasmatales*, whose substrat
 methyltransferases have no licence-clean model. Adding the terminal methylcobalamin:CoM
 methyltransferase, which detects methylotrophy without naming the substrate, resolved all seven.
 That model is subfamily-level and matches 30 bacterial genomes on its own; it is sound only
-because the gate independently requires `mcrA`. Among the digester methanogens it discriminated
+because the gate independently requires `mcrA`. Among the digester methanogens, it discriminated
 correctly, but the GTDB sample showed that it alone also matches non-methylotrophic methanogens,
-which is why a call resting on it now needs a confirming lineage (Methods).
+which is why a call resting on it needs a confirming lineage (Methods).
 
 ## The export test reduces attributed hydrolytic capacity
 
@@ -422,10 +407,10 @@ corrections: *Methanonatronarchaeales* are methyl-reducing methanogens
 anaerobic methane and alkane oxidiser lineages form a class of their own. One
 *Methanonatronarchaeales* genome therefore moves from background to methanogen, and 90 oxidisers (89
 sampled under methanogen orders, one as background) move to their own class, which is why the
-classes hold 1,056 and 1,897 genomes rather than the sampled 1,144 and 1,899. Two background genomes
-were assigned a methanogenesis route, both `mcrA`-carrying archaea (*Hadarchaeales*, and an unnamed
-order within *Syntropharchaeia*); no bacterial genome received one. On the conservative reading
-they are false positives, a rate of 0.1% in 1,897 background genomes; if the metabolism of these
+classes hold 1,056 and 1,897 genomes rather than the sampled 1,144 and 1,899 (see Methods). Two background genomes
+were assigned a methanogenesis route, both `mcrA`-carrying archaea (*Hadarchaeales* and an unnamed
+order within *Syntropharchaeia*); no bacterial genome received one. On the conservative reading,
+they are false positives, at a rate of 0.1% in 1,897 background genomes; if the metabolism of these
 two lineages is established, they belong in the lineage policy with a source, not in the benchmark.
 
 The 90 anaerobic methane and alkane oxidisers (*Methanoperedenaceae*, *Methanocomedenaceae*,
@@ -433,12 +418,12 @@ The 90 anaerobic methane and alkane oxidisers (*Methanoperedenaceae*, *Methanoco
 They are the clearest case for lineage confirmation: 65 of the 90 satisfy the hydrogenotrophic
 gene gate and 55 the acetoclastic one, because reverse methanogenesis uses the same enzymes.
 Gene content cannot separate them from methanogens. That none of them receives a route is not an
-independent test: the class is defined by lineage and the same lineage policy removes the calls.
+independent test: the class is defined by lineage, and the same lineage policy removes the calls.
 The one outcome not fixed by construction is the methylotrophic gate, which no oxidiser triggered. Of the 1,056 methanogens, 819 were assigned at least
 one route. Of the 237 that were not, 217 carry no detectable `mcrA` at all. GTDB representatives
 include many incomplete genomes, and a genome that does not contain the defining marker should not
 be given a route. Sensitivity is therefore 78% of the methanogens sampled, and 98% (819 of 839) of
-those in which `mcrA` was detected: most of the gap is genomes that lack the defining marker.
+those in which `mcrA` was detected; most of the gap is genomes that lack the defining marker.
 
 The 20 that carry `mcrA` without an assignable route are the informative residue. They include
 three *Methanomassiliicoccales*, obligate hydrogen-dependent methylotrophs that lack the Mtr/H4MPT
@@ -446,7 +431,7 @@ set as a matter of biology and here carry none of the three methyltransferases t
 gate accepts, neither the substrate-specific MtaB and MttB nor the shared MT2; five *Methanothrix*
 genomes that carry the C1 pathway but not the acetate markers; and hydrogenotrophs that reach only
 part of the C1 pathway. Whether a missing marker reflects biology or an incomplete assembly is
-not resolvable from gene content, which is the honest position for a capability method to take; in
+not resolvable from gene content; in
 a report, genome completeness (CheckM2) is shown beside every methanogen for that reason.
 
 | | background | methanogen | anaerobic methane / alkane oxidiser |
@@ -483,74 +468,81 @@ hydrogenotrophic rows that are kept, *Hadarchaeales* and DAOWMC01, are the two b
 counted as false positives in @tbl-gtdb.](figures/fig-route-lineage){#fig-routes}
 
 Of the 156 acetoclastic calls under the family-level check, 59 were in methylotrophic genera that do
-not use acetate and 14 in unnamed *Methanosarcinaceae* genera the policy leaves unconfirmed, and more
+not use acetate and 14 in unnamed *Methanosarcinaceae* genera; the policy leaves them unconfirmed, and more
 than a quarter of the hydrogenotrophic calls fell on organisms that run the C1
 pathway oxidatively or in reverse, or reduce methyl groups rather than CO~2~
 [@sorokin2017methanonatronarchaeia]. Neither error is visible in a specificity test against
-non-methanogens, which is how the digester benchmark was framed. The catalogue result held
-because its acetoclastic calls happened to fall in *Methanosarcina* and *Methanothrix*: the
-earlier rule would have accepted *Methanolobus* as readily. Most of the change in the number of
+non-methanogens. In the digester catalogue this error did not arise, but only by chance: its six acetoclastic calls
+all fell in *Methanosarcina* and *Methanothrix*, and the family-level check would have accepted a
+*Methanolobus* genome just as readily. Most of the change in the number of
 genomes with a route is correctness, not lost sensitivity (@tbl-sens): only the eight
-hydrogenotrophs that reach three of the six C1 steps once isoenzymes count once are a cost.
+hydrogenotrophs that reach three of the six C1 steps once isoenzymes are counted once are a cost.
 
 | genomes in methanogen orders with ≥ 1 route | genomes | kind |
 |:------------------------|---:|:---|
-| August benchmark, order labels | 896 | |
+| family-level check, original order labels | 896 | |
 | anaerobic methane / alkane oxidisers, route removed | −65 | correctness |
 | *Methanothrix* genomes whose only call was a false hydrogenotrophic one | −5 | correctness |
 | hydrogenotrophs at three of six C1 steps | −8 | sensitivity |
 | *Methanonatronarchaeales* moved from background | +1 | label |
-| methanogens with ≥ 1 route now | 819 | |
+| lineage policy, corrected order labels | 819 | |
 
 : Where the change in route assignments comes from. {#tbl-sens}
 
-One question remains open. Of 50 *Methanobacteriales* genomes with a methylotrophic call, 14 are
+Of 50 *Methanobacteriales* genomes with a methylotrophic call, 14 are
 *Methanosphaera*, confirmed by lineage, and 36 are in genera where methylotrophy is not established
 (*Methanobacterium* 21, *Methanocatella* 7, *Methanobinarius* 4, *Methanovirga* 2, *Methanarmilla* 2).
 These calls do not rest on a lone methyltransferase-like hit: all 36 carry the methanol
-methyltransferase (MtaB) together with a corrinoid protein, 35 of them also the methyltransferase
+methyltransferase (MtaB) together with a corrinoid protein; 35 of them also carry the methyltransferase
 partner (MtaA). The corrinoid protein is of the MtaC2 family rather than the MtaC of
-*Methanosarcina*. The gate now requires the corrinoid partner for the
-MtaB term, and the calls stand. We report them as capacity and flag them.
+*Methanosarcina*. The gate requires the corrinoid partner for the
+MtaB term, and all 36 calls meet that requirement. We report them as capacity and flag them.
 
 ## Detecting a pyrrolysine marker depends on the gene caller
 
 Monomethylamine methyltransferase illustrates a failure mode that is upstream of the panel
 entirely. In *Methanosarcina barkeri*, the NCBI reference annotation contains no monomethylamine
-methyltransferase, so the Pfam family PF05369 returns nothing however the search is run. Calling
-genes with Prodigal recovers it. Under the standard translation table each of the two gene copies
+methyltransferase, so the Pfam family PF05369 returns nothing. Calling
+genes with Prodigal recovers it. Under the standard translation table, each of the two gene copies
 is truncated at the in-frame amber codon into fragments of 238 and 202 residues, against a
 450-residue model, and both clear the gathering threshold independently. Under a table that reads
 TAG through, each copy is reconstructed as a single protein of 556 and 535 residues at roughly
 twice the bit score, with the substituted residue at the expected pyrrolysine position.
 
-Across the GTDB sample the family was found in 278 of 1,144 methanogens, concentrated in
+Across the GTDB sample, the family was found in 278 of 1,144 methanogens, concentrated in
 *Methanomassiliicoccales* (137), *Methanosarcinales* (119) and *Methanomethylicales* (22), against
 18 of 1,899 background genomes. Those background hits cannot by themselves place a genome on a
-methylotrophic route, because that gate independently requires `mcrA`. The marker is included in
-the panel on that basis.
+methylotrophic route, because that gate independently requires `mcrA`.
+
+## Scoring takes seconds per genome
+
+Scoring the 1,401-genome catalogue on 16 cores took 8 min 8 s of wall-clock time and 1.6
+CPU-hours in four repeat runs (range 7 min 38 s to 8 min 31 s), or approximately 4 CPU-seconds per
+genome, of which `hmmsearch` against the 144-model database is nearly all. Peak memory stayed
+within 16 GB for the job as a whole. The cost scales linearly with genome count and the work is
+embarrassingly parallel, so a single core processes a genome in a few seconds and a laptop handles
+a few hundred genomes in minutes; nothing here requires a cluster.
 
 # Discussion
 
-The specificity result is the load-bearing one, and it is worth being precise about what
-produces it. Every methanogenesis gate carries a mandatory `mcrA` term, and `mcrA` is pinned
-exclusively to a gene-specific model, so a shared gene symbol or EC elsewhere in the panel cannot
+Every methanogenesis gate carries a mandatory `mcrA` term, and `mcrA` is detected
+only by a gene-specific model assigned by curated accession, so a shared gene symbol or EC elsewhere in the panel cannot
 by itself place a bacterium on a methanogenesis route. The gates are structurally protected in a
 way that module completeness is not: a collision inflates a percentage quietly, whereas firing a
-gate requires the one marker that is hardest to match by accident. This is a design choice rather
-than a fortunate outcome, and it is the reason the two audits described in the methods, of curated
+gate requires the one marker that is hardest to match by accident. This is a design choice,
+and it is the reason the audits described in Methods, of curated
 accessions and of symbol matches, are aimed at completeness figures rather than at the gates.
 
 Scoring 1,361 bacterial genomes and assigning none of them a route tests that design directly,
-and the GTDB representatives extend it: those genomes were not binned at all, so agreement across
-the two collections cannot be explained by a shared assembly pipeline. The genomes outside the
+and the GTDB representatives extend it: those genomes were not binned at all, so agreement between
+the digester and GTDB collections cannot be explained by a shared assembly pipeline. The genomes outside the
 methanogen orders that did receive a route are the informative cases rather than the failures.
 Each carries `mcrA`, and one belongs to an order of methyl-reducing methanogens that our own list
 of methanogen orders had omitted, so the panel identified a methanogen before the reference labels
-did; the benchmark classes now count it as one. A specificity benchmark measures the labels as
-much as the tool.
-What the test cannot do is establish the same for module percentages, which have no equivalent
-gatekeeper and are correspondingly more exposed to the collisions the audits are there to catch.
+did; the benchmark classes were corrected to count it as one.
+The `mcrA` requirement protects route calls only. Module completeness percentages have no such
+required marker, so a gene-symbol or EC collision can raise them unnoticed; the audits in Methods
+exist for that reason.
 
 The secretion result carries the larger practical consequence. Reporting family presence alone
 would credit 597 genomes with cellulolytic capacity where 50 is defensible, in the module most
@@ -576,7 +568,7 @@ Markers with no licence-clean detector. Nine of 86 markers remain unresolved. `b
 rather than absent, including in an organism that performs it.
 
 Dependence on upstream gene calling. The pyrrolysine result above is a property of the
-annotation, not of the panel, and it cuts both ways: `mtmB` is detectable from Prodigal calls and
+annotation, not of the panel: `mtmB` is detectable from Prodigal calls and
 invisible in NCBI reference proteomes. Any input built by an annotation pipeline that does not
 translate through in-frame amber codons will under-report methylamine methyltransferases, and the
 panel cannot detect that this has happened. The same caution applies to any marker whose gene
@@ -607,9 +599,7 @@ presence in a sample does imply that some organism carries the gene. A multi-gen
 its members can be satisfied by different organisms, and the resulting false-positive rate scales
 with how common the individual markers are. The hydrogenotrophic gate is the worst case in this
 panel, since a threshold of four present among eight carriers admits many ways to assemble a call
-from unrelated genomes. In the same bile-acid analysis, requiring corroborating genes in the same
-sample rather than on the same contig produced 29% spurious operon calls, driven by two markers
-present in 39% and 48% of samples and carried by organisms that do not perform the pathway.
+from unrelated genomes.
 
 Contig-level co-occurrence preserves single-organism evidence without requiring a bin, and the
 scorer implements it, but measuring its cost on the GTDB set shows it does not transfer to these
@@ -622,7 +612,7 @@ chromosome, so demanding `mcrA` and four C1 steps on one contig amounts to deman
 that spans most of a replicon. The option exists for pathways it suits; these gates are defined
 for, and should be run on, binned genomes. Binned input answers
 what an organism can do, and assembly-level search answers whether a capability is present in a
-sample. The two questions have different error models and should not be conflated.
+sample. These questions have different error models and should not be conflated.
 
 ![Methanogens of the GTDB sample that lose every route when every gate term must lie on one contig,
 by the number of contigs in the genome. The share is of genomes with at least one route under
@@ -635,15 +625,15 @@ against order-level labels, and those labels were wrong in both directions here.
 *Methanonatronarchaeales* are methanogens that our order list did not include, so a correct call
 counted as a false positive until the benchmark classes were corrected. The anaerobic methane and alkane oxidisers sit inside methanogen
 orders; an order-level benchmark counts their routes as correct methanogen calls, and it did so
-for 65 of them before the lineage policy. Both indicate that a benchmark of this kind measures
-the reference labels as much as the tool, and that a specificity test against non-methanogens
+for 65 of them before the lineage policy. Either way, an error in the reference labels appeared as
+an error of the panel, so a specificity test against non-methanogens
 has to be paired with a check of which route each methanogen receives.
 
-Benchmark scope. Specificity now rests on two collections that differ in construction, one
+Benchmark scope. Specificity rests on collections built differently, one
 binned from digester metagenomes by a single group and one drawn from GTDB representatives, which
 removes the possibility that the result is an artefact of one binning pipeline. Both remain
 snapshots of public sequence databases, and neither tests genomes from a digester the panel has
-not seen; a prospective test on new plant samples has not been done. Sensitivity is measured only
+not seen. Sensitivity is measured only
 against taxonomic assignment, which is itself an inference: a genome placed in a methanogen order
 that carries no `mcrA` is counted here as a genome with a missing marker, not as a misplaced
 lineage, and the two are not distinguishable from gene content alone.
@@ -652,24 +642,16 @@ lineage, and the two are not distinguishable from gene content alone.
 
 The markers that remain unresolved are not evenly distributed: they concentrate in syntrophic
 fatty-acid oxidation and in substrate-specific methylotrophy, both of which matter for
-interpreting a stressed reactor. Closing them requires new licence-clean models. The pyrrolysine case is
-now closed and suggests where else to look: the obstacle was never the model but the annotation
+interpreting a stressed reactor. Closing them requires new licence-clean models. The pyrrolysine case
+suggests where else to look: the obstacle there was never the model but the annotation
 feeding it, and any marker whose gene carries a recoded codon will behave the same way. The
 approach itself is not specific to anaerobic digestion; the same construction, a curated
 domain-scoped pathway model over public-domain and CC0 profile HMMs, applies to any setting
 where licensing rather than biology is the obstacle.
 
-The premise this work starts from, that full-scale digesters are run on bulk parameters without
-microbial data, is itself asserted rather than measured. The reviews that state it cite no survey
-of operator practice [@koch2014microbiomes; @carballa2015management], and the largest multi-plant
-campaigns are research projects built on 16S rRNA amplicons rather than genome-resolved profiles
-[@hassa2021indicative]. We found no questionnaire, interview or audit study of what monitoring
-data plant operators use or act on. A structured survey of that kind would give the field a
-baseline against which the adoption of any microbial method, including this one, could be judged.
-
 ## Data and code availability
 
-Panel, scorer, build and validation scripts are distributed as `digestome`. They run as standalone
+Panel, scorer, build and validation scripts are distributed as the `digestome` package. They run as standalone
 command-line steps; the scorer and aggregator are Python 3 standard library only, so they carry
 no dependency beyond HMMER and a Python interpreter. Reference data are downloaded by the provided scripts from NCBIfam,
 InterPro/Pfam and Rhea; no licensed database is required at any stage. The benchmark catalogue is
@@ -679,20 +661,17 @@ licence and the curated panel under CC BY 4.0.
 The version used for every number in this manuscript is archived at Zenodo
 (v0.1.1, DOI [10.5281/zenodo.22986804](https://doi.org/10.5281/zenodo.22986804); the
 version-independent DOI [10.5281/zenodo.22913615](https://doi.org/10.5281/zenodo.22913615) always
-resolves to the latest release) and developed at <https://github.com/tpall/digestome>. The report
-renderer that consumes the scorer's output is a separate, closed component and is not required to
-reproduce anything reported here.
+resolves to the latest release) and developed at <https://github.com/tpall/digestome>.
 
 ## Competing interests
 
 The author is the owner of Magrittr OÜ, which commercially provides anaerobic digestion microbiome
-analyses using the panel described herein. To mitigate this conflict of
-interest, the panel, scoring methodology and validation scripts are openly available to facilitate
+analyses using the panel described herein. The panel, scoring methodology and validation scripts are openly available to facilitate
 independent replication and verification of the results.
 
 ## Funding
 
-No external funding. The work was carried out by the author at Magrittr OÜ. Computation was bought
+No external funding. Computation was bought
 from the University of Tartu High Performance Computing Centre under a commercial service agreement.
 
 ## Acknowledgements

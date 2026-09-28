@@ -49,14 +49,13 @@ licence-freedom. CC0 gives away attribution, which we want to keep.
 **Competing interest statement** (bioRxiv asks for this explicitly; it is also in the PDF)
 
 > The author is the owner of Magrittr OÜ, which commercially provides anaerobic digestion microbiome
-> analyses using the panel described herein. To mitigate this conflict of
-> interest, the panel, scoring methodology and validation scripts are openly available to facilitate
-> independent replication and verification of the results.
+> analyses using the panel described herein. The panel, scoring methodology and validation scripts
+> are openly available to facilitate independent replication and verification of the results.
 
 **Funding statement**
 
-> No external funding. The work was carried out by the author at Magrittr OÜ. Computation was bought
-> from the University of Tartu High Performance Computing Centre under a commercial service agreement.
+> No external funding. Computation was bought from the University of Tartu High Performance
+> Computing Centre under a commercial service agreement.
 
 **Has this been submitted to a journal?** No.
 
