@@ -193,7 +193,7 @@ The biology is curated and the panel is tested, but read the boundaries:
 - **Curated accessions are audited at build time.** Four wrong accessions were corrected, nine colliding gene symbols pinned, and the build asserts every pressed model carries a curated NC cutoff. This is no longer an open validation task.
 - **Non-curated (symbol- and EC-matched) rows are audited but weaker.** `audit_symbol_matches.py` flags collisions; gene-symbol matches are reliable, EC matches still warrant review before results are relied upon.
 - **Some Pfam domains are shared across enzymes** (PF00871 = acetate *and* butyrate kinase; PF00374 = several [NiFe]-hydrogenases; PF06253 = the whole MttB superfamily). Gene-level calls on those need the NCBIfam gene-specific model, not the Pfam hit alone.
-- **Coverage is honest about its gaps.** Modules and gates with no license-clean detector report `NA` / `NOT ASSESSABLE`, never `0.0`.
+- **Coverage is honest about its gaps.** Modules and gates with no licence-clean detector report `NA` / `NOT ASSESSABLE`, never `0.0`.
 
 ---
 
