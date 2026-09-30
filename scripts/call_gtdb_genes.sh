@@ -36,7 +36,7 @@ cd "$WORK"
 [ -s tmp/sample_ftp.tsv ] || { echo "!! run fetch_gtdb_sample.sh first (needs tmp/sample_ftp.tsv)" >&2; exit 1; }
 mkdir -p "$FNA" "$OUT"
 
-command -v prodigal >/dev/null 2>&1 || module load prodigal/2.6.3 2>/dev/null || true
+command -v prodigal >/dev/null 2>&1 || module load "${PRODIGAL_MODULE:-prodigal}" 2>/dev/null || true
 command -v prodigal >/dev/null 2>&1 || { echo "!! prodigal not available" >&2; exit 1; }
 
 # Genome sequence, then genes. The .fna is removed once called: 3,000 genomes of

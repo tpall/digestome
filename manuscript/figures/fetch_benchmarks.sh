@@ -2,14 +2,14 @@
 # Copy the scored benchmark outputs the figures are drawn from off the cluster, into results/benchmarks/
 # (gitignored). Only the reduced tables in manuscript/figures/data/ are committed.
 #
-#   bash manuscript/figures/fetch_benchmarks.sh
+#   HOST=<ssh host> SRC=<path under $DB there> bash manuscript/figures/fetch_benchmarks.sh
 #
-# The benchmarks were scored on Magrittr OÜ's commercial allocation at the University of Tartu HPC
-# Centre, from inputs rebuilt there from public sources (GTDB r226 files, NCBI). Remote directory
-# names are mapped to the local ones make_figure_data.py reads.
+# HOST is the machine where the benchmarks were scored (see the README's "Reproducing the
+# benchmarks"); SRC is the ad_panel_test directory under that machine's $DB, relative to the login
+# directory or absolute. Remote directory names are mapped to the local ones make_figure_data.py reads.
 set -euo pipefail
 cd "$(dirname "$0")/../.."
-HOST=${HOST:-magrittr-hpc}
+HOST=${HOST:?set HOST to the ssh host where the benchmarks were scored}
 SRC=${SRC:-databases/ad_panel_test}
 DST=results/benchmarks
 mkdir -p "$DST/gtdb" "$DST/catalogue"
