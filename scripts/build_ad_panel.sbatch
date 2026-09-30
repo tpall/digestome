@@ -8,17 +8,16 @@
 # No --partition/--account here: those are site-specific. Pass them at submit
 # time (sbatch -p <partition> -A <account> ...) or export SBATCH_PARTITION and
 # SBATCH_ACCOUNT, which SLURM picks up automatically.
-# Build the digestome panel HMM DB against current NCBIfam.
+# Build the digestome panel HMM database (NCBIfam + Pfam) with build_ad_hmm_db.sh.
 #
-# The point of this run is verification, not just artifacts. build_ad_hmm_db.sh
-# was written as a scaffold that GUESSES at two things it could not check
-# offline: the hmm_PGAP.tsv column names, and the .tgz archive layout. Sections
-# A-D below report what was actually found so those guesses can be confirmed or
-# corrected, and so the EC-derived matches can be reviewed before anything built
-# here is trusted in a report.
+# Besides the database, the log is the build's audit. Sections A-E report the
+# NCBIfam metadata columns and archive layout found, panel coverage, the
+# EC-derived matches to review, and each curated accession against what NCBIfam
+# calls it. build_ad_hmm_db.sh itself stops if a pressed model lacks a noise cutoff.
 #
-# Prereqs (login node):
+# Prereqs (login node: they need internet):
 #   bash scripts/prefetch_ncbifam.sh
+#   bash scripts/prefetch_pfam.sh
 #   mkdir -p logs
 # Submit from the worktree root:
 #   sbatch scripts/build_ad_panel.sbatch
@@ -63,7 +62,7 @@ bash "$ROOT/scripts/build_ad_hmm_db.sh"
 
 echo
 echo "================ A. NCBIfam metadata columns ================"
-echo "(build script guessed: ncbi_accession / gene_symbol / ec_numbers / label)"
+echo "(expected by the build: ncbi_accession / gene_symbol / ec_numbers / label)"
 head -1 "$WORK/hmm_PGAP.tsv" | tr '\t' '\n' | nl
 echo
 echo "================ B. archive layout ================"

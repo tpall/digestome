@@ -183,6 +183,43 @@ hydrogenotrophs), *C. ljungdahlii* (acetogen), *S. wolfei* (syntroph), and
 and the full `eut` operon, so it exercises nearly every gene-symbol collision
 fixed on this branch. Any methanogenesis gate firing on E. coli is a live bug.
 
+## Reproducing the benchmarks
+
+Both benchmarks in the manuscript rebuild from public sources. Steps marked *login* need internet
+access; the scoring steps run under SLURM (pass `-A`/`-p` at submit time) or directly with `bash`.
+Everything lands under `$DB/ad_panel_test/`.
+
+**Digester MAG catalogue** (1,401 genomes, Campanaro et al. 2020, PRJNA602310):
+
+```bash
+export DB=/path/to/databases
+bash scripts/fetch_biogas_catalogue.sh                       # login: proteomes + NCBI-name taxonomy
+python3 scripts/build_genus_orders.py <gtdb>/taxonomy/gtdb_taxonomy.tsv > $DB/ad_panel/genus_orders.tsv
+mkdir -p logs && GENUS_ORDERS=$DB/ad_panel/genus_orders.tsv sbatch scripts/score_catalogue.sbatch
+```
+
+The catalogue's taxonomy is NCBI genus names, so `genus_orders.tsv` (genus → GTDB order) is what lets
+the order-level rules read it. `scripts/subset_catalogue_plant.py` cuts a single plant out of the
+catalogue; point `CATALOGUE=` at it to score one reactor.
+
+**GTDB species representatives** (3,043 genomes):
+
+```bash
+mkdir -p $DB/ad_panel_test/gtdb
+cp benchmarks/gtdb_r226_sample.tsv $DB/ad_panel_test/gtdb/gtdb_sample.tsv   # the manuscript's sample
+bash scripts/fetch_gtdb_sample.sh                            # login: genomes for the sample
+bash scripts/call_gtdb_genes.sh                              # Prodigal gene calls (see the script for why)
+mkdir -p logs && sbatch scripts/score_gtdb_sample.sbatch
+python3 scripts/summarise_gtdb_benchmark.py --work $DB/ad_panel_test/gtdb
+```
+
+Use the fixed list in `benchmarks/` to reproduce the manuscript: the current
+`scripts/sample_gtdb_reps.py` counts one more order as methanogens and moves five background genomes
+(see `benchmarks/README.md`). Run the sampler instead to draw a fresh sample from another release.
+
+The manuscript's figures are drawn from these outputs by `manuscript/figures/make_figure_data.py` and
+`plot_figures.R`.
+
 ---
 
 ## Maturity

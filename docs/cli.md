@@ -14,6 +14,21 @@ Flags and scripts. For what the numbers mean, see [scoring.md](scoring.md); for 
 | `main.nf`, `nextflow.config` | Nextflow workflow over the analysis path: HMMSEARCH, SCORE, AGGREGATE. Calls the same command-line tools rather than reimplementing them. |
 | `scripts/audit_symbol_matches.py` | Build-time audit: flags panel rows whose gene symbol collides with an unrelated enzyme. Run when editing the panel. |
 
+### Cluster entry points
+
+SLURM batch scripts around the same tools. None hard-codes an account or partition: pass `-A`/`-p`
+at submit time. The Nextflow workflow does not use them; it submits its own jobs.
+
+| script | what it does | when |
+|---|---|---|
+| `scripts/build_ad_panel.sbatch` | builds the panel database (`ad_panel.hmm`, map, Rhea table) after `prefetch_ncbifam.sh` and `prefetch_pfam.sh` | once per release |
+| `scripts/smoke_test.sbatch` | the 24-assertion test on seven reference genomes | after every build |
+| `scripts/community_report.sbatch` | scores one sample's MAG proteomes and aggregates them into a community profile, without a workflow engine | per sample |
+| `scripts/score_catalogue.sbatch` | scores the digester MAG catalogue, or a one-plant subset of it | reproducing the manuscript |
+| `scripts/score_gtdb_sample.sbatch` | scores the GTDB representative sample | reproducing the manuscript |
+
+See the README's *Reproducing the benchmarks* for the fetch steps that precede the last two.
+
 ### `panel_scored.py`
 
 | flag | |
