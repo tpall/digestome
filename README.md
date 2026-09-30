@@ -52,7 +52,8 @@ assets/      the curated panel and the secretion modules — the data this
 
 ## Quick start
 
-Two ways to run the same analysis. Either needs the panel built once first.
+Two ways to run the same analysis. Either needs the panel built once first. Nothing needs cloning:
+Nextflow fetches the workflow from GitHub itself, and `nextflow pull` brings the build scripts along.
 
 ### 0. Build the panel (once)
 
@@ -61,6 +62,9 @@ access, and it gains nothing from a task graph.
 
 ```bash
 export DB=/path/to/databases          # site-specific, required, never defaulted
+
+nextflow pull tpall/digestome -r v0.1.2   # or git clone; the copy lands in ~/.nextflow/assets/tpall/digestome
+cd ~/.nextflow/assets/tpall/digestome     # (or your clone)
 
 bash scripts/prefetch_ncbifam.sh          # NCBIfam + Rhea   (login node: needs internet)
 bash scripts/prefetch_pfam.sh             # pinned Pfam families
@@ -75,7 +79,7 @@ Per-genome parallelism, resume, and executor independence: the same command runs
 on a laptop, a SLURM cluster or a cloud batch service.
 
 ```bash
-nextflow run . \
+nextflow run tpall/digestome -r v0.1.2 \
     --proteomes 'mags/*.faa' \
     --db        $DB \
     --gtdbtk    gtdbtk.bac120.summary.tsv \
@@ -84,6 +88,10 @@ nextflow run . \
     -profile    slurm            # or: standard | conda | singularity | docker
 ```
 
+`-r` pins a release, so a rerun a year later gives the same answer; the latest is on the
+[releases page](https://github.com/tpall/digestome/releases). From a clone, `nextflow run .` does the
+same with your working copy.
+
 Writes `results/profile.txt`, `results/profile.json` and the result tables in
 `results/tables/` (genomes, modules, routes, risks; see `docs/cli.md`), plus a Nextflow trace,
 timeline and report under `results/pipeline_info/`.
@@ -91,13 +99,13 @@ timeline and report under `results/pipeline_info/`.
 A samplesheet works instead of a glob when names matter:
 
 ```bash
-nextflow run . --input samples.csv --db $DB     # columns: sample,faa
+nextflow run tpall/digestome -r v0.1.2 --input samples.csv --db $DB     # columns: sample,faa
 ```
 
 To check the wiring without tools, data or a database:
 
 ```bash
-nextflow run . -profile test -stub-run
+nextflow run tpall/digestome -r v0.1.2 -profile test -stub-run
 ```
 
 ### Option B: command line, for a handful of genomes
