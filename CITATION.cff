@@ -31,3 +31,15 @@ authors:
     affiliation: "Magrittr OÜ, Tartu, Estonia"
 version: "0.1.2"
 date-released: "2026-09-28"
+preferred-citation:
+  type: article
+  title: "digestome: a licence-clean marker-gene panel for functional profiling of anaerobic digestion microbiomes"
+  authors:
+    - family-names: "Päll"
+      given-names: "Taavi"
+      orcid: "https://orcid.org/0000-0001-7606-675X"
+      affiliation: "Magrittr OÜ, Tartu, Estonia"
+  journal: "bioRxiv"
+  year: 2026
+  doi: "10.64898/2026.09.28.755039"
+  url: "https://www.biorxiv.org/content/10.64898/2026.09.28.755039"

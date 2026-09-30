@@ -2,14 +2,16 @@
 
 **Licence-clean functional profiling of anaerobic digestion microbiomes.**
 
+[![bioRxiv](https://img.shields.io/badge/bioRxiv-10.64898%2F2026.09.28.755039-b31b1b.svg)](https://www.biorxiv.org/content/10.64898/2026.09.28.755039)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22913615.svg)](https://doi.org/10.5281/zenodo.22913615)
 [![License: MIT](https://img.shields.io/badge/code-MIT-blue.svg)](LICENSE)
 [![Panel: CC BY 4.0](https://img.shields.io/badge/panel-CC%20BY%204.0-lightgrey.svg)](LICENSE-DATA)
 
-Cite the archived release: Päll T. *digestome: a licence-clean marker-gene panel for functional
-profiling of anaerobic digestion microbiomes.* Zenodo, 2026. DOI
-[10.5281/zenodo.22913615](https://doi.org/10.5281/zenodo.22913615) (all versions; the manuscript uses
-v0.1.2).
+Cite the paper: Päll T. *digestome: a licence-clean marker-gene panel for functional profiling of
+anaerobic digestion microbiomes.* bioRxiv, 2026. DOI
+[10.64898/2026.09.28.755039](https://www.biorxiv.org/content/10.64898/2026.09.28.755039).
+The software is archived at Zenodo, DOI [10.5281/zenodo.22913615](https://doi.org/10.5281/zenodo.22913615)
+(all versions; the paper uses v0.1.2).
 
 > **Two entry points.** The command-line path needs only HMMER and Python 3
 > (standard library), with no licensed database at any stage. A Nextflow workflow
