@@ -1,13 +1,13 @@
 digraph G {
-  rankdir=LR; newrank=true; nodesep=0.25; ranksep=0.55;
-  node [shape=box, style="rounded,filled", fontname="Helvetica", fontsize=11, margin="0.12,0.06"];
+  rankdir=LR; newrank=true; nodesep=0.12; ranksep=0.35;
+  node [shape=box, style="rounded,filled", fontname="Helvetica", fontsize=14, margin="0.12,0.06"];
   edge [color="#6D7173", arrowsize=0.6];
-  subgraph cluster_1 { label="Before the sample"; fontname="Helvetica"; fontsize=12; color="#BBBBBB"; style="rounded";
+  subgraph cluster_1 { label="Before the sample"; fontname="Helvetica"; fontsize=15; color="#BBBBBB"; style="rounded";
   state_0 [label="Reactor state\nbefore", fillcolor="#FFFFFF", color="#6D7173", style="rounded,dashed,filled"];
   comm_0 [label="Community\nbefore", fillcolor="#FFFFFF", color="#6D7173", style="rounded,dashed,filled"];
   dna_0 [label="Previous\nprofile", fillcolor="#E69F00", color="#9C6A00", fontcolor="#000000", penwidth=2];
   }
-  subgraph cluster_2 { label="Levers and design"; fontname="Helvetica"; fontsize=12; color="#BBBBBB"; style="rounded";
+  subgraph cluster_2 { label="Levers and design"; fontname="Helvetica"; fontsize=15; color="#BBBBBB"; style="rounded";
   feed [label="Feed mix\n(protein, fibre, fat)", fillcolor="#E8F1F8", color="#0072B2"];
   olr [label="Loading rate", fillcolor="#E8F1F8", color="#0072B2"];
   hrt [label="Retention time", fillcolor="#E8F1F8", color="#0072B2"];
@@ -17,13 +17,13 @@ digraph G {
   air [label="Air dosing\n(desulphurisation)", fillcolor="#E8F1F8", color="#0072B2"];
   reactor [label="Reactor type,\nmixing, stages", fillcolor="#F2F2F2", color="#6D7173"];
   }
-  subgraph cluster_3 { label="Reactor at sampling (not observed directly)"; fontname="Helvetica"; fontsize=12; color="#BBBBBB"; style="rounded";
+  subgraph cluster_3 { label="Reactor at sampling (not observed directly)"; fontname="Helvetica"; fontsize=15; color="#BBBBBB"; style="rounded";
   te [label="Trace elements\nin the digester", fillcolor="#FFFFFF", color="#6D7173", style="rounded,dashed,filled"];
   acceptor [label="Sulfate, nitrate,\noxygen", fillcolor="#FFFFFF", color="#6D7173", style="rounded,dashed,filled"];
   state [label="Reactor state\n(VFA, H2, NH3, pH)", fillcolor="#FFFFFF", color="#6D7173", style="rounded,dashed,filled"];
   comm [label="Community\n(who carries what)", fillcolor="#FFF4E0", color="#E69F00", style="rounded,dashed,filled", penwidth=2];
   }
-  subgraph cluster_4 { label="What is measured"; fontname="Helvetica"; fontsize=12; color="#BBBBBB"; style="rounded";
+  subgraph cluster_4 { label="What is measured"; fontname="Helvetica"; fontsize=15; color="#BBBBBB"; style="rounded";
   sampling [label="Sampling point\nand time", fillcolor="#F2F2F2", color="#6D7173"];
   extract [label="DNA extraction,\nsequencing depth", fillcolor="#F2F2F2", color="#6D7173"];
   ref [label="Reference genomes\n(GTDB or own MAGs)", fillcolor="#F2F2F2", color="#6D7173"];
@@ -33,11 +33,11 @@ digraph G {
   gas [label="Gas yield, CH4 %", fillcolor="#E3F2EC", color="#009E73"];
   cue [label="What the operator\nsees on site (foam, smell)", fillcolor="#FFFFFF", color="#0072B2", style="rounded,dashed,filled"];
   }
-  subgraph cluster_5 { label="Which samples exist"; fontname="Helvetica"; fontsize=12; color="#BBBBBB"; style="rounded";
+  subgraph cluster_5 { label="Which samples exist"; fontname="Helvetica"; fontsize=15; color="#BBBBBB"; style="rounded";
   goodday [label="Sample on a\nstable day", fillcolor="#F2F2F2", color="#6D7173"];
   sampled [label="A sample\nis taken", fillcolor="#FFFFFF", color="#CC79A7", shape=octagon, style="filled"];
   }
-  subgraph cluster_6 { label="Next interval"; fontname="Helvetica"; fontsize=12; color="#BBBBBB"; style="rounded";
+  subgraph cluster_6 { label="Next interval"; fontname="Helvetica"; fontsize=15; color="#BBBBBB"; style="rounded";
   decision [label="Operator's next\nchange (load, feed)", fillcolor="#E8F1F8", color="#0072B2"];
   state_1 [label="Reactor state,\nnext interval", fillcolor="#FBE7E1", color="#D55E00", style="rounded,dashed,filled"];
   proc_1 [label="Process data,\nnext interval", fillcolor="#E3F2EC", color="#009E73"];

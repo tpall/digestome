@@ -136,12 +136,12 @@ node_line <- function(id) {
   sprintf("  %s [label=\"%s\", %s];", id, n$label, style[[n$group]])
 }
 dot <- c("digraph G {",
-  "  rankdir=LR; newrank=true; nodesep=0.25; ranksep=0.55;",
-  "  node [shape=box, style=\"rounded,filled\", fontname=\"Helvetica\", fontsize=11, margin=\"0.12,0.06\"];",
+  "  rankdir=LR; newrank=true; nodesep=0.12; ranksep=0.35;",
+  "  node [shape=box, style=\"rounded,filled\", fontname=\"Helvetica\", fontsize=14, margin=\"0.12,0.06\"];",
   "  edge [color=\"#6D7173\", arrowsize=0.6];",
   unlist(lapply(seq_along(clusters), function(i) {
     cl <- clusters[[i]]
-    c(sprintf("  subgraph cluster_%d { label=\"%s\"; fontname=\"Helvetica\"; fontsize=12; color=\"#BBBBBB\"; style=\"rounded\";",
+    c(sprintf("  subgraph cluster_%d { label=\"%s\"; fontname=\"Helvetica\"; fontsize=15; color=\"#BBBBBB\"; style=\"rounded\";",
               i, cl[1]), sapply(cl[-1], node_line), "  }")
   })),
   sprintf("  %s -> %s%s;", edges$from, edges$to,
@@ -151,6 +151,9 @@ fig <- file.path(here, "..", "figures", "fig-dag")
 writeLines(dot, file.path(here, "dag.dot"))
 system2("dot", c("-Tsvg", file.path(here, "dag.dot"), "-o", paste0(fig, ".svg")))
 system2("dot", c("-Tpdf", file.path(here, "dag.dot"), "-o", paste0(fig, ".pdf")))
+# The PDF (Typst) edition places the figure turned 90 degrees on its own page: the graph is wide, and
+# upright in a portrait text column its labels shrink to about 5 pt.
+system2("dot", c("-Tsvg", "-Grotate=90", file.path(here, "dag.dot"), "-o", paste0(fig, "-rotated.svg")))
 system2("dot", c("-Tpng", "-Gdpi=200", file.path(here, "dag.dot"), "-o", paste0(fig, ".png")))
 
 # ---- checks ----------------------------------------------------------------------------------

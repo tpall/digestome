@@ -541,11 +541,29 @@ operator sees on site is a parent of the decision that is not recorded. If the r
 is recorded, the parents of the decision (the profile, the process data, the gas yield and the
 recorded reason) form a sufficient adjustment set.
 
+::: {.content-visible unless-format="typst"}
 ![Causal graph of a digester and of what a marker-gene profile observes, unrolled into the weeks
 before the sample, the sampling week and the eight weeks after the profile is delivered. Dashed nodes
 are not observed directly. The bold arrows are every cause of the profile. "A sample is taken" marks
 selection: every analysis of collected samples conditions on it. Each edge carries a stated reason in
 the script that draws the figure (`manuscript/dag/`).](figures/fig-dag){#fig-dag width=100%}
+:::
+
+::: {.content-visible when-format="typst"}
+```{=typst}
+#pagebreak(weak: true)
+```
+
+![Causal graph of a digester and of what a marker-gene profile observes, unrolled into the weeks
+before the sample, the sampling week and the eight weeks after the profile is delivered. Dashed nodes
+are not observed directly. The bold arrows are every cause of the profile. "A sample is taken" marks
+selection: every analysis of collected samples conditions on it. Each edge carries a stated reason in
+the script that draws the figure (`manuscript/dag/`). The figure is turned 90 degrees.](figures/fig-dag-rotated.svg){#fig-dag height=21cm}
+
+```{=typst}
+#pagebreak(weak: true)
+```
+:::
 
 ## Detecting a pyrrolysine marker depends on the gene caller
 
