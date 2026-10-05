@@ -384,8 +384,8 @@
 <!-- comm&#45;&gt;dna -->
 <g id="edge24" class="edge">
 <title>comm&#45;&gt;dna</title>
-<path fill="none" stroke="#9c6a00" stroke-width="1.6" d="M560.08,-293C577.4,-311.38 601.56,-340.21 614.62,-370 641.05,-430.29 595.35,-467.27 639.62,-516 643.58,-520.36 648.25,-523.97 653.34,-526.94"/>
-<polygon fill="#9c6a00" stroke="#9c6a00" stroke-width="1.6" points="652.06,-528.64 658.36,-529.51 653.98,-524.9 652.06,-528.64"/>
+<path fill="none" stroke="#d55e00" stroke-width="3.5" d="M560.08,-293C577.4,-311.38 601.56,-340.21 614.62,-370 641.05,-430.29 595.35,-467.27 639.62,-516 642.23,-518.88 645.15,-521.42 648.3,-523.67"/>
+<polygon fill="#d55e00" stroke="#d55e00" stroke-width="3.5" points="646.53,-526.29 655.91,-527.99 649.64,-520.81 646.53,-526.29"/>
 </g>
 <!-- comm&#45;&gt;gas -->
 <g id="edge30" class="edge">
@@ -402,8 +402,8 @@
 <!-- sampling&#45;&gt;dna -->
 <g id="edge25" class="edge">
 <title>sampling&#45;&gt;dna</title>
-<path fill="none" stroke="#9c6a00" stroke-width="1.6" d="M423.82,-450.32C485.94,-448.19 584.26,-448.28 614.62,-468 634.79,-481.1 620.89,-500.91 639.62,-516 643.68,-519.27 648.15,-522.09 652.85,-524.53"/>
-<polygon fill="#9c6a00" stroke="#9c6a00" stroke-width="1.6" points="651.9,-526.41 658.22,-527.04 653.67,-522.6 651.9,-526.41"/>
+<path fill="none" stroke="#d55e00" stroke-width="3.5" d="M423.82,-450.32C485.94,-448.19 584.26,-448.28 614.62,-468 634.79,-481.1 620.89,-500.91 639.62,-516 642.23,-518.1 645.01,-520.02 647.91,-521.77"/>
+<polygon fill="#d55e00" stroke="#d55e00" stroke-width="3.5" points="646.23,-524.45 655.69,-525.68 649.06,-518.82 646.23,-524.45"/>
 </g>
 <!-- extract -->
 <g id="node17" class="node">
@@ -415,8 +415,8 @@
 <!-- extract&#45;&gt;dna -->
 <g id="edge26" class="edge">
 <title>extract&#45;&gt;dna</title>
-<path fill="none" stroke="#9c6a00" stroke-width="1.6" d="M601.16,-507.65C617.61,-511.85 635.59,-516.44 652.7,-520.81"/>
-<polygon fill="#9c6a00" stroke="#9c6a00" stroke-width="1.6" points="651.81,-522.75 658.14,-522.2 652.85,-518.68 651.81,-522.75"/>
+<path fill="none" stroke="#d55e00" stroke-width="3.5" d="M601.16,-507.65C615.69,-511.36 631.4,-515.37 646.65,-519.26"/>
+<polygon fill="#d55e00" stroke="#d55e00" stroke-width="3.5" points="645.86,-522.31 655.36,-521.48 647.41,-516.21 645.86,-522.31"/>
 </g>
 <!-- ref -->
 <g id="node18" class="node">
@@ -428,8 +428,8 @@
 <!-- ref&#45;&gt;dna -->
 <g id="edge27" class="edge">
 <title>ref&#45;&gt;dna</title>
-<path fill="none" stroke="#9c6a00" stroke-width="1.6" d="M614.98,-540C627.2,-540 639.86,-540 652.09,-540"/>
-<polygon fill="#9c6a00" stroke="#9c6a00" stroke-width="1.6" points="652.06,-542.1 658.06,-540 652.06,-537.9 652.06,-542.1"/>
+<path fill="none" stroke="#d55e00" stroke-width="3.5" d="M614.98,-540C625.32,-540 635.97,-540 646.42,-540"/>
+<polygon fill="#d55e00" stroke="#d55e00" stroke-width="3.5" points="646.19,-543.15 655.19,-540 646.19,-536.85 646.19,-543.15"/>
 </g>
 <!-- decision -->
 <g id="node26" class="node">

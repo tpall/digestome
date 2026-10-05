@@ -235,10 +235,10 @@ scored absent with the reason stated; where no taxonomy is supplied, or it is to
 the genome, the gate falls back to gene evidence and says so. A genome missing from the taxonomy
 table is treated as unclassified, never as a negative.
 
-Gates are evaluated per genome by default. The scorer can instead require every term of a gate to lie on
-one contig (contig-level co-occurrence), which preserves single-organism evidence without a bin. We
-measured the cost of that option on the GTDB sample by scoring each methanogen both ways with the final
-scorer and lineage policy, taking contig counts from the Prodigal gene calls.
+By default, gates are evaluated per genome. As an option, the scorer can require every term of a gate
+to lie on one contig (contig-level co-occurrence), which keeps the evidence within one organism without
+needing a bin. We measured what the option costs on the GTDB sample: we scored each methanogen both
+ways with the final scorer and lineage policy, and took contig counts from the Prodigal gene calls.
 
 ## Secretion evidence
 
@@ -265,22 +265,35 @@ what the panel defines.
 ## Causal structure of the readout
 
 To state what a profile can and cannot attribute, we drew the causal structure of a digester and of
-its measurement as a directed acyclic graph (DAG). Nodes are the operator's levers (feed, loading
-rate, retention time, temperature, trace-element dosing, inoculum, air dosing for desulphurisation),
-the reactor design, the reactor state (volatile fatty acids, hydrogen, free ammonia, pH), trace
-elements and electron acceptors in the digester, the community, the profile and its three
-measurement parents (sampling point and time, DNA extraction and sequencing depth, reference genomes),
-the process data, gas yield, a trace-element analysis, what the operator sees on site, the operator's
-next change, and whether a sample is taken at all. Because state and community act on each other, the
-graph is unrolled into three slices: the weeks before the sample (about one retention time), the
-sampling week, and the eight weeks after the profile is delivered. Every edge carries a one-line
-reason in a single edge list, which also generates the figure. We read the graph with dagitty 0.3.4
-[@textor2016dagitty]: the parents and ancestors of the profile, the directed paths from each upstream
-node to the profile, back-door paths and minimal adjustment sets for the effect of the operator's next
-change on the next state, and the conditional independencies the graph implies among observed nodes,
-each tested a second time conditional on a sample having been taken. Paths were enumerated with an
-explicit limit and the run stops if the limit is reached. The script and its output are in
-`manuscript/dag/`.
+its measurement as a directed acyclic graph (DAG). In a DAG, each node is a variable and each arrow
+states an assumed direct cause; a missing arrow states that there is no direct effect. The first group
+of nodes holds the operator's levers (feed, loading rate, retention time, temperature, trace-element
+dosing, inoculum, and air dosing for desulphurisation) and the reactor design. The second holds the
+reactor state (volatile fatty acids, hydrogen, free ammonia, pH) and the trace elements and electron
+acceptors in the digester. Next come the community and the profile, and three measurement choices
+that also act on the profile: the sampling point and time, the DNA extraction and sequencing depth,
+and the reference genomes. The last group holds the other observations and the decision: process data,
+gas yield, a trace-element analysis, what the operator sees on site, the operator's next change, and
+whether a sample is taken at all.
+
+A DAG cannot contain a loop, but the reactor state and the community act on each other. We therefore
+unrolled the graph into three time slices: the weeks before the sample (about one retention time), the
+sampling week, and the eight weeks after the profile is delivered. A single edge list holds every
+arrow with a one-line reason, and the same list draws the figure.
+
+We queried the graph with dagitty 0.3.4 [@textor2016dagitty]. We listed the parents of the profile
+(its direct causes), the ancestors of the community (every node with a directed path to it), and the
+directed paths from each upstream node to the profile. For the effect of the operator's next change on
+the reactor state in the following slice, we listed the back-door paths and the minimal adjustment
+sets. A back-door path links a decision to its outcome through a common cause rather than through the
+decision's effect; an adjustment set is a set of observed variables that blocks every such path, so
+that the effect can be estimated. Finally, we listed the conditional independencies that the graph
+implies among observed nodes, that is, pairs of variables that should be unrelated once a stated set
+of others is held fixed. We tested each one twice, as stated and again conditional on a sample having
+been taken, because only samples that someone took can be analysed.
+
+Paths were enumerated up to an explicit limit, and the script stops if the limit is reached. The
+script and its output are in `manuscript/dag/`.
 
 ## Software implementation and compute environment
 
@@ -505,13 +518,12 @@ MtaB term, and all 36 calls meet that requirement. We report them as capacity an
 
 ## Contig-level co-occurrence does not transfer to the methanogenesis gates
 
-Requiring every term on one contig leaves 64% of the methanogens that have a route with none
-(525 of 819), and the loss tracks assembly contiguity (@fig-contig): nothing for single-contig genomes, 14% at two
-to ten contigs, 62% at eleven to fifty, 83% at fifty-one to two hundred and 95% beyond that. The reason is gene arrangement rather than
-assembly quality. The rule is cheap for an operon-encoded pathway, where the members sit side by
-side, and prohibitive for a distributed one: the `mcr`, `fwd` and `mtr` loci lie apart on the
-chromosome, so demanding `mcrA` and four C1 steps on one contig amounts to demanding a contig
-that spans most of a replicon.
+Requiring every gate term on one contig removed every route from 64% of the methanogens that had one
+under genome-level scoring (525 of 819). The loss grew with the number of contigs in the genome
+(@fig-contig): none for single-contig genomes, 14% at two to ten contigs, 62% at eleven to fifty, 83%
+at fifty-one to two hundred, and 95% above two hundred. The cause is gene arrangement, not assembly
+quality. The `mcr`, `fwd` and `mtr` loci lie apart on the chromosome, so a contig that holds `mcrA`
+and four C1 steps has to span most of a replicon.
 
 ![Methanogens of the GTDB sample that lose every route when every gate term must lie on one contig,
 by the number of contigs in the genome. The share is of genomes with at least one route under
@@ -521,32 +533,34 @@ counts are taken from the Prodigal gene calls.](figures/fig-contig-loss){#fig-co
 
 ## A profile reports the community together with three measurement choices
 
-The causal graph of the readout (@fig-dag) has 28 nodes and 44 edges. The profile has four parents:
-the community, and the three measurement choices of sampling point and time, DNA extraction and
-sequencing depth, and reference genomes. The reactor state has no path to the profile except through
-the community. Thirteen nodes are ancestors of the community, and eleven observed upstream nodes have
-at least one directed path to the profile: every lever, the reactor design, and the three measurement
-choices; the feed has six.
+The causal graph of the readout (@fig-dag) has 28 nodes and 44 arrows. The profile has four direct
+causes: the community and the three measurement choices (sampling point and time, DNA extraction and
+sequencing depth, and reference genomes). The reactor state reaches the profile only through the
+community. Thirteen nodes are causes of the community, directly or through other nodes. Eleven
+observed upstream nodes have at least one directed path to the profile: every lever, the reactor
+design and the three measurement choices. The feed has six such paths.
 
-Among the observed nodes, the graph implies 24 conditional independencies that involve a measurement.
-Twelve still hold when a sample having been taken is conditioned on, and so can be tested on samples
-that exist only because someone took them; the other twelve are opened by that selection. Nine of the
-twelve that survive concern the measurement choices (for example, extraction is independent of the
-process data, with or without selection). The remaining three concern the inoculum and the reactor
-design, and each would fail if a specific arrow that the graph leaves out were present.
+The graph implies 24 conditional independencies that involve a measurement. Twelve still hold among
+samples that were taken, so they can be tested on collected samples. Selection opens the other twelve:
+they will fail on collected samples even if the graph is right. Of the twelve testable ones, nine
+concern the measurement choices; for example, extraction is independent of the process data, with or
+without selection. The other three concern the inoculum and the reactor design, and each would fail if
+one specific arrow that the graph leaves out were present.
 
 For the effect of the operator's next change on the reactor state in the following interval, the graph
-has 133 back-door paths, 79 of them open. As drawn, no adjustment set exists, because what the
-operator sees on site is a parent of the decision that is not recorded. If the reason for each change
-is recorded, the parents of the decision (the profile, the process data, the gas yield and the
-recorded reason) form a sufficient adjustment set.
+has 133 back-door paths, 79 of them open, meaning that they carry association unless something on them
+is adjusted for. As drawn, no adjustment set exists, because what the operator sees on site drives the
+decision and is not recorded. If the reason for each change is recorded, the direct causes of the
+decision (the profile, the process data, the gas yield and the recorded reason) form a sufficient
+adjustment set.
 
 ::: {.content-visible unless-format="typst"}
-![Causal graph of a digester and of what a marker-gene profile observes, unrolled into the weeks
-before the sample, the sampling week and the eight weeks after the profile is delivered. Dashed nodes
-are not observed directly. The bold arrows are every cause of the profile. "A sample is taken" marks
-selection: every analysis of collected samples conditions on it. Each edge carries a stated reason in
-the script that draws the figure (`manuscript/dag/`).](figures/fig-dag){#fig-dag width=100%}
+![Causal graph of a digester and of what a marker-gene profile observes. The graph is unrolled into
+three time slices: the weeks before the sample, the sampling week, and the eight weeks after the profile
+is delivered. Dashed nodes are not observed directly. The four thick orange arrows are the direct
+causes of the profile: the community, the sampling point and time, the DNA extraction and sequencing
+depth, and the reference genomes. "A sample is taken" marks selection: every analysis of collected samples is conditional on it.
+The script that draws the figure gives a reason for every arrow (`manuscript/dag/`).](figures/fig-dag){#fig-dag width=100%}
 :::
 
 ::: {.content-visible when-format="typst"}
@@ -554,11 +568,12 @@ the script that draws the figure (`manuscript/dag/`).](figures/fig-dag){#fig-dag
 #pagebreak(weak: true)
 ```
 
-![Causal graph of a digester and of what a marker-gene profile observes, unrolled into the weeks
-before the sample, the sampling week and the eight weeks after the profile is delivered. Dashed nodes
-are not observed directly. The bold arrows are every cause of the profile. "A sample is taken" marks
-selection: every analysis of collected samples conditions on it. Each edge carries a stated reason in
-the script that draws the figure (`manuscript/dag/`). The figure is turned 90 degrees.](figures/fig-dag-rotated.svg){#fig-dag height=21cm}
+![Causal graph of a digester and of what a marker-gene profile observes. The graph is unrolled into
+three time slices: the weeks before the sample, the sampling week, and the eight weeks after the profile
+is delivered. Dashed nodes are not observed directly. The four thick orange arrows are the direct
+causes of the profile: the community, the sampling point and time, the DNA extraction and sequencing
+depth, and the reference genomes. "A sample is taken" marks selection: every analysis of collected samples is conditional on it.
+The script that draws the figure gives a reason for every arrow (`manuscript/dag/`). The figure is turned 90 degrees.](figures/fig-dag-rotated.svg){#fig-dag height=21cm}
 
 ```{=typst}
 #pagebreak(weak: true)
@@ -623,35 +638,44 @@ than as a missing detector, and would probably not have been investigated.
 
 ## From profile to advice
 
-The causal graph (@fig-dag) turns two statements usually made as caveats into consequences of
-structure. Because the reactor state reaches the profile only through a community that changes over
-weeks, a profile cannot report what the reactor is doing now; the capacity limitation below follows
-from the graph. And because three measurement choices are parents of the profile, a change between
-two samples is interpretable only with sampling, extraction and reference held fixed. The surviving
-independence of extraction and process data gives a practical rule: a profile that moves while
-volatile fatty acids, VOA/TIC and gas yield do not points to the protocol before the community.
+The causal graph (@fig-dag) turns two caveats into consequences of its structure. First, the reactor
+state reaches the profile only through the community, which changes over weeks. A profile therefore
+cannot report what the reactor is doing now; the capacity limitation below follows from the graph.
+Second, three measurement choices act on the profile directly, so a change between two samples can be
+read as a change in the community only if sampling, extraction and reference stay the same. Because
+extraction stays independent of the process data, a practical rule follows: if the profile moves while
+volatile fatty acids, VOA/TIC and gas yield do not, check the protocol before the community.
 
-A single finding cannot be read on its own either. With thirteen causes of the community, a thin
-acetoclastic route is compatible with ammonia inhibition, trace-element limitation, washout or a route
-that was never established, and the state also acts on the community, so a thin route can be a result
-of high ammonia rather than a cause of anything. Interpreting a profile therefore needs a second
-measurement that observes a competing cause, such as the process data or a digester trace-element
-analysis. The profile complements the physicochemical proxies rather than replacing them.
+A single finding cannot be read on its own either. Thirteen nodes act on the community, so a thin
+acetoclastic route is compatible with ammonia inhibition, trace-element limitation, washout, or a route
+that was never established. The reactor state also acts on the community, so a thin route can be a
+result of high ammonia rather than the cause of anything. Interpreting a profile therefore needs a
+second measurement of a competing cause, such as the process data or a digester trace-element analysis.
+The profile complements the physicochemical proxies; it does not replace them.
 
-Whether advice derived from profiles improves outcomes is a causal question, and the graph says what a
-field study would have to record for it to be answerable [@maivali2026bayesian]. The estimand has to be
-one intervention, for example raising the loading rate by one step rather than holding it, with the
-risk of a process upset within eight weeks read from the plant's routine log as VOA/TIC above that
-plant's own upper limit. Community-based advice claims effect modification by the community on top of
-that. Since no adjustment set exists unless the reason for each change is recorded, a field study has to
-record it at the time, on a fixed checklist, together with the profile, the process data and the gas
-yield. Framing the comparison as an emulated target trial with time zero at the delivery of the profile
-[@hernan2016target] prevents classifying plants by what they did later, and positivity will fail
-wherever all operators respond to a signal in the same way. Selection matters as much as confounding:
-plants sample when a process is in difficulty, so half of the graph's testable implications cannot be
-tested on such samples, and thresholds calibrated on them would describe disturbed states. Samples
-taken on stable days are the counterweight. This is what the prospective validation named under
-benchmark scope below would have to look like.
+Whether advice based on profiles improves outcomes is a causal question, and the graph shows what a
+field study would have to record to answer it [@maivali2026bayesian]. The estimand, the precise effect
+to be estimated, has to be one intervention. An example is raising the loading rate by one step rather
+than holding it. The outcome would be a process upset within eight weeks, read from the plant's routine
+log as VOA/TIC above that plant's own upper limit. Advice based on a profile claims
+something more specific: that the same load step is riskier in a reactor whose acetate route is thin
+than in one whose route is strong. In causal terms, the community modifies the effect of the load step
+(effect modification). Testing that advice therefore needs more than showing that load steps
+cause upsets: the effect has to be larger in reactors the profile flags as thin than in those it does
+not.
+
+Operators also act on what they see on site, so the effect is confounded by indication, and without a
+record of why each change was made no adjustment set exists. A field study therefore has to record the
+reason for each change at the time, on a fixed checklist, together with the profile, the process data
+and the gas yield. Framing the comparison as an emulated target trial with time zero at the delivery of
+the profile [@hernan2016target] prevents classifying plants by what they did later. The comparison is
+impossible wherever all operators respond to a signal in the same way, because there is then no one to
+compare with (positivity fails).
+
+Selection matters as much as confounding. Plants sample when a process is in difficulty; on such
+samples, half of the graph's testable implications cannot be tested, and thresholds calibrated on them
+would describe disturbed states. Samples taken on stable days are the counterweight. This is what the
+prospective validation named under benchmark scope below would have to look like.
 
 ## Limitations
 
@@ -683,24 +707,25 @@ only, too coarse for the order-level rules. The policy is data, one table with a
 so a new lineage is a reviewed edit rather than a code change; a lineage it does not know is
 reported, not guessed.
 
-Prevalence is measured over binned genomes. Scoring is per genome, so a marker carried by
-taxa that do not bin is not counted. The error is always downward and falls hardest on rare or
-taxonomically restricted functions, whose carriers are the least likely to be recovered as bins.
+Prevalence is measured over binned genomes. Scoring is per genome, so a marker carried by taxa that do
+not bin is not counted. The error always lowers prevalence, and it falls hardest on rare or
+taxonomically restricted functions, whose carriers are the least likely to form bins.
 
-Recovering the unbinned carriers by scoring assembly proteomes directly is not a safe substitute here, and
-the reason is quantitative rather than conceptual. A single-gene call survives the move, because
-presence in a sample does imply that some organism carries the gene. A multi-gene gate does not:
-its members can be satisfied by different organisms, and the resulting false-positive rate scales
-with how common the individual markers are. The hydrogenotrophic gate is the worst case in this
-panel, since a threshold of four present among eight carriers admits many ways to assemble a call
-from unrelated genomes.
+Scoring assembly proteomes directly would recover the unbinned carriers, but it is not a safe
+substitute here, for a quantitative rather than a conceptual reason. A single-gene call survives the
+move, because presence in a sample does show that some organism carries the gene. A multi-gene gate
+does not: different organisms can satisfy its members, and the false-positive rate grows with how
+common the individual markers are. The hydrogenotrophic gate is the worst case in this panel. Its
+threshold of four present among eight carriers lets a call be assembled from unrelated genomes in many
+ways.
 
-Contig-level co-occurrence preserves single-organism evidence without a bin, but it does not
-transfer to these gates (@fig-contig). The cost comes from gene arrangement rather than assembly
-quality: the rule is cheap for an operon-encoded pathway and prohibitive for a distributed one. The
-option exists for pathways it suits; these gates are defined for, and should be run on, binned genomes.
-Binned input answers what an organism can do, and assembly-level search answers whether a capability
-is present in a sample. These questions have different error models and should not be conflated.
+Contig-level co-occurrence keeps the evidence within one organism without a bin, but it does not
+transfer to these gates (@fig-contig). The cost comes from gene arrangement, not from assembly
+quality: the rule is cheap for an operon-encoded pathway and prohibitive for one spread across the
+chromosome. The option remains for pathways it suits; these gates are defined for binned genomes and
+should be run on them. Binned input answers what an organism can do, and assembly-level search answers
+whether a sample contains a capability. The two questions have different error models and should be
+kept apart.
 
 Taxonomic ground truth. Both the specificity and the sensitivity figures are measured
 against order-level labels, and those labels were wrong in both directions here.

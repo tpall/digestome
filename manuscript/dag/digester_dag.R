@@ -145,7 +145,7 @@ dot <- c("digraph G {",
               i, cl[1]), sapply(cl[-1], node_line), "  }")
   })),
   sprintf("  %s -> %s%s;", edges$from, edges$to,
-          ifelse(edges$to == "dna", " [color=\"#9C6A00\", penwidth=1.6]", "")),
+          ifelse(edges$to == "dna", " [color=\"#D55E00\", penwidth=3.5, arrowsize=0.9]", "")),
   "}")
 fig <- file.path(here, "..", "figures", "fig-dag")
 writeLines(dot, file.path(here, "dag.dot"))

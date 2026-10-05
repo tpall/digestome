@@ -65,10 +65,10 @@ digraph G {
   reactor -> hrt;
   reactor -> comm;
   reactor -> sampling;
-  comm -> dna [color="#9C6A00", penwidth=1.6];
-  sampling -> dna [color="#9C6A00", penwidth=1.6];
-  extract -> dna [color="#9C6A00", penwidth=1.6];
-  ref -> dna [color="#9C6A00", penwidth=1.6];
+  comm -> dna [color="#D55E00", penwidth=3.5, arrowsize=0.9];
+  sampling -> dna [color="#D55E00", penwidth=3.5, arrowsize=0.9];
+  extract -> dna [color="#D55E00", penwidth=3.5, arrowsize=0.9];
+  ref -> dna [color="#D55E00", penwidth=3.5, arrowsize=0.9];
   state -> proc;
   te -> te_meas;
   comm -> gas;
