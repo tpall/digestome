@@ -1,0 +1,67 @@
+Nodes 28, edges 44, latent (not observed): acceptor, comm, comm_0, cue, state, state_0, state_1, te
+
+## 1. What the profile has as causes (its parents and their ancestors)
+Parents of dna: comm, extract, ref, sampling
+Ancestors of comm: temp, te, te_dose, state, state_0, olr, reactor, inoc, hrt, feed, comm_0, acceptor, air
+
+## 2. Effect of the operator's next change on the next state
+Parents of decision: cue, dna, gas, proc
+As drawn (what the operator saw on site is not recorded): no adjustment set exists
+If the reason for each change is recorded: { cue, dna, gas, proc }
+Backdoor paths from decision to state_1: 133, of which 79 open.
+Shortest open backdoor paths:
+  decision <- dna <- comm -> state_1
+  decision <- gas <- comm -> state_1
+  decision <- cue <- state -> state_1
+  decision <- gas <- state -> state_1
+  decision <- proc <- state -> state_1
+  decision <- cue <- state -> comm -> state_1
+
+## 3. A change between two samples: what besides the community moves the profile
+Non-community parents of dna: extract, ref, sampling
+
+## 4. Two plants side by side: open paths between plant-level causes and the profile
+  sampling -> ... -> dna: 1 directed path(s)
+  reactor -> ... -> dna: 4 directed path(s)
+  ref -> ... -> dna: 1 directed path(s)
+  extract -> ... -> dna: 1 directed path(s)
+  temp -> ... -> dna: 2 directed path(s)
+  te_dose -> ... -> dna: 2 directed path(s)
+  olr -> ... -> dna: 1 directed path(s)
+  inoc -> ... -> dna: 1 directed path(s)
+  hrt -> ... -> dna: 2 directed path(s)
+  feed -> ... -> dna: 6 directed path(s)
+  air -> ... -> dna: 2 directed path(s)
+
+## 5. Implications among observed nodes that involve a measured output
+Testable on a client series (they still hold given that a sample was taken): 12
+  extr _||_ gas
+  extr _||_ proc
+  extr _||_ t_ms
+  gas _||_ ref
+  gas _||_ smpl | rctr
+  inoc _||_ proc
+  inoc _||_ t_ms
+  proc _||_ rctr | hrt
+  proc _||_ ref
+  proc _||_ smpl | rctr
+  proc _||_ smpl | hrt
+  ref _||_ t_ms
+Not testable on a client series: opened by selection on sampled = yes: 12
+  air _||_ t_ms
+  dna _||_ gddy
+  dn_0 _||_ t_ms
+  gas _||_ gddy
+  gddy _||_ proc
+  gddy _||_ pr_1
+  gddy _||_ t_ms
+  hrt _||_ t_ms
+  olr _||_ t_ms
+  rctr _||_ t_ms
+  smpl _||_ t_ms
+  t_ms _||_ temp
+
+## 6. Which samples exist
+Parents of sampled: dna_0, goodday, state. Every analysis of client samples conditions on sampled = yes.
+Without samples on stable days, sampled depends on the state (and the previous profile) alone: the samples
+over-represent upset states. Section 5 lists the implications this selection breaks.
