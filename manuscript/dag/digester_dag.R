@@ -196,13 +196,13 @@ keep <- Filter(function(ci) all(c(ci$X, ci$Y, ci$Z) %in% obs) &&
                impliedConditionalIndependencies(dag))
 fmt <- function(ci) trimws(paste(capture.output(print(ci)), collapse = " "))
 survives <- sapply(keep, function(ci) dseparated(dag, ci$X, ci$Y, unique(c(ci$Z, "sampled"))))
-say("Testable on a client series (they still hold given that a sample was taken): %d", sum(survives))
+say("Testable on collected field samples (they still hold given that a sample was taken): %d", sum(survives))
 for (ci in keep[survives]) say("  %s", fmt(ci))
-say("Not testable on a client series: opened by selection on sampled = yes: %d", sum(!survives))
+say("Not testable on collected field samples: opened by selection on sampled = yes: %d", sum(!survives))
 for (ci in keep[!survives]) say("  %s", fmt(ci))
 
 say("\n## 6. Which samples exist")
-say("Parents of sampled: %s. Every analysis of client samples conditions on sampled = yes.",
+say("Parents of sampled: %s. Every analysis of collected samples conditions on sampled = yes.",
     paste(parents(dag, "sampled"), collapse = ", "))
 say("Without samples on stable days, sampled depends on the state (and the previous profile) alone: the samples")
 say("over-represent upset states. Section 5 lists the implications this selection breaks.")

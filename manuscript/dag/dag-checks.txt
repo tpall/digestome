@@ -34,7 +34,7 @@ Non-community parents of dna: extract, ref, sampling
   air -> ... -> dna: 2 directed path(s)
 
 ## 5. Implications among observed nodes that involve a measured output
-Testable on a client series (they still hold given that a sample was taken): 12
+Testable on collected field samples (they still hold given that a sample was taken): 12
   extr _||_ gas
   extr _||_ proc
   extr _||_ t_ms
@@ -47,7 +47,7 @@ Testable on a client series (they still hold given that a sample was taken): 12
   proc _||_ smpl | rctr
   proc _||_ smpl | hrt
   ref _||_ t_ms
-Not testable on a client series: opened by selection on sampled = yes: 12
+Not testable on collected field samples: opened by selection on sampled = yes: 12
   air _||_ t_ms
   dna _||_ gddy
   dn_0 _||_ t_ms
@@ -62,6 +62,6 @@ Not testable on a client series: opened by selection on sampled = yes: 12
   t_ms _||_ temp
 
 ## 6. Which samples exist
-Parents of sampled: dna_0, goodday, state. Every analysis of client samples conditions on sampled = yes.
+Parents of sampled: dna_0, goodday, state. Every analysis of collected samples conditions on sampled = yes.
 Without samples on stable days, sampled depends on the state (and the previous profile) alone: the samples
 over-represent upset states. Section 5 lists the implications this selection breaks.
