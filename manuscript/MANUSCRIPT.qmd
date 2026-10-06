@@ -667,8 +667,11 @@ not.
 Operators also act on what they see on site, so the effect is confounded by indication, and without a
 record of why each change was made no adjustment set exists. A prospective validation therefore has to record the
 reason for each change at the time, on a fixed checklist, together with the profile, the process data
-and the gas yield. Framing the comparison as an emulated target trial with time zero at the delivery of
-the profile [@hernan2016target] prevents classifying plants by what they did later. The comparison is
+and the gas yield. Framing the comparison as an emulated target trial [@hernan2016target], with time zero at the
+delivery of the profile, places each plant in a group (raise the load or hold it) by what was decided at
+that point. Grouping plants by what they did in the following weeks would put every plant that had an
+upset before it could raise the load into the "hold" group, and so make raising the load look safer
+than it is. The comparison is
 impossible wherever all operators respond to a signal in the same way, because there is then no one to
 compare with (positivity fails).
 
