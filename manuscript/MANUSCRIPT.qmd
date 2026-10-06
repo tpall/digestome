@@ -262,10 +262,12 @@ licence-clean source. The same rule applies to gates and, through `core_detectab
 completeness percentages, which must be read against what could be detected rather than against
 what the panel defines.
 
-## Causal structure of the readout
+## Causal structure of a profile
 
-To state what a profile can and cannot attribute, we drew the causal structure of a digester and of
-its measurement as a directed acyclic graph (DAG). In a DAG, each node is a variable and each arrow
+We call the panel's output for one sample a profile: the route calls and module completeness of
+each genome, together with each genome's share of the reads. It is the genomic profile of the
+Introduction. To state what a profile can and cannot attribute, we drew the causal structure of a
+digester and of its measurement as a directed acyclic graph (DAG). In a DAG, each node is a variable and each arrow
 states an assumed direct cause; a missing arrow states that there is no direct effect. The first group
 of nodes holds the operator's levers (feed, loading rate, retention time, temperature, trace-element
 dosing, inoculum, and air dosing for desulphurisation) and the reactor design. The second holds the
@@ -533,7 +535,7 @@ counts are taken from the Prodigal gene calls.](figures/fig-contig-loss){#fig-co
 
 ## A profile reports the community together with three measurement choices
 
-The causal graph of the readout (@fig-dag) has 28 nodes and 44 arrows. The profile has four direct
+The causal graph of a profile (@fig-dag) has 28 nodes and 44 arrows. The profile has four direct
 causes: the community and the three measurement choices (sampling point and time, DNA extraction and
 sequencing depth, and reference genomes). The reactor state reaches the profile only through the
 community. Thirteen nodes are causes of the community, directly or through other nodes. Eleven
@@ -648,13 +650,14 @@ volatile fatty acids, VOA/TIC and gas yield do not, check the protocol before th
 
 A single finding cannot be read on its own either. Thirteen nodes act on the community, so a thin
 acetoclastic route is compatible with ammonia inhibition, trace-element limitation, washout, or a route
-that was never established. The reactor state also acts on the community, so a thin route can be a
-result of high ammonia rather than the cause of anything. Interpreting a profile therefore needs a
+that was never established. The reactor state also acts on the community, so a thin acetate route can
+be a result of high ammonia, which inhibits acetate-using methanogens, rather than the cause of a
+problem such as acetate accumulation. Interpreting a profile therefore needs a
 second measurement of a competing cause, such as the process data or a digester trace-element analysis.
 The profile complements the physicochemical proxies; it does not replace them.
 
 Whether advice based on profiles improves outcomes is a causal question, and the graph shows what a
-field study would have to record to answer it [@maivali2026bayesian]. The estimand, the precise effect
+prospective validation would have to record to answer it [@maivali2026bayesian]. The estimand, the precise effect
 to be estimated, has to be one intervention. An example is raising the loading rate by one step rather
 than holding it. The outcome would be a process upset within eight weeks, read from the plant's routine
 log as VOA/TIC above that plant's own upper limit. Advice based on a profile claims
@@ -665,7 +668,7 @@ cause upsets: the effect has to be larger in reactors the profile flags as thin 
 not.
 
 Operators also act on what they see on site, so the effect is confounded by indication, and without a
-record of why each change was made no adjustment set exists. A field study therefore has to record the
+record of why each change was made no adjustment set exists. A prospective validation therefore has to record the
 reason for each change at the time, on a fixed checklist, together with the profile, the process data
 and the gas yield. Framing the comparison as an emulated target trial with time zero at the delivery of
 the profile [@hernan2016target] prevents classifying plants by what they did later. The comparison is

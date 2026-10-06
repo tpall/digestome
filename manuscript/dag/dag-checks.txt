@@ -34,7 +34,7 @@ Non-community parents of dna: extract, ref, sampling
   air -> ... -> dna: 2 directed path(s)
 
 ## 5. Implications among observed nodes that involve a measured output
-Testable on collected field samples (they still hold given that a sample was taken): 12
+Testable on collected samples (they still hold given that a sample was taken): 12
   extr _||_ gas
   extr _||_ proc
   extr _||_ t_ms
@@ -47,7 +47,7 @@ Testable on collected field samples (they still hold given that a sample was tak
   proc _||_ smpl | rctr
   proc _||_ smpl | hrt
   ref _||_ t_ms
-Not testable on collected field samples: opened by selection on sampled = yes: 12
+Not testable on collected samples: opened by selection on sampled = yes: 12
   air _||_ t_ms
   dna _||_ gddy
   dn_0 _||_ t_ms

@@ -1,5 +1,5 @@
 # Causal DAG of a digester and of what a marker-gene profile observes (manuscript, "Causal structure of
-# the readout"). One edge list drives the figure (figures/fig-dag.*) and the checks (dag/dag-checks.txt).
+# a profile"). One edge list drives the figure (figures/fig-dag.*) and the checks (dag/dag-checks.txt).
 #
 #   Rscript manuscript/dag/digester_dag.R
 #
@@ -199,9 +199,9 @@ keep <- Filter(function(ci) all(c(ci$X, ci$Y, ci$Z) %in% obs) &&
                impliedConditionalIndependencies(dag))
 fmt <- function(ci) trimws(paste(capture.output(print(ci)), collapse = " "))
 survives <- sapply(keep, function(ci) dseparated(dag, ci$X, ci$Y, unique(c(ci$Z, "sampled"))))
-say("Testable on collected field samples (they still hold given that a sample was taken): %d", sum(survives))
+say("Testable on collected samples (they still hold given that a sample was taken): %d", sum(survives))
 for (ci in keep[survives]) say("  %s", fmt(ci))
-say("Not testable on collected field samples: opened by selection on sampled = yes: %d", sum(!survives))
+say("Not testable on collected samples: opened by selection on sampled = yes: %d", sum(!survives))
 for (ci in keep[!survives]) say("  %s", fmt(ci))
 
 say("\n## 6. Which samples exist")
