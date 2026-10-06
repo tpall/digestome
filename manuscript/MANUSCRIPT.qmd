@@ -12,9 +12,8 @@ author:
 date: last-modified
 abstract: |
   Functional profiling of anaerobic digestion microbiomes is routinely performed
-  against KEGG or MetaCyc, both of which require a paid licence for commercial use. This
-  blocks fee-for-service analysis for biogas operators, the setting where the results have
-  the most immediate operational value. We present `digestome`, a curated marker-gene panel for
+  against KEGG or MetaCyc, whose paid commercial licences block fee-for-service analysis for
+  biogas operators, the setting where the results have the most immediate operational value. We present `digestome`, a curated marker-gene panel for
   anaerobic digestion built exclusively on sources that are free for commercial use
   (NCBIfam, public domain; Pfam, CC0; Rhea, CC BY), together with a scorer that
   reports pathway completeness, branch capability and, for hydrolysis, whether the enzyme
@@ -30,11 +29,20 @@ abstract: |
   them, with 14 more left unconfirmed in unnamed genera.
   Testing whether a catalytic domain shares a
   polypeptide with an export module reduced the genomes credited with cellulolytic capacity
-  from 597 to 50.
+  from 597 to 50. A causal graph of the measurement shows that a profile reports the community
+  together with three measurement choices (sampling, DNA extraction and sequencing depth, and
+  reference genomes), which fixes what one profile can attribute and what a prospective
+  validation would have to record.
 keywords: [anaerobic digestion, biogas, metagenomics, functional annotation, methanogenesis, open data]
 bibliography: references.bib
 # APA leaves titles as written; the default Chicago style title-cases them, breaking species names.
 csl: apa.csl
+crossref:
+  custom:
+    - kind: float
+      key: suppfig
+      reference-prefix: Figure S
+      space-before-numbering: false
 format:
   html:
     default-image-extension: svg
@@ -58,6 +66,8 @@ format:
     include-in-header:
       # Justified text in narrow table cells leaves rivers of space; tables read better ragged-right.
       text: |
+        // Supplementary figures read "Figure S1": Typst would otherwise put a space after the label.
+        #show ref: it => { let el = it.element; if el != none and el.func() == figure and el.kind == "quarto-float-suppfig" { link(el.location(), [Figure~S#counter(figure.where(kind: "quarto-float-suppfig")).at(el.location()).first()]) } else { it } }
         #show table.cell: set par(justify: false)
         #show table.cell: set text(hyphenate: false)
 execute:
@@ -70,7 +80,7 @@ Industrial anaerobic digestion is commonly regarded as a biological "black box"
 [@koch2014microbiomes; @devrieze2020frontier; @adblackbox2024]. Biogas plant operators must
 manage a highly complex microbial community that they cannot directly observe, forcing them to
 rely on physicochemical proxies, such as volatile fatty acids, the volatile organic acids to total
-inorganic carbon (VOA/TIC) ratio, ammonium, and biogas composition, that typically register a
+inorganic carbon (VOA/TIC) ratio (also written FOS/TAC or VOA/TAC), ammonium, and biogas composition, that typically register a
 metabolic disturbance only after a process imbalance has already occurred
 [@koch2014microbiomes; @carballa2015management]. Surveys of many full-scale digesters show that
 community structure reflects process condition [@hassa2021indicative], yet reviews in the
@@ -131,8 +141,8 @@ independently curated pathway model. Constructing such a model for a single spec
 rather than for the entirety of global metabolism, is precisely what makes this problem tractable.
 
 The other obstacle is interpretive, stemming from the fact that marker-gene profiling merely
-reports what a genome carries, leaving gaps that separate this raw genomic profile from the
-actionable insights a plant operator actually requires. First, a gene may be present, but the
+reports what a genome carries, leaving gaps that separate this raw genomic profile (the per-genome
+calls and abundances for one sample) from the actionable insights a plant operator actually requires. First, a gene may be present, but the
 pathway it serves may operate in the opposite direction. Second, an enzyme may be encoded but never
 secreted from the cell; in the context of extracellular hydrolysis, this lack of transport means it
 never contacts its substrate. Beyond these, a marker for which no detector exists is easily registered as a
@@ -264,9 +274,9 @@ what the panel defines.
 
 ## Causal structure of a profile
 
-We call the panel's output for one sample a profile: the route calls and module completeness of
-each genome, together with each genome's share of the reads. It is the genomic profile of the
-Introduction. To state what a profile can and cannot attribute, we drew the causal structure of a
+A profile, as in the Introduction, is the panel's output for one sample: the route calls and module
+completeness of each genome, together with each genome's share of the reads. To state what a profile
+can and cannot attribute, we drew the causal structure of a
 digester and of its measurement as a directed acyclic graph (DAG). In a DAG, each node is a variable and each arrow
 states an assumed direct cause; a missing arrow states that there is no direct effect. The first group
 of nodes holds the operator's levers (feed, loading rate, retention time, temperature, trace-element
@@ -294,8 +304,7 @@ implies among observed nodes, that is, pairs of variables that should be unrelat
 of others is held fixed. We tested each one twice, as stated and again conditional on a sample having
 been taken, because only samples that someone took can be analysed.
 
-Paths were enumerated up to an explicit limit, and the script stops if the limit is reached. The
-script and its output are in `manuscript/dag/`.
+The full graph is @suppfig-dag; the script and its output are in `manuscript/dag/`.
 
 ## Software implementation and compute environment
 
@@ -524,7 +533,8 @@ Requiring every gate term on one contig removed every route from 64% of the meth
 under genome-level scoring (525 of 819). The loss grew with the number of contigs in the genome
 (@fig-contig): none for single-contig genomes, 14% at two to ten contigs, 62% at eleven to fifty, 83%
 at fifty-one to two hundred, and 95% above two hundred. The cause is gene arrangement, not assembly
-quality. The `mcr`, `fwd` and `mtr` loci lie apart on the chromosome, so a contig that holds `mcrA`
+quality: the rule is cheap for an operon-encoded pathway, whose genes sit side by side, and prohibitive
+for one spread across the chromosome. The `mcr`, `fwd` and `mtr` loci lie apart on the chromosome, so a contig that holds `mcrA`
 and four C1 steps has to span most of a replicon.
 
 ![Methanogens of the GTDB sample that lose every route when every gate term must lie on one contig,
@@ -535,16 +545,20 @@ counts are taken from the Prodigal gene calls.](figures/fig-contig-loss){#fig-co
 
 ## A profile reports the community together with three measurement choices
 
-The causal graph of a profile (@fig-dag) has 28 nodes and 44 arrows. The profile has four direct
-causes: the community and the three measurement choices (sampling point and time, DNA extraction and
-sequencing depth, and reference genomes). The reactor state reaches the profile only through the
-community. Thirteen nodes are causes of the community, directly or through other nodes. Eleven
-observed upstream nodes have at least one directed path to the profile: every lever, the reactor
-design and the three measurement choices. The feed has six such paths.
+The numbers in this subsection are properties of the graph as stated, whose arrows are assumptions
+drawn from the operating handbooks and from how the method works; they are not measurements. The
+graph (@suppfig-dag) has 28 nodes and 44 arrows; @fig-dag shows the part that concerns the profile.
+The profile has four direct causes: the community and the three measurement choices (sampling point
+and time, DNA extraction and sequencing depth, and reference genomes). The reactor state reaches the
+profile only through the community. Thirteen nodes are causes of the community, directly or through
+other nodes. Every lever reaches the profile only through the community; the reactor design also
+reaches it through the sampling point.
 
 The graph implies 24 conditional independencies that involve a measurement. Twelve still hold among
 samples that were taken, so they can be tested on collected samples. Selection opens the other twelve:
-they will fail on collected samples even if the graph is right. Of the twelve testable ones, nine
+they will fail on collected samples even if the graph is right. In the graph, whether a sample is taken
+depends on the reactor state, on the previous profile, and on whether samples are also taken on stable
+days. Of the twelve testable ones, nine
 concern the measurement choices; for example, extraction is independent of the process data, with or
 without selection. The other three concern the inoculum and the reactor design, and each would fail if
 one specific arrow that the graph leaves out were present.
@@ -556,31 +570,14 @@ decision and is not recorded. If the reason for each change is recorded, the dir
 decision (the profile, the process data, the gas yield and the recorded reason) form a sufficient
 adjustment set.
 
-::: {.content-visible unless-format="typst"}
-![Causal graph of a digester and of what a marker-gene profile observes. The graph is unrolled into
-three time slices: the weeks before the sample, the sampling week, and the eight weeks after the profile
-is delivered. Dashed nodes are not observed directly. The four thick orange arrows are the direct
-causes of the profile: the community, the sampling point and time, the DNA extraction and sequencing
-depth, and the reference genomes. "A sample is taken" marks selection: every analysis of collected samples is conditional on it.
-The script that draws the figure gives a reason for every arrow (`manuscript/dag/`).](figures/fig-dag){#fig-dag width=100%}
-:::
-
-::: {.content-visible when-format="typst"}
-```{=typst}
-#pagebreak(weak: true)
-```
-
-![Causal graph of a digester and of what a marker-gene profile observes. The graph is unrolled into
-three time slices: the weeks before the sample, the sampling week, and the eight weeks after the profile
-is delivered. Dashed nodes are not observed directly. The four thick orange arrows are the direct
-causes of the profile: the community, the sampling point and time, the DNA extraction and sequencing
-depth, and the reference genomes. "A sample is taken" marks selection: every analysis of collected samples is conditional on it.
-The script that draws the figure gives a reason for every arrow (`manuscript/dag/`). The figure is turned 90 degrees.](figures/fig-dag-rotated.svg){#fig-dag height=21cm}
-
-```{=typst}
-#pagebreak(weak: true)
-```
-:::
+![The part of the causal graph that concerns the profile (the full graph is @suppfig-dag). The four
+thick orange arrows are the direct causes of the profile: the community, the sampling point and time,
+the DNA extraction and sequencing depth, and the reference genomes. The levers and the reactor state
+reach the profile only through the community; the process data observe the state directly. Dashed
+nodes are not observed directly. "A sample is taken" marks selection: analysis is possible only for
+samples someone chose to take, so every analysis is conditional on it, and samples taken on stable
+days counter the bias toward disturbed states. Every arrow here is a directed path in the full
+graph.](figures/fig-dag){#fig-dag width=100%}
 
 ## Detecting a pyrrolysine marker depends on the gene caller
 
@@ -675,8 +672,9 @@ the profile [@hernan2016target] prevents classifying plants by what they did lat
 impossible wherever all operators respond to a signal in the same way, because there is then no one to
 compare with (positivity fails).
 
-Selection matters as much as confounding. Plants sample when a process is in difficulty; on such
-samples, half of the graph's testable implications cannot be tested, and thresholds calibrated on them
+Selection, analysing only the samples someone chose to take, matters as much as confounding: it biases
+the sample rather than merely thinning it. Plants sample when a process is in difficulty; on such
+samples, half of the graph's implied independencies cannot be tested, and thresholds calibrated on them
 would describe disturbed states. Samples taken on stable days are the counterweight. This is what the
 prospective validation named under benchmark scope below would have to look like.
 
@@ -723,9 +721,7 @@ threshold of four present among eight carriers lets a call be assembled from unr
 ways.
 
 Contig-level co-occurrence keeps the evidence within one organism without a bin, but it does not
-transfer to these gates (@fig-contig). The cost comes from gene arrangement, not from assembly
-quality: the rule is cheap for an operon-encoded pathway and prohibitive for one spread across the
-chromosome. The option remains for pathways it suits; these gates are defined for binned genomes and
+transfer to these gates (@fig-contig). The option remains for pathways it suits; these gates are defined for binned genomes and
 should be run on them. Binned input answers what an organism can do, and assembly-level search answers
 whether a sample contains a capability. The two questions have different error models and should be
 kept apart.
@@ -743,7 +739,8 @@ Benchmark scope. Specificity rests on collections built differently, one
 binned from digester metagenomes by a single group and one drawn from GTDB representatives, which
 removes the possibility that the result is an artefact of one binning pipeline. Both remain
 snapshots of public sequence databases, and neither tests genomes from a digester the panel has
-not seen. Sensitivity is measured only
+not seen. No prospective validation in operating plants has been attempted; what one would have to
+record is set out in the Discussion. Sensitivity is measured only
 against taxonomic assignment, which is itself an inference: a genome placed in a methanogen order
 that carries no `mcrA` is counted here as a genome with a missing marker, not as a misplaced
 lineage, and the two are not distinguishable from gene content alone.
@@ -796,4 +793,44 @@ abundances public: the specificity benchmark in this work is only possible becau
 ## References {.unnumbered}
 
 ::: {#refs}
+:::
+
+
+## Supplementary figure {.unnumbered}
+
+::: {.content-visible unless-format="typst"}
+::: {#suppfig-dag}
+![](figures/fig-s1-dag.svg){width=100%}
+
+Full causal graph of a digester and of what a marker-gene profile observes, unrolled into three time
+slices: the weeks before the sample, the sampling week, and the eight weeks after the profile is
+delivered. Dashed nodes are not observed directly. The four thick orange arrows are the direct causes of
+the profile. "A sample is taken" marks selection: analysis is possible only for samples someone chose
+to take, so every analysis is conditional on it. The script that draws the figure gives a reason for
+every arrow (`manuscript/dag/`).
+:::
+:::
+
+::: {.content-visible when-format="typst"}
+```{=typst}
+#pagebreak(weak: true)
+// The template writes "Figure S 1." for this kind; same look as its other captions, without the space.
+#show figure.caption.where(kind: "quarto-float-suppfig"): it => [
+  #set align(left)
+  #set par(first-line-indent: 0em)
+  #emph([Figure S#context it.counter.display("1").])
+  #it.body
+]
+```
+
+::: {#suppfig-dag}
+![](figures/fig-s1-dag-rotated.svg){height=21cm}
+
+Full causal graph of a digester and of what a marker-gene profile observes, unrolled into three time
+slices: the weeks before the sample, the sampling week, and the eight weeks after the profile is
+delivered. Dashed nodes are not observed directly. The four thick orange arrows are the direct causes of
+the profile. "A sample is taken" marks selection: analysis is possible only for samples someone chose
+to take, so every analysis is conditional on it. The script that draws the figure gives a reason for
+every arrow (`manuscript/dag/`). The figure is turned 90 degrees.
+:::
 :::

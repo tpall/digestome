@@ -3,6 +3,11 @@
 #
 #   Rscript manuscript/dag/digester_dag.R
 #
+# Node ids and the manuscript's terms: dna = the profile, dna_0 = the previous profile, comm = the
+# community, state = the reactor state, proc = the process data, sampled = a sample is taken,
+# goodday = a sample on a stable day, decision = the operator's next change, *_0 / *_1 = the slices
+# before the sample and after the profile is delivered.
+#
 # State and community feed back on each other, so the graph is unrolled in time: *_0 is the
 # history before the sample, the unsuffixed nodes are the reactor at sampling, *_1 the next interval.
 suppressPackageStartupMessages(library(dagitty))
@@ -44,7 +49,7 @@ sampling  | measure    | Sampling point\\nand time
 extract   | measure    | DNA extraction,\\nsequencing depth
 ref       | measure    | Reference genomes\\n(GTDB or own MAGs)
 dna       | report     | Marker-gene profile\\n(genome shares)
-proc      | observed   | Process data\\n(FOS/TAC, VFA, NH4, pH)
+proc      | observed   | Process data\\n(VOA/TIC, VFA, NH4, pH)
 proc_1    | observed   | Process data,\\nnext interval
 te_meas   | observed   | Trace-element\\nanalysis
 gas       | observed   | Gas yield, CH4 %
@@ -147,7 +152,7 @@ dot <- c("digraph G {",
   sprintf("  %s -> %s%s;", edges$from, edges$to,
           ifelse(edges$to == "dna", " [color=\"#D55E00\", penwidth=3.5, arrowsize=0.9]", "")),
   "}")
-fig <- file.path(here, "..", "figures", "fig-dag")
+fig <- file.path(here, "..", "figures", "fig-s1-dag")
 writeLines(dot, file.path(here, "dag.dot"))
 system2("dot", c("-Tsvg", file.path(here, "dag.dot"), "-o", paste0(fig, ".svg")))
 system2("dot", c("-Tpdf", file.path(here, "dag.dot"), "-o", paste0(fig, ".pdf")))
@@ -155,6 +160,63 @@ system2("dot", c("-Tpdf", file.path(here, "dag.dot"), "-o", paste0(fig, ".pdf"))
 # upright in a portrait text column its labels shrink to about 5 pt.
 system2("dot", c("-Tsvg", "-Grotate=90", file.path(here, "dag.dot"), "-o", paste0(fig, "-rotated.svg")))
 system2("dot", c("-Tpng", "-Gdpi=200", file.path(here, "dag.dot"), "-o", paste0(fig, ".png")))
+
+# ---- reduced figure (manuscript Figure 4) --------------------------------------------------
+# The part of the graph the Results subsection is about: the profile, its four direct causes, the
+# reactor state behind the community, the process data beside it, and selection. All levers are one
+# node. Every arrow below must be a directed path in the full graph, or the script stops, so the
+# reduced figure cannot claim an arrow the full graph does not have.
+levers <- c("feed", "olr", "hrt", "temp", "te_dose", "inoc", "air")
+red_nodes <- read.table(header = TRUE, sep = "|", strip.white = TRUE, quote = "", text = "
+id       | group      | label
+levers   | lever      | Operator's levers\\n(feed, load, retention,\\ntemperature, additives)
+state    | state      | Reactor state\\n(VFA, H2, NH3, pH)
+comm     | community  | Community\\n(who carries what)
+sampling | measure    | Sampling point\\nand time
+extract  | measure    | DNA extraction,\\nsequencing depth
+ref      | measure    | Reference\\ngenomes
+dna      | report     | Marker-gene\\nprofile
+proc     | observed   | Process data\\n(VOA/TIC, VFA, NH4, pH)
+goodday  | measure    | Sample on a\\nstable day
+sampled  | selection  | A sample\\nis taken
+")
+red_edges <- read.table(header = TRUE, sep = "|", strip.white = TRUE, quote = "", text = "
+from     | to
+levers   | state
+levers   | comm
+state    | comm
+comm     | dna
+sampling | dna
+extract  | dna
+ref      | dna
+state    | proc
+state    | sampled
+goodday  | sampled
+")
+for (i in seq_len(nrow(red_edges))) {
+  fr <- if (red_edges$from[i] == "levers") levers else red_edges$from[i]
+  ok <- any(sapply(fr, function(f) length(paths(dag, f, red_edges$to[i], directed = TRUE,
+                                                limit = PATH_LIMIT)$paths) > 0))
+  if (!ok) stop(sprintf("reduced figure: %s -> %s is not a path in the full graph", red_edges$from[i], red_edges$to[i]))
+}
+red_line <- function(id) {
+  n <- red_nodes[red_nodes$id == id, ]
+  sprintf("  %s [label=\"%s\", %s];", id, n$label, style[[n$group]])
+}
+red <- c("digraph R {",
+  "  rankdir=TB; nodesep=0.3; ranksep=0.45;",
+  "  node [shape=box, style=\"rounded,filled\", fontname=\"Helvetica\", fontsize=14, margin=\"0.14,0.07\"];",
+  "  edge [color=\"#6D7173\", arrowsize=0.7];",
+  sapply(red_nodes$id, red_line),
+  "  { rank=same; sampling; extract; ref; }",
+  "  { rank=same; dna; proc; sampled; }",
+  sprintf("  %s -> %s%s;", red_edges$from, red_edges$to,
+          ifelse(red_edges$to == "dna", " [color=\"#D55E00\", penwidth=3.5, arrowsize=0.9]", "")),
+  "}")
+red_fig <- file.path(here, "..", "figures", "fig-dag")
+writeLines(red, file.path(here, "dag-reduced.dot"))
+for (fmt in c("svg", "pdf")) system2("dot", c(paste0("-T", fmt), file.path(here, "dag-reduced.dot"), "-o", paste0(red_fig, ".", fmt)))
+system2("dot", c("-Tpng", "-Gdpi=200", file.path(here, "dag-reduced.dot"), "-o", paste0(red_fig, ".png")))
 
 # ---- checks ----------------------------------------------------------------------------------
 out <- c()

@@ -1,0 +1,27 @@
+digraph R {
+  rankdir=TB; nodesep=0.3; ranksep=0.45;
+  node [shape=box, style="rounded,filled", fontname="Helvetica", fontsize=14, margin="0.14,0.07"];
+  edge [color="#6D7173", arrowsize=0.7];
+  levers [label="Operator's levers\n(feed, load, retention,\ntemperature, additives)", fillcolor="#E8F1F8", color="#0072B2"];
+  state [label="Reactor state\n(VFA, H2, NH3, pH)", fillcolor="#FFFFFF", color="#6D7173", style="rounded,dashed,filled"];
+  comm [label="Community\n(who carries what)", fillcolor="#FFF4E0", color="#E69F00", style="rounded,dashed,filled", penwidth=2];
+  sampling [label="Sampling point\nand time", fillcolor="#F2F2F2", color="#6D7173"];
+  extract [label="DNA extraction,\nsequencing depth", fillcolor="#F2F2F2", color="#6D7173"];
+  ref [label="Reference\ngenomes", fillcolor="#F2F2F2", color="#6D7173"];
+  dna [label="Marker-gene\nprofile", fillcolor="#E69F00", color="#9C6A00", fontcolor="#000000", penwidth=2];
+  proc [label="Process data\n(VOA/TIC, VFA, NH4, pH)", fillcolor="#E3F2EC", color="#009E73"];
+  goodday [label="Sample on a\nstable day", fillcolor="#F2F2F2", color="#6D7173"];
+  sampled [label="A sample\nis taken", fillcolor="#FFFFFF", color="#CC79A7", shape=octagon, style="filled"];
+  { rank=same; sampling; extract; ref; }
+  { rank=same; dna; proc; sampled; }
+  levers -> state;
+  levers -> comm;
+  state -> comm;
+  comm -> dna [color="#D55E00", penwidth=3.5, arrowsize=0.9];
+  sampling -> dna [color="#D55E00", penwidth=3.5, arrowsize=0.9];
+  extract -> dna [color="#D55E00", penwidth=3.5, arrowsize=0.9];
+  ref -> dna [color="#D55E00", penwidth=3.5, arrowsize=0.9];
+  state -> proc;
+  state -> sampled;
+  goodday -> sampled;
+}
