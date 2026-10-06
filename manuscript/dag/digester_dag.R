@@ -166,7 +166,11 @@ system2("dot", c("-Tpng", "-Gdpi=200", file.path(here, "dag.dot"), "-o", paste0(
 # reactor state behind the community, the process data beside it, and selection. All levers are one
 # node. Every arrow below must be a directed path in the full graph, or the script stops, so the
 # reduced figure cannot claim an arrow the full graph does not have.
-levers <- c("feed", "olr", "hrt", "temp", "te_dose", "inoc", "air")
+# The collapsed node is exactly the levers its label names (feed, load, retention, temperature,
+# additives = trace-element dosing and air dosing). Inoculum is left out: it acts on the community only,
+# so it has no path to the reactor state within a slice, and the levers -> state arrow would be false
+# for it (referee round 4, G1).
+levers <- c("feed", "olr", "hrt", "temp", "te_dose", "air")
 red_nodes <- read.table(header = TRUE, sep = "|", strip.white = TRUE, quote = "", text = "
 id       | group      | label
 levers   | lever      | Operator's levers\\n(feed, load, retention,\\ntemperature, additives)
@@ -195,7 +199,8 @@ goodday  | sampled
 ")
 for (i in seq_len(nrow(red_edges))) {
   fr <- if (red_edges$from[i] == "levers") levers else red_edges$from[i]
-  ok <- any(sapply(fr, function(f) length(paths(dag, f, red_edges$to[i], directed = TRUE,
+  # all, not any: an arrow from a collapsed node claims a path for every member
+  ok <- all(sapply(fr, function(f) length(paths(dag, f, red_edges$to[i], directed = TRUE,
                                                 limit = PATH_LIMIT)$paths) > 0))
   if (!ok) stop(sprintf("reduced figure: %s -> %s is not a path in the full graph", red_edges$from[i], red_edges$to[i]))
 }
